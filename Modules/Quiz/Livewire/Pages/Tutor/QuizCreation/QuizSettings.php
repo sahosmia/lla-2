@@ -98,6 +98,7 @@ class QuizSettings extends Component
         if (!empty($quizSetting)) {
             $quizSetting = $this->quizService->addQuizSettings($this->quizId, $quizSetting);
             $this->dispatch('showAlertMessage', type: 'success', title: __('quiz::quiz.quiz_created'), message: __('quiz::quiz.quiz_settings_updated_successfully'));
+            return redirect()->route('quiz.tutor.question-manager', ['quizId' => $this->quizId]);
         }
     }
 }

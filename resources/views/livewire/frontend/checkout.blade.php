@@ -11,7 +11,7 @@
                             {{ __('checkout.checkout') }}
                         @endslot
                         <strong class="am-checkout_logo">
-                            <x-application-logo />
+                            <x-application-logo style="max-width: 150px; height: auto;" />
                         </strong>
                         <h2>{{ __('checkout.you_almost_there') }}</h2>
                         <p>{{ __('checkout.fill_details_mentioned_below_purchase_courses') }}</p>

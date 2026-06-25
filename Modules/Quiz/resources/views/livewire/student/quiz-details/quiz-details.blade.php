@@ -15,9 +15,12 @@
         @endif
         <div class="am-quiz-detail_content">
             <div class="am-quiz-detail_info">
-                @if(!empty($quizAttempt?->quiz?->tutor?->profile?->image) && Storage::disk(getStorageDisk())->exists($quizAttempt?->quiz?->tutor?->profile?->image))
+                @php
+                    $tutorImage = $quizAttempt?->quiz?->tutor?->profile?->image;
+                @endphp
+                @if(!empty($tutorImage) && (filter_var($tutorImage, FILTER_VALIDATE_URL) || Storage::disk(getStorageDisk())->exists($tutorImage)))
                     <figure>
-                        <img src="{{ resizedImage($quizAttempt?->quiz?->tutor?->profile?->image, 160, 160) }}" alt="{{ $quizAttempt?->quiz?->tutor?->profile?->full_name }}" />
+                        <img src="{{ resizedImage($tutorImage, 160, 160) }}" alt="{{ $quizAttempt?->quiz?->tutor?->profile?->full_name }}" />
                     </figure>
                 @endif
                 <h6>
@@ -122,7 +125,7 @@
             </div>
             @if($quizAttempt?->quiz?->questions?->count() > 0)
                 @if ($quizAttempt->result == 'assigned')
-                    <button data-toggle="modal" data-bs-toggle="modal" data-bs-target="#start-confirm-popup" class="am-btn">
+                    <button data-bs-toggle="modal" data-bs-target="#start-confirm-popup" class="am-btn">
                         {{ __('quiz::quiz.start_quiz') }}
                         <i class="am-icon-chevron-right"></i>
                     </button>
@@ -145,7 +148,7 @@
                     @endif
                 @endif
             @endif
-    <div class="modal fade am-deletepopup am-startquiz-popup" id="back-confirm-popup" data-bs-backdrop="static">
+    <div class="modal fade am-deletepopup am-startquiz-popup" id="start-confirm-popup" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="am-modal-body">
