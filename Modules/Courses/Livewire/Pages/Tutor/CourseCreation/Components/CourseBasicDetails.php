@@ -50,7 +50,6 @@ class CourseBasicDetails extends Component
         $this->levels       = Course::LEVEL;
         $this->types        = [
             'video'             => 1,
-            'live'              => 3,
             'article'           => 4,
             'all'               => 5,
         ];
