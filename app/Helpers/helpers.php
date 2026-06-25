@@ -412,8 +412,13 @@ if (!function_exists('getStorageDisk')) {
 
 if (!function_exists('resizedImage')) {
 
-    function resizedImage(string $image, int $width, int $height)
+    function resizedImage($image, int $width, int $height)
     {
+        if (filter_var($image, FILTER_VALIDATE_URL)) {
+            return $image;
+        }
+
+        $image = (string) $image;
         $disk = getStorageDisk();
 
         // Check if the original image exists

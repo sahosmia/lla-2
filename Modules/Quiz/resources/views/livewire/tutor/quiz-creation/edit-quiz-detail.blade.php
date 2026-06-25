@@ -60,7 +60,7 @@
                         </div>
                     </div>
                     @if(isActiveModule('Courses'))
-                        <div class="form-group @error('form.quizzable_type') am-invalid @enderror">
+                        <div class="form-group @error('form.quizzable_type') am-invalid @enderror" style="display: none;">
                             <x-input-label class="am-important" for="quizzable_type" wire:loading.class="am-disabled">{{ __('quiz::quiz.quiz_type') }}</x-input-label>
                             <div class="am-radiowrap">
                                 <div class="am-radio">

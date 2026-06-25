@@ -1,6 +1,6 @@
 @props(['multiLang' => true])
 @php
-    if(!empty(auth()?->user()?->profile->image) && Storage::disk(getStorageDisk())->exists(auth()?->user()?->profile?->image)) {
+    if(!empty(auth()?->user()?->profile?->image) && Storage::disk(getStorageDisk())->exists(auth()?->user()?->profile?->image)) {
         $userImage = resizedImage(auth()?->user()?->profile?->image, 36, 36);
     } else {
         $userImage = setting('_general.default_avatar_for_user') ? url(Storage::url(setting('_general.default_avatar_for_user')[0]['path'])) : resizedImage('placeholder.png', 36, 36);
@@ -211,7 +211,7 @@
     <div class="am-header_user_menu">
         <a href="javascript:void(0);">
             <figure class="am-shimmer userImg">
-                <img x-cloak src="{{ $userImage }}" alt="{{ auth()?->user()?->profile?->full_name }}">
+                <img src="{{ $userImage }}" alt="{{ auth()?->user()?->profile?->full_name }}">
             </figure>
         </a>
         <div class="am-usermenu-dropdown {{ $userRole == 'admin' ? 'am-dropdown_admin' : '' }}">
