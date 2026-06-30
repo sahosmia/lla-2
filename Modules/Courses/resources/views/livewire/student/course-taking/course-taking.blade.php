@@ -395,9 +395,9 @@
                                             <div class="am-searchhead_title">
                                                 <div class="cr-title-box">
                                                     @if (!empty($course->title))
-                                                        <h2>{{ $course->title }}</h1>
+                                                        <h2>{{ $course->title }}</h2>
                                                     @endif
-                                                    <span data-toggle="modal" data-bs-toggle="modal" data-bs-target="#back-confirm-popup"><em>{{ __('courses::courses.in') }}:</em> {!! $course->category?->name !!}</span>
+                                                    <span><em>{{ __('courses::courses.in') }}:</em> {!! $course->category?->name !!}</span>
                                                 </div>
                                                 @if (!empty($course->subtitle))
                                                     <p>{{ $course->subtitle }}</p>
