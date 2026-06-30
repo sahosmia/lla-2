@@ -21,7 +21,7 @@
         $isIdentity = setting('_lernen.identity_verification_for_role') ?? "both";
     @endphp
 
-    @if(auth()->user()->role == 'tutor' || $isIdentity == 'both')
+    @if(auth()->user()->role == 'tutor' || ($isIdentity == 'both' && auth()->user()->role != 'student'))
         <li @class(['am-active'=> $activeRoute == auth()->user()->role.'.profile.identification'])>
             <a href="{{ route(auth()->user()->role.'.profile.identification') }}" wire:navigate.remove>
                 {{ __('profile.identity_verification') }}

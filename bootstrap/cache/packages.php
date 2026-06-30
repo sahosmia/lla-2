@@ -54,16 +54,26 @@
       0 => 'Larabuild\\Pagebuilder\\ServiceProvider',
     ),
   ),
-  'laravel/reverb' => 
+  'laravel/breeze' =>
   array (
-    'aliases' => 
+    'providers' =>
     array (
-      'Output' => 'Laravel\\Reverb\\Output',
+      0 => 'Laravel\\Breeze\\BreezeServiceProvider',
     ),
+  ),
+  'laravel/reverb' =>
+  array (
     'providers' => 
     array (
       0 => 'Laravel\\Reverb\\ApplicationManagerServiceProvider',
       1 => 'Laravel\\Reverb\\ReverbServiceProvider',
+    ),
+  ),
+  'laravel/sail' =>
+  array (
+    'providers' =>
+    array (
+      0 => 'Laravel\\Sail\\SailServiceProvider',
     ),
   ),
   'laravel/sanctum' => 
@@ -71,6 +81,13 @@
     'providers' => 
     array (
       0 => 'Laravel\\Sanctum\\SanctumServiceProvider',
+    ),
+  ),
+  'laravel/sentinel' =>
+  array (
+    'providers' =>
+    array (
+      0 => 'Laravel\\Sentinel\\SentinelServiceProvider',
     ),
   ),
   'laravel/socialite' => 
@@ -136,6 +153,13 @@
     'providers' => 
     array (
       0 => 'Carbon\\Laravel\\ServiceProvider',
+    ),
+  ),
+  'nunomaduro/collision' =>
+  array (
+    'providers' =>
+    array (
+      0 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
     ),
   ),
   'nunomaduro/termwind' => 

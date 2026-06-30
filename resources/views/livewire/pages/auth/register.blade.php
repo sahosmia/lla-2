@@ -59,7 +59,7 @@ new #[Layout('layouts.guest')] class extends Component
         $validated = $this->validate((new RegisterUserRequest())->rules());
         $user = (new RegisterService)->registerUser($validated);
         Auth::login($user);
-        $this->redirect(route('tutor.profile.personal-details', absolute: false), navigate: true);
+        $this->redirect($user->redirect_after_login, navigate: true);
     }
 
     public function redirectGoogle() 

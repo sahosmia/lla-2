@@ -24,6 +24,7 @@ class RegisterService
             'password'      => Hash::make($request['password']),
             'profession'    => $request['profession'],
             'organization'  => $request['organization'],
+            'email_verified_at' => $request['user_role'] == 'student' ? now() : null,
         ]);
         $user->profile()->create([
             'first_name'    => $request['first_name'],
@@ -56,6 +57,11 @@ class RegisterService
 
 
         $user->assignRole($request['user_role']);
+
+        if ($request['user_role'] == 'student') {
+            $user->email_verified_at = now();
+            $user->save();
+        }
 
         $emailData = ['userName' => $user->profile->full_name, 'userEmail' => $user->email, 'key' => $user->getKey()];
 
