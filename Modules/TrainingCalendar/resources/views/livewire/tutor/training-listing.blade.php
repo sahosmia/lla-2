@@ -102,7 +102,7 @@
                                 <td data-label="{{ __('trainingcalendar::trainingcalendar.title') }}">
                                     <div class="cr-image-and-text">
                                         <figure>
-                                            <img src="{{ asset('modules/trainingcalendar/images/training-placeholder.png') }}" alt="training image" onerror="this.src='{{ asset('images/placeholder.png') }}'">
+                                            <img src="{{ asset('modules/trainingcalendar/images/training-placeholder.png') }}" alt="training image" onerror="this.src='{{ asset('demo-content/placeholders/placeholder.png') }}'">
                                         </figure>
                                         {{ $training->title }}
                                     </div>

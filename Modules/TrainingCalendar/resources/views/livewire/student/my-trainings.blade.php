@@ -13,7 +13,7 @@
                 @if($training)
                     <div class="cr-card">
                         <figure class="cr-image-wrapper">
-                            <img src="{{ asset('modules/trainingcalendar/images/training-placeholder.png') }}" alt="{{ $training->title }}" class="cr-background-image" onerror="this.src='{{ asset('images/placeholder.png') }}'">
+                            <img src="{{ asset('modules/trainingcalendar/images/training-placeholder.png') }}" alt="{{ $training->title }}" class="cr-background-image" onerror="this.src='{{ asset('demo-content/placeholders/placeholder.png') }}'">
                             <figcaption>
                                 <span class="am-quizstatus am-quizstatus_published">
                                     {{ ucfirst($training->type) }}
