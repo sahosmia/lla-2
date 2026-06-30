@@ -12,7 +12,19 @@ class MyTrainings extends Component
 {
     use WithPagination;
 
+    public bool $isLoading = true;
+
     protected TrainingCalendarService $service;
+
+    public function mount(): void
+    {
+        $this->isLoading = true;
+    }
+
+    public function loadData(): void
+    {
+        $this->isLoading = false;
+    }
 
     public function boot(TrainingCalendarService $service): void
     {
@@ -22,7 +34,10 @@ class MyTrainings extends Component
     #[Layout('layouts.app')]
     public function render()
     {
-        $registrations = $this->service->getStudentRegistrations(Auth::id());
+        $registrations = collect();
+        if (!$this->isLoading) {
+            $registrations = $this->service->getStudentRegistrations(Auth::id());
+        }
 
         return view('trainingcalendar::livewire.student.my-trainings', compact('registrations'));
     }

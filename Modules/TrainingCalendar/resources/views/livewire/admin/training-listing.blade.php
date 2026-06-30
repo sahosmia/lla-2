@@ -67,93 +67,85 @@
                 </div>
             </div>
 
-            <div class="am-quizlist_wrap">
-                @if($trainings->isNotEmpty())
-                    <ul class="row gy-4 list-unstyled">
-                        @foreach($trainings as $training)
-                            <li class="col-xl-4 col-lg-6 col-md-6">
-                                <div class="am-quizlist_item border rounded bg-white h-100 d-flex flex-column">
-                                    <figure class="position-relative m-0">
-                                        <img src="{{ asset('modules/trainingcalendar/images/training-placeholder.png') }}" class="w-100 rounded-top" style="height: 180px; object-fit: cover;" alt="training image" onerror="this.src='{{ asset('images/placeholder.png') }}'">
-                                        <figcaption class="position-absolute top-0 end-0 p-2">
-                                            @php
-                                                $statusClass = match ($training->status) {
-                                                    'draft' => 'am-quizstatus_draft',
-                                                    'cancelled' => 'am-quizstatus_archived',
-                                                    default => 'am-quizstatus_published',
-                                                };
-                                            @endphp
-                                            <span class="am-quizstatus {{ $statusClass }}">
-                                                {{ ucfirst($training->status) }}
-                                            </span>
-                                        </figcaption>
-                                    </figure>
-                                    <div class="am-quizlist_item_content p-3 flex-grow-1 d-flex flex-column">
-                                        <div class="am-quizlist_coursename d-flex justify-content-between align-items-start mb-2">
-                                            <div class="am-quizlist_coursetitle">
-                                                <h3 class="m-0 h6 fw-bold">{{ $training->title }}</h3>
-                                                <span class="text-muted small">{{ ucfirst($training->type) }}</span>
+            <div class="am-disputelist_wrap">
+                <div class="am-disputelist am-custom-scrollbar-y">
+                    @if($trainings->isNotEmpty())
+                        <table class="tb-table">
+                            <thead>
+                                <tr>
+                                    <th>{{ __('trainingcalendar::trainingcalendar.id') }}</th>
+                                    <th>{{ __('trainingcalendar::trainingcalendar.title') }}</th>
+                                    <th>{{ __('trainingcalendar::trainingcalendar.tutor') }}</th>
+                                    <th>{{ __('trainingcalendar::trainingcalendar.type') }}</th>
+                                    <th>{{ __('trainingcalendar::trainingcalendar.event_datetime') }}</th>
+                                    <th>{{ __('trainingcalendar::trainingcalendar.status') }}</th>
+                                    <th>{{ __('trainingcalendar::trainingcalendar.actions') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($trainings as $training)
+                                    <tr>
+                                        <td data-label="{{ __('trainingcalendar::trainingcalendar.id') }}">
+                                            <span>{{ $training->id }}</span>
+                                        </td>
+                                        <td data-label="{{ __('trainingcalendar::trainingcalendar.title') }}">
+                                            <span>{{ $training->title }}</span>
+                                        </td>
+                                        <td data-label="{{ __('trainingcalendar::trainingcalendar.tutor') }}">
+                                            <div class="am-instructor-column">
+                                                <span>{{ $training->tutor?->profile?->full_name }}</span>
                                             </div>
-                                            <div class="am-itemdropdown">
-                                                <a href="javascript:void(0);" id="am-itemdropdown-{{ $training->id }}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                    <i class="icon-more-vertical"></i>
-                                                </a>
-                                                <ul class="am-itemdropdown_list dropdown-menu dropdown-menu-end" aria-labelledby="am-itemdropdown-{{ $training->id }}">
-                                                    <li>
-                                                        <a href="{{ route('trainingcalendar.detail', $training->slug) }}" target="_blank" class="dropdown-item">
-                                                            <i class="icon-eye me-2"></i>
-                                                            {{ __('courses::courses.view_details') }}
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0);" @click="$wire.dispatch('showConfirm', { id : {{ $training->id }}, action : 'delete-training' })" class="dropdown-item text-danger">
-                                                            <i class="icon-trash-2 me-2"></i>
-                                                            {{ __('general.delete') }}
-                                                        </a>
-                                                    </li>
-                                                </ul>
+                                        </td>
+                                        <td data-label="{{ __('trainingcalendar::trainingcalendar.type') }}">
+                                            <span>{{ ucfirst($training->type) }}</span>
+                                        </td>
+                                        <td data-label="{{ __('trainingcalendar::trainingcalendar.event_datetime') }}">
+                                            <span>{{ $training->event_datetime?->format('M d, Y') }}</span>
+                                        </td>
+                                        <td data-label="{{ __('trainingcalendar::trainingcalendar.status') }}">
+                                            <div class="am-status-tag">
+                                                @php
+                                                    $tagClass = match ($training->status) {
+                                                        'published' => 'tk-active',
+                                                        'draft' => 'tk-disabled',
+                                                        'cancelled' => 'tk-disabled',
+                                                        default => 'tk-disabled',
+                                                    };
+                                                @endphp
+                                                <em class="tk-project-tag {{ $tagClass }}">{{ ucfirst($training->status) }}</em>
                                             </div>
-                                        </div>
-
-                                        @if($training->tutor?->profile)
-                                            <div class="card-tutor-profile d-flex align-items-center mb-3">
-                                                @if($training->tutor->profile->image)
-                                                    <img src="{{ asset('storage/' . $training->tutor->profile->image) }}" alt="Tutor" class="rounded-circle me-2" style="width: 30px; height: 30px; object-fit: cover;">
-                                                @else
-                                                    <div class="rounded-circle me-2 bg-indigo text-white d-flex align-items-center justify-content-center" style="width: 30px; height: 30px; font-size: 12px; font-weight: bold;">
-                                                        {{ substr($training->tutor->profile->first_name ?? 'T', 0, 1) }}
+                                        </td>
+                                        <td data-label="{{ __('trainingcalendar::trainingcalendar.actions') }}">
+                                            <ul class="tb-action-icon">
+                                                <li>
+                                                    <div class="am-custom-tooltip">
+                                                        <span class="am-tooltip-text">{{ __('general.view_details') }}</span>
+                                                        <a href="{{ route('trainingcalendar.detail', $training->slug) }}" target="_blank">
+                                                            <i class="icon-eye"></i>
+                                                        </a>
                                                     </div>
-                                                @endif
-                                                <div class="tutor-info-text">
-                                                    <span class="small fw-bold">{{ $training->tutor->profile->full_name }}</span>
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        <ul class="am-quizlist_item_footer list-unstyled mt-auto pt-3 border-top d-flex flex-wrap gap-3">
-                                            <li class="d-flex align-items-center gap-1 small text-muted">
-                                                <i class="icon-calendar"></i>
-                                                {{ $training->event_datetime?->format('M d, Y') }}
-                                            </li>
-                                            <li class="d-flex align-items-center gap-1 small text-muted">
-                                                <i class="icon-users"></i>
-                                                {{ $training->paid_registrations_count }} / {{ $training->max_seats ?? '∞' }}
-                                            </li>
-                                            <li class="d-flex align-items-center gap-1 small text-muted ms-auto fw-bold text-dark">
-                                                {{ formatAmount($training->price) }}
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </li>
-                        @endforeach
-                    </ul>
-                    <div class="mt-4">
-                        {{ $trainings->links('pagination.custom') }}
-                    </div>
-                @else
-                    <x-no-record :image="asset('images/empty.png')" :title="__('general.no_record_title')" />
-                @endif
+                                                </li>
+                                                <li>
+                                                    <div class="am-custom-tooltip">
+                                                        <span class="am-tooltip-text">{{ __('general.delete') }}</span>
+                                                        <a href="javascript:void(0);" @click="$wire.dispatch('showConfirm', { id : {{ $training->id }}, action : 'delete-training' })" class="tb-delete">
+                                                            <i class="icon-trash-2"></i>
+                                                        </a>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                        <div class="mt-4">
+                            {{ $trainings->links('pagination.custom') }}
+                        </div>
+                    @else
+                        <x-no-record :image="asset('images/empty.png')" :title="__('general.no_record_title')" />
+                    @endif
+                </div>
             </div>
         </div>
     </div>
@@ -162,15 +154,4 @@
 @push('styles')
     <link rel="stylesheet" href="{{ asset('modules/courses/css/main.css') }}">
     <link rel="stylesheet" href="{{ asset('modules/quiz/css/main.css') }}">
-    <style>
-        .am-training-admin .am-quizstatus {
-            padding: 2px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .am-training-admin .am-quizstatus_published { background: #e6f9f1; color: #00b96b; }
-        .am-training-admin .am-quizstatus_draft { background: #fef4e6; color: #ff9f43; }
-        .am-training-admin .am-quizstatus_archived { background: #feebeb; color: #ff4d4f; }
-    </style>
 @endpush

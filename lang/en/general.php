@@ -104,6 +104,7 @@ return [
     'title'                                     => 'Title',
     'amount'                                    => 'Amount',
     'view'                                      => 'View',
+    'view_details'                              => 'View Details',
     'verified'                                  => 'Verified',
     'non_verified'                              => 'Non-verified',
     'all_users'                                 => 'All users',

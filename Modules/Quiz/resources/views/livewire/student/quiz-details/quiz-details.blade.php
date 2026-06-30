@@ -121,7 +121,9 @@
             </div>
             @if($quizAttempt?->quiz?->questions?->count() > 0)
                 @if ($quizAttempt->result == 'assigned')
-                    <button data-toggle="modal" data-bs-toggle="modal" data-bs-target="#start-confirm-popup" class="am-btn">
+                    {{-- <button data-toggle="modal" data-bs-toggle="modal" data-bs-target="#start-confirm-popup" class="am-btn"> --}}
+                                        <button data-bs-toggle="modal" data-bs-target="#start-confirm-popup" class="am-btn">
+
                         {{ __('quiz::quiz.start_quiz') }}
                         <i class="am-icon-chevron-right"></i>
                     </button>
@@ -144,7 +146,9 @@
                     @endif
                 @endif
             @endif
-    <div class="modal fade am-deletepopup am-startquiz-popup" id="back-confirm-popup" data-bs-backdrop="static">
+    {{-- <div class="modal fade am-deletepopup am-startquiz-popup" id="back-confirm-popup" data-bs-backdrop="static"> --}}
+            <div class="modal fade am-deletepopup am-startquiz-popup" id="start-confirm-popup" data-bs-backdrop="static">
+
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="am-modal-body">
