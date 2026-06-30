@@ -14,8 +14,19 @@ class TrainingListing extends Component
 
     public string $keyword = '';
     public string $status = '';
+    public bool $isLoading = true;
 
     protected TrainingCalendarService $service;
+
+    public function mount(): void
+    {
+        $this->isLoading = true;
+    }
+
+    public function loadData(): void
+    {
+        $this->isLoading = false;
+    }
 
     public function boot(TrainingCalendarService $service): void
     {
@@ -42,14 +53,17 @@ class TrainingListing extends Component
     #[Layout('layouts.app')]
     public function render()
     {
-        $trainings = $this->service->getTutorTrainings(Auth::id(), [
-            'keyword' => $this->keyword,
-            'status' => $this->status,
-            'per_page' => 12,
-        ]);
+        $trainings = collect();
+        if (!$this->isLoading) {
+            $trainings = $this->service->getTutorTrainings(Auth::id(), [
+                'keyword' => $this->keyword,
+                'status' => $this->status,
+                'per_page' => 12,
+            ]);
+        }
 
         $counts = $this->service->getTrainingCounts(Auth::id());
 
-        return view('trainingcalendar::livewire.tutor.training-listing', compact('trainings', 'counts'));
+        return view('trainingcalendar::livewire.tutor.training-listing', compact('trainings', 'counts', 'trainings'));
     }
 }
