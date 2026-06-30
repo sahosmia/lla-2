@@ -19,37 +19,57 @@
                         <h4 class="am-subtitle mb-4">Contact Details</h4>
                         
                         <ul class="am-contact-list list-unstyled">
-                            <li class="d-flex mb-3">
-                                <span class="am-icon-box me-3"><i class="icon-phone"></i></span>
-                                <div>
-                                    <span class="d-block text-muted small">Phone / WhatsApp</span>
-                                    <a href="tel:+8801742719724" class="am-link">+880 1742 719724</a>
-                                </div>
-                            </li>
-                            <li class="d-flex mb-3">
-                                <span class="am-icon-box me-3"><i class="icon-mail"></i></span>
-                                <div>
-                                    <span class="d-block text-muted small">Email Address</span>
-                                    <a href="mailto:info@thelearninglineacademy.com" class="am-link">info@thelearninglineacademy.com</a> 
-                                </div>
-                            </li>
-                            <li class="d-flex mb-3">
-                                <span class="am-icon-box me-3"><i class="icon-map-pin"></i></span>
-                                <div>
-                                    <span class="d-block text-muted small">Training Mode</span>
-                                    <p class="mb-0">Online & Physical Training</p> 
-                                </div>
-                            </li>
+                            @if(!empty(setting('_front_page_settings.footer_contact')))
+                                <li class="d-flex mb-3">
+                                    <span class="am-icon-box me-3"><i class="am-icon-call"></i></span>
+                                    <div>
+                                        <span class="d-block text-muted small">Phone / WhatsApp</span>
+                                        <a href="tel:{{ setting('_front_page_settings.footer_contact') }}" class="am-link">{{ setting('_front_page_settings.footer_contact') }}</a>
+                                    </div>
+                                </li>
+                            @endif
+                            @if(!empty(setting('_front_page_settings.footer_email')))
+                                <li class="d-flex mb-3">
+                                    <span class="am-icon-box me-3"><i class="am-icon-email-02"></i></span>
+                                    <div>
+                                        <span class="d-block text-muted small">Email Address</span>
+                                        <a href="mailto:{{ setting('_front_page_settings.footer_email') }}" class="am-link">{{ setting('_front_page_settings.footer_email') }}</a>
+                                    </div>
+                                </li>
+                            @endif
+                            @if(!empty(setting('_front_page_settings.footer_address')))
+                                <li class="d-flex mb-3">
+                                    <span class="am-icon-box me-3"><i class="am-icon-location"></i></span>
+                                    <div>
+                                        <span class="d-block text-muted small">Training Mode</span>
+                                        <p class="mb-0">{{ setting('_front_page_settings.footer_address') }}</p>
+                                    </div>
+                                </li>
+                            @endif
                         </ul>
 
-                        <div class="am-social-wrap mt-4 pt-4 border-top">
-                            <h5 class="small text-uppercase mb-3">Follow Our Hub</h5>
-                            <div class="am-social-links d-flex gap-3">
-                                <a href="https://www.youtube.com/@TheLearningLineAcademy" target="_blank" class="am-social-btn youtube"><i class="icon-youtube"></i></a> [cite: 71]
-                                <a href="https://www.linkedin.com/in/rafiqul-islam" target="_blank" class="am-social-btn linkedin"><i class="icon-linkedin"></i></a> [cite: 72]
-                                <a href="https://www.facebook.com/TheLearningLineAcademy" target="_blank" class="am-social-btn facebook"><i class="icon-facebook"></i></a> [cite: 73]
+                        @if (
+                            !empty( setting('_general.fb_link')) ||
+                            !empty( setting('_general.insta_link')) ||
+                            !empty( setting('_general.linkedin_link')) ||
+                            !empty( setting('_general.yt_link')) ||
+                            !empty( setting('_general.tiktok_link'))
+                        )
+                            <div class="am-social-wrap mt-4 pt-4 border-top">
+                                <h5 class="small text-uppercase mb-3">Follow Our Hub</h5>
+                                <div class="am-social-links d-flex gap-3">
+                                    @if(!empty(setting('_general.yt_link')))
+                                        <a href="{{ setting('_general.yt_link') }}" target="_blank" class="am-social-btn youtube"><i class="am-icon-youtube"></i></a>
+                                    @endif
+                                    @if(!empty(setting('_general.linkedin_link')))
+                                        <a href="{{ setting('_general.linkedin_link') }}" target="_blank" class="am-social-btn linkedin"><i class="am-icon-linkedin"></i></a>
+                                    @endif
+                                    @if(!empty(setting('_general.fb_link')))
+                                        <a href="{{ setting('_general.fb_link') }}" target="_blank" class="am-social-btn facebook"><i class="am-icon-facebook"></i></a>
+                                    @endif
+                                </div>
                             </div>
-                        </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -187,6 +207,9 @@
     .am-input:focus {
         border-color: var(--primary-color);
         box-shadow: none;
+    }
+    .form-select.am-input:focus {
+        background-position: right 0.75rem center !important;
     }
     .am-btn-primary {
         padding: 12px 30px;
