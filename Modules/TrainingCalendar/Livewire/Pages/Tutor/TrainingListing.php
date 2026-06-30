@@ -28,6 +28,17 @@ class TrainingListing extends Component
         $this->isLoading = false;
     }
 
+    public function updatedKeyword()
+    {
+        $this->resetPage();
+    }
+
+    public function filterStatus(string $status)
+    {
+        $this->status = $status;
+        $this->resetPage();
+    }
+
     public function boot(TrainingCalendarService $service): void
     {
         $this->service = $service;

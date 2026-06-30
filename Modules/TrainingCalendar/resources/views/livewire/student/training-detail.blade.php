@@ -18,7 +18,11 @@
             </div>
             <div class="am-quiz-detail_description">
                 @if($registration->training?->title)
-                    <h3>{{ $registration->training->title }}</h3>
+                    <div class="am-title_wrap">
+                        <div class="am-title">
+                            <h2>{{ $registration->training->title }}</h2>
+                        </div>
+                    </div>
                 @endif
                 <div class="am-course-stats">
                     <div class="am-stat-item">
@@ -54,7 +58,9 @@
 
                 <div class="am-training-content mt-4">
                     <h5>{{ __('trainingcalendar::trainingcalendar.description') }}</h5>
-                    <p>{!! nl2br(e($registration->training?->description)) !!}</p>
+                    <div class="am-description-text">
+                        {!! nl2br(e($registration->training?->description)) !!}
+                    </div>
                 </div>
 
                 <div class="am-instructions mt-4">
@@ -113,6 +119,10 @@
         }
         .am-notice-list li {
             border-left: 4px solid #4f46e5 !important;
+        }
+        .am-description-text {
+            color: #585858;
+            line-height: 1.6;
         }
     </style>
 @endpush

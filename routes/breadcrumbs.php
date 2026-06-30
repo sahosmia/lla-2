@@ -457,3 +457,14 @@ if(\Nwidart\Modules\Facades\Module::has('TrainingCalendar') && \Nwidart\Modules\
         $trail->push(__('trainingcalendar::trainingcalendar.module_settings'), route('trainingcalendar.admin.settings'));
     });
 }
+
+if(\Nwidart\Modules\Facades\Module::has('TrainingCalendar') && \Nwidart\Modules\Facades\Module::isEnabled('TrainingCalendar')){
+    Breadcrumbs::for('trainingcalendar.browse', function (BreadcrumbTrail $trail) {
+        $trail->push(__('trainingcalendar::trainingcalendar.browse_trainings'), route('trainingcalendar.browse'));
+    });
+
+    Breadcrumbs::for('trainingcalendar.detail', function (BreadcrumbTrail $trail, $training) {
+        $trail->parent('trainingcalendar.browse');
+        $trail->push($training->title ?? __('trainingcalendar::trainingcalendar.event_details'), route('trainingcalendar.detail', $training));
+    });
+}

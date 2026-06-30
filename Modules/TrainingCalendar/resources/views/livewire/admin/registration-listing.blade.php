@@ -65,7 +65,7 @@
                                                 @php
                                                     $tagClass = $registration->payment_status === 'paid' ? 'tk-active' : 'tk-disabled';
                                                 @endphp
-                                                <em class="tk-project-tag {{ $tagClass }}">{{ ucfirst($registration->payment_status) }}</em>
+                                                <em class="tk-project-tag {{ $tagClass }}">{{ __('trainingcalendar::trainingcalendar.' . $registration->payment_status) }}</em>
                                             </div>
                                         </td>
 

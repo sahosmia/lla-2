@@ -59,22 +59,22 @@
         <div class="am-slots_wrap">
             <ul class="am-category-slots">
                 <li>
-                    <button wire:click="$set('status', '')" class="{{ $status === '' ? 'active' : '' }}">
+                    <button wire:click="filterStatus('')" class="{{ $status === '' ? 'active' : '' }}">
                         {{ __('trainingcalendar::trainingcalendar.all') }}
                     </button>
                 </li>
                 <li>
-                    <button wire:click="$set('status', 'published')" class="{{ $status === 'published' ? 'active' : '' }}">
+                    <button wire:click="filterStatus('published')" class="{{ $status === 'published' ? 'active' : '' }}">
                         {{ __('trainingcalendar::trainingcalendar.published') }}
                     </button>
                 </li>
                 <li>
-                    <button wire:click="$set('status', 'draft')" class="{{ $status === 'draft' ? 'active' : '' }}">
+                    <button wire:click="filterStatus('draft')" class="{{ $status === 'draft' ? 'active' : '' }}">
                         {{ __('trainingcalendar::trainingcalendar.draft') }}
                     </button>
                 </li>
                 <li>
-                    <button wire:click="$set('status', 'cancelled')" class="{{ $status === 'cancelled' ? 'active' : '' }}">
+                    <button wire:click="filterStatus('cancelled')" class="{{ $status === 'cancelled' ? 'active' : '' }}">
                         {{ __('trainingcalendar::trainingcalendar.cancelled') }}
                     </button>
                 </li>
@@ -130,7 +130,7 @@
                                         @endphp
                                         <span class="cr-status">
                                             <span style="background-color: {{ $dotColor }};" class="cr-dot {{ $dotClass }}"></span>
-                                            {{ ucfirst($training->status) }}
+                                            {{ __('trainingcalendar::trainingcalendar.' . $training->status) }}
                                         </span>
                                         <div class="am-itemdropdown">
                                             <a href="javascript:void(0);" id="am-itemdropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -184,9 +184,7 @@
                     </div>
                 @endif
             @else
-                <div class="am-quizlist_wrap">
-                    @include('quiz::skeletons.quiz-listing-skeleton', ['total' => 10])
-                </div>
+                @include('trainingcalendar::skeletons.training-listing')
             @endif
         </div>
     </div>

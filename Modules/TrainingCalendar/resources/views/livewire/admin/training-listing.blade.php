@@ -112,7 +112,7 @@
                                                         default => 'tk-disabled',
                                                     };
                                                 @endphp
-                                                <em class="tk-project-tag {{ $tagClass }}">{{ ucfirst($training->status) }}</em>
+                                                <em class="tk-project-tag {{ $tagClass }}">{{ __('trainingcalendar::trainingcalendar.' . $training->status) }}</em>
                                             </div>
                                         </td>
                                         <td data-label="{{ __('trainingcalendar::trainingcalendar.actions') }}">
