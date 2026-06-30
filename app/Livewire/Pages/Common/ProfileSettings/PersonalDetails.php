@@ -140,7 +140,7 @@ class PersonalDetails extends Component
         $user->organization = $this->form->organization;
         $user->save();
         
-        $this->dispatch('profile-img-updated', image: resizedImage($form->image, 36, 36));
+        $this->dispatch('profile-img-updated', image: profileImageUrl($form->image, 36, 36));
         $this->dispatch('showAlertMessage', type: 'success', title: __('general.success_title'), message: __('general.success_message'));
     }
 

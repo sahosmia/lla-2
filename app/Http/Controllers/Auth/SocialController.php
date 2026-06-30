@@ -59,7 +59,7 @@ class SocialController extends Controller
         if ($user->roles()?->first()?->name == 'tutor') {
             return redirect()->route('tutor.dashboard');
         } else {
-            return redirect()->route('student.bookings');
+            return redirect()->route('courses.course-list');
         }
     }
 }

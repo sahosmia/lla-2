@@ -1,5 +1,8 @@
-@if(!empty($question->thumbnail) && Storage::disk(getStorageDisk())->exists($question->thumbnail?->path))
+@php
+    $questionImageUrl = storageMediaUrl($question->thumbnail?->path);
+@endphp
+@if(!empty($questionImageUrl))
     <figure class="am-quizsteps_img">
-        <img src="{{ Storage::disk(getStorageDisk())->url($question->thumbnail?->path) }}" alt="{{ $question->question_title }}">
+        <img src="{{ $questionImageUrl }}" alt="{{ $question->title }}">
     </figure>
 @endif

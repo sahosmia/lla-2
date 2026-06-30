@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Modules\LaraPayease\Facades\PaymentDriver;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 use Nwidart\Modules\Facades\Module;
 use App\Jobs\CompletePurchaseJob;
@@ -107,6 +108,48 @@ class SiteController extends Controller
         }
     }
 
+    public function sslcommerzIpn(Request $request)
+    {
+        header('HTTP/1.0 200 OK');
+        flush();
+
+        $request->merge(['payment_method' => 'sslcommerz']);
+        $gatewayObj = getGatewayObject('sslcommerz');
+
+        if (!empty($gatewayObj)) {
+            $paymentData = $gatewayObj->paymentResponse($request->all());
+            if (!empty($paymentData) && $paymentData['status'] == Response::HTTP_OK) {
+                $orderServices = new OrderService();
+                $orderDetail = $orderServices->getOrderDetail($paymentData['data']['order_id']);
+
+                if (!empty($orderDetail) && $orderDetail->status !== 'complete') {
+                    $status = $orderServices->updateOrder($orderDetail, [
+                        'status' => 'complete',
+                        'transaction_id' => $paymentData['data']['transaction_id'],
+                    ]);
+
+                    if ($status) {
+                        Bus::dispatchNow(new CompletePurchaseJob($orderDetail));
+                    }
+                }
+            }
+        }
+
+        echo 'OK';
+    }
+
+    public function sslcommerzFail(Request $request)
+    {
+        $request->merge(['payment_method' => 'sslcommerz']);
+
+        return redirect()->route('payment.failed');
+    }
+
+    public function sslcommerzCancel(Request $request)
+    {
+        return redirect()->route('payment.cancelled');
+    }
+
     public function paymentSuccess(Request $request, $webhook = false)
     {
         $orderServices   = new OrderService();
@@ -126,7 +169,7 @@ class SiteController extends Controller
                     $orderDetail   = $orderServices->getOrderDetail($paymentData['data']['order_id']);
                     $status = $orderServices->updateOrder($orderDetail, ['status' => 'complete', 'transaction_id' => $paymentData['data']['transaction_id']]);
                     if ($status) {
-                        dispatch(new CompletePurchaseJob($orderDetail));
+                        Bus::dispatchNow(new CompletePurchaseJob($orderDetail));
                         $request->session()->forget('payment_data');
                         if (Auth::guest() && !empty($orderDetail->orderBy)) {
                             Auth::login($orderDetail->orderBy);
@@ -143,7 +186,7 @@ class SiteController extends Controller
                     if ($request->source == 'api' && $request->upi) {
                         return response()->json(['success' => true, 'message' => __('general.payment_cancelled')], Response::HTTP_BAD_REQUEST);
                     }
-                    return redirect(route('checkout'))->with('error', __('general.payment_cancelled_desc'));
+                    return redirect()->route('payment.failed');
                 }
             }
         }
@@ -210,7 +253,7 @@ class SiteController extends Controller
             'ipn_url'       => !empty($ipnUrl) ? route($ipnUrl, ['payment_method' => $orderDetail->payment_method, 'upi' => $orderDetail->unique_payment_id, 'source' => request()->get('source') ?? 'web']) : url('/'),
             'order_id'      => $orderDetail->id,
             'track'         => $orderDetail->unique_payment_id,
-            'cancel_url'    => route('checkout', ['upi' => $orderDetail->unique_payment_id, 'source' => request()->get('source') ?? 'web']),
+            'cancel_url'    => route('sslcommerz.cancel'),
             'success_url'   => route('thank-you', ['id' => $orderDetail->id]),
             'email'         => $orderDetail->email,
             'name'          => $orderDetail->first_name,

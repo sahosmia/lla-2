@@ -68,6 +68,10 @@ class EditQuiz extends Component
         $this->quizId = (int)$quizId;
         $this->form->setQuizDetail($this->quiz);
 
+        if (isActiveModule('Courses') && empty($this->form->quizzable_type)) {
+            $this->form->quizzable_type = \Modules\Courses\Models\Course::class;
+        }
+
         $this->quizzable_ids = $this->initOptions($this->form->quizzable_type);
         if($this->form->quizzable_type == UserSubjectGroupSubject::class){
             $slotData = $this->bookingService->getAvailableSubjectSlots($this->form->quizzable_id, $this->dateFormat, $this->timeFormat);

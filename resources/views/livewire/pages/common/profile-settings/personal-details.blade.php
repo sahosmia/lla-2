@@ -230,7 +230,7 @@
                             </div>
                             @if(!empty($form->image))
                                 <div class="am-uploadedfile">
-                                    <img src="{{ $form->isBase64 ? $form->image :  url(Storage::url($form->image )) }}" alt="{{ $form->imageName }}">
+                                    <img src="{{ $form->isBase64 ? $form->image : profileImageUrl($form->image, 200, 200) }}" alt="{{ $form->imageName }}">
                                     @if( $form->isBase64 )
                                         <span>{{ $form->imageName }}</span>
                                     @else

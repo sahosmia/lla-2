@@ -4,6 +4,10 @@
         <p>{{ __('courses::courses.select_category_upload') }}</p>
     </div>
     <form class="am-themeform">
+        @php
+            $allowImgFileExt = !empty($imageExtensions) ? array_map('trim', explode(',', $imageExtensions)) : [];
+            $allowVideoFileExt = !empty($videoExtensions) ? array_map('trim', explode(',', $videoExtensions)) : [];
+        @endphp
         <fieldset>
             <div class="form-group">
                 <x-input-label class="am-important" :value="__('courses::courses.add_course_thumbnail')" />

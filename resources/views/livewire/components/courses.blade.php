@@ -61,7 +61,13 @@
                                                         <span class="cr-price-amount">{!! formatAmount($course?->pricing?->final_price, true) !!}</span>
                                                     </div>
                                                 </div> 
-                                                <a href="{{ route('login') }}" class="am-btn">{{ __('general.enrole') }}</a>
+                                                <!--<a href="{{ route('login') }}" class="am-btn">{{ __('general.enrole') }}</a>-->
+                                                @auth
+                                                    <a href="{{ route('courses.course-detail', ['slug' => $course?->slug]) }}" class="am-btn">{{ __('general.enrole') }}</a>
+                                                @else
+                                                    <a href="{{ route('login') }}" class="am-btn">{{ __('general.enrole') }}</a>
+                                                @endauth
+                                                
                                             </div>
                                         </div>
                                     </div>
@@ -133,8 +139,13 @@
                                                 </div>
                                             </div>
                                             <div class="cr-price-wrap">
-                                                <a href="{{ route('login') }}" class="am-btn">{{ __('general.enrole') }}</a>
+                                                @auth
+                                                    <a href="{{ route('courses.course-detail', ['slug' => $course?->slug]) }}" class="am-btn">{{ __('general.enrole') }}</a>
+                                                @else
+                                                    <a href="{{ route('login') }}" class="am-btn">{{ __('general.enrole') }}</a>
+                                                @endauth                                            
                                             </div>
+                                            
                                         </div>
                                     </div>
                                 </div>
@@ -220,7 +231,11 @@
                                                     <span class="cr-price-amount">{!! formatAmount($course?->pricing?->final_price, true) !!}</span>
                                                 </div>
                                             </div>
-                                            <a href="{{ route('login') }}" class="am-btn">{{ __('general.enrole') }}</a>
+                                            @auth
+                                                <a href="{{ route('courses.course-detail', ['slug' => $course?->slug]) }}" class="am-btn">{{ __('general.enrole') }}</a>
+                                            @else
+                                                <a href="{{ route('login') }}" class="am-btn">{{ __('general.enrole') }}</a>
+                                            @endauth                                        
                                         </div>
                                     </div>
                                 </div>

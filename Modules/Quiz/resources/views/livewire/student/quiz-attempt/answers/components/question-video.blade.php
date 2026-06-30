@@ -1,5 +1,10 @@
-@if(!empty($question->video) && Storage::disk(getStorageDisk())->exists($question->video?->path))
-    <video class="video-js am-quizsteps_video" data-setup='{}' preload="auto" wire:key="auth-video" id="auth-video" width="300" height="300" controls >
-        <source src="{{ Storage::disk(getStorageDisk())->url($question->video?->path) }}#t=0.1" wire:key="auth-video-src" type="video/mp4" >
-    </video>
+@php
+    $questionVideoUrl = storageMediaUrl($question->video?->path);
+@endphp
+@if(!empty($questionVideoUrl))
+    <figure class="am-quizsteps_video">
+        <video controls preload="metadata">
+            <source src="{{ $questionVideoUrl }}#t=0.1" wire:key="auth-video-src" type="video/mp4">
+        </video>
+    </figure>
 @endif

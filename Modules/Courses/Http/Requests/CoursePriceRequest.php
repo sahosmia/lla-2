@@ -15,9 +15,10 @@ class CoursePriceRequest extends FormRequest
     public function rules()
     {
         return [
-            'price'         => 'required_if:isFree,false|nullable|numeric|min:0.01|max:99999.99',
-            'discount'      => 'sometimes|numeric|min:0|max:100',
-            'final_price'   => 'nullable|numeric|min:0|max:99999.99|lte:price',
+            'isFree'        => 'boolean',
+            'price'         => 'required_if:isFree,false|nullable|numeric|min:0|max:99999.99',
+            'discount'      => 'nullable|numeric|min:0|max:100',
+            'final_price'   => 'nullable|numeric|min:0|max:99999.99',
         ];
     }
 

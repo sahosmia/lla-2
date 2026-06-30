@@ -42,7 +42,7 @@
                             <p>{!! __('thank_you.thanks_detail') !!}</p> 
                         </div>
                         <div class="am-checkout-details">
-                            <a href="{{ auth()->user()->role == 'student' ? route('student.bookings') : route('tutor.invoices') }}" class="am-btn">{{ __('thank_you.continue_profile') }}</a>
+                            <a href="{{ $continueUrl }}" class="am-btn">{{ $continueLabel }}</a>
                         </div>
                     </div>
                     <div class="am-ordersummary">
@@ -50,18 +50,24 @@
                             <h3>{{ __('thank_you.order_summary') }}</h3>
                         </div>
                         <ul class="am-ordersummary_list">
-                            @php
-                                $discount = 0;
-                                $total = 0;
-                            @endphp
                             @foreach ($orderItem as $item)
                             <li>
                                 <figure class="am-ordersummary_list_img">
-                                    @if(!empty($item->options['image']) && Storage::disk(getStorageDisk())->exists($item->options['image']))
-                                        <img src="{{ resizedImage($item->options['image'],34,34) }}" alt="{{$item->options['image']}}" />
-                                    @else
-                                        <img src="{{ setting('_general.default_avatar_for_user') ? url(Storage::url(setting('_general.default_avatar_for_user')[0]['path'])) : resizedImage('placeholder.png', 34, 34) }}" alt="default avatar" />
-                                    @endif
+                                    @php
+                                        $imageUrl = null;
+                                        if (!empty($item->options['image']) && Storage::disk(getStorageDisk())->exists($item->options['image'])) {
+                                            $imageUrl = resizedImage($item->options['image'], 34, 34);
+                                        } elseif ($item->orderable_type === 'Modules\Courses\Models\Course' && !empty($item->orderable?->thumbnail?->path)) {
+                                            $imageUrl = url(Storage::url($item->orderable->thumbnail->path));
+                                        } elseif ($item->orderable_type === 'Modules\Courses\Models\Course') {
+                                            $imageUrl = asset('modules/courses/images/course.png');
+                                        } elseif ($item->orderable_type === 'Modules\CourseBundles\Models\Bundle' && !empty($item->orderable?->thumbnail?->path)) {
+                                            $imageUrl = url(Storage::url($item->orderable->thumbnail->path));
+                                        } else {
+                                            $imageUrl = resizedImage('placeholder.png', 34, 34);
+                                        }
+                                    @endphp
+                                    <img src="{{ $imageUrl }}" alt="{{ $item->title }}" />
                                 </figure>
                                 <div class="am-ordersummary_list_title">
                                     <div @class(['am-ordersummary_list_info','am-w-full' => (!\Nwidart\Modules\Facades\Module::has('kupondeal') || \Nwidart\Modules\Facades\Module::isDisabled('kupondeal'))])>
@@ -70,7 +76,10 @@
                                             <h3><a href="javascript:void(0);">{{ $item->title }}</a></h3>
                                             <span>{{$item->options['subject_group']}}</span>
                                         @elseif($item->orderable_type == 'Modules\Courses\Models\Course')
-                                            <span>{{$item->options['sub_category']}}</span>
+                                            <span>{{$item->options['sub_category'] ?? ''}}</span>
+                                            <h3><a href="javascript:void(0);">{{ Str::ucfirst($item->title) }}</a></h3>
+                                        @elseif($item->orderable_type == 'Modules\TrainingCalendar\Models\TrainingCalendar')
+                                            <span>{{ ucfirst($item->options['type'] ?? __('trainingcalendar::trainingcalendar.training')) }}</span>
                                             <h3><a href="javascript:void(0);">{{ Str::ucfirst($item->title) }}</a></h3>
                                         @elseif($item->orderable_type == 'Modules\Subscriptions\Models\Subscription')
                                             <span>{{ $item->options['period'] }}</span>
@@ -101,6 +110,8 @@
                                             <strong>{!! formatAmount($item->price, true) !!}<span>
                                                 @if($item->orderable_type == 'Modules\Courses\Models\Course')
                                                     /{{ __('courses::courses.course') }}
+                                                @elseif($item->orderable_type == 'Modules\TrainingCalendar\Models\TrainingCalendar')
+                                                    /{{ __('trainingcalendar::trainingcalendar.training') }}
                                                 @elseif($item->orderable_type == 'App\Models\SlotBooking')
                                                     /{{ __('checkout.session') }}
                                                 @elseif($item->orderable_type == 'Modules\CourseBundles\Models\Bundle')
@@ -111,18 +122,12 @@
                                     </div>
                                 </div>
                             </li>
-                            @php
-                                if(\Nwidart\Modules\Facades\Module::has('kupondeal') && \Nwidart\Modules\Facades\Module::isEnabled('kupondeal')){
-                                    $discount += $item->discount_amount ?? 0;
-                                    $total += ($item->price - ($item->discount_amount ?? 0));
-                                }
-                            @endphp
                             @endforeach
                         </ul>
                         <ul class="am-ordersummary_price">
                             <li>
                                 <span>{{ __('thank_you.subtotal') }}</span>
-                                <strong>{!! formatAmount($orderItem[0]->total, true) !!}</strong>
+                                <strong>{!! formatAmount($subtotal, true) !!}</strong>
                             </li>
                             @if(\Nwidart\Modules\Facades\Module::has('kupondeal') && \Nwidart\Modules\Facades\Module::isEnabled('kupondeal') && $discount > 0)
                                 <li>
@@ -132,7 +137,7 @@
                             @endif
                             <li class="am-ordersummary_price_total">
                                 <span>{{ __('thank_you.grand_total') }}</span>
-                                <strong>{!! formatAmount(\Nwidart\Modules\Facades\Module::has('kupondeal') && \Nwidart\Modules\Facades\Module::isEnabled('kupondeal') ? $total : $orderItem[0]->total, true) !!}</strong>
+                                <strong>{!! formatAmount($grandTotal, true) !!}</strong>
                             </li>
                         </ul>
                     </div>

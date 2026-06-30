@@ -15,7 +15,6 @@ use Illuminate\Support\Str;
 use Modules\Assignments\Models\Assignment;
 use Modules\Quiz\Models\Quiz;
 use App\Models\User;
-use App\Models\Order;
 use Livewire\Component;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
@@ -89,49 +88,33 @@ class CourseTaking extends Component
         }
         
           if ($this->role == 'student' && $courseAddedToStudent) {
-            if (!empty($this->course->validity) && !empty($this->course->validity_type)) {
-                $startDate = null;
-                if ($this->course->pricing && $this->course->pricing->price > 0) {
-                    // Paid course, use purchase date
-                    $order = Order::where('user_id', Auth::id())
-                                    ->whereHas('items', function ($query) {
-                                        $query->where('orderable_id', $this->course->id)
-                                              ->where('orderable_type', 'Modules\Courses\Models\Course');
-                                    })
-                                    ->first();
-                    if ($order) {
-                        $startDate = \Carbon\Carbon::parse($order->created_at);
-                    }
-                } else {
-                    // Free course, use enrollment date
-                    $startDate = \Carbon\Carbon::parse($courseAddedToStudent->created_at);
-                }
+            $courseService = new CourseService();
 
-                if ($startDate) {
-                    $expirationDate = $startDate->add($this->course->validity, $this->course->validity_type);
+            if ($courseService->isCourseAccessExpired($this->course, Auth::id())) {
+                session()->flash('error', __('courses::courses.course_access_expired'));
 
-                    if (\Carbon\Carbon::now()->gt($expirationDate)) {
-                        session()->flash('error', __('courses::courses.course_access_expired'));
-                        // return $this->redirect(route('courses.course-list'));
-                        return back(); 
+                return $this->redirect(route('courses.course-list'));
+            }
 
-                        
-                    }
-                    
-                    $this->expirationDate = $expirationDate->format('d M, Y');
-                }
+            $expirationDate = $courseService->getCourseExpirationDate($this->course, Auth::id());
+            if ($expirationDate) {
+                $this->expirationDate = $expirationDate->format('d M, Y');
             }
         }
 
-        if (!empty($this->course->course_watchtime_sum_duration) && !empty($this->course->content_length)) {
-            $progress = floor(($this->course->course_watchtime_sum_duration / $this->course->content_length) * 100);
-            $this->progress = $progress >= 99 ? 100 : $progress;
-        }
+        $this->refreshProgress();
 
-        $firstCurriculum = $this->course?->sections?->first()?->curriculums?->first();
+        $firstCurriculum = null;
+        if (!empty($courseAddedToStudent?->last_curriculum_id)) {
+            $firstCurriculum = (new CourseService())->getCurriculumById($courseAddedToStudent->last_curriculum_id);
+        }
+        if (!$firstCurriculum) {
+            $firstCurriculum = $this->course?->sections?->first()?->curriculums?->first();
+        }
         if ($firstCurriculum) {
             $this->activeCurriculum = $firstCurriculum->toArray();
             $this->setActiveCurriculmPath();
+            $this->persistEnrollmentState((int) $firstCurriculum->id);
         }
 
         $this->studentRating = $this->course->ratings->where('student_id', Auth::id())->first();
@@ -260,15 +243,23 @@ class CourseTaking extends Component
     {
         $this->activeCurriculum = $curriculum;
         $this->setActiveCurriculmPath();
+        $this->persistEnrollmentState((int) ($curriculum['id'] ?? 0));
     }
 
-    public function nextCurriculum($id)
+    public function nextCurriculum($currentId)
     {
-        $nextCurriculum = (new CourseService())->getCurriculumById($id);
+        $nextId = $this->curriculumOrder[$currentId] ?? null;
+
+        if (!$nextId) {
+            return;
+        }
+
+        $nextCurriculum = (new CourseService())->getCurriculumById($nextId);
 
         if ($nextCurriculum) {
             $this->activeCurriculum = $nextCurriculum->toArray();
             $this->setActiveCurriculmPath();
+            $this->persistEnrollmentState((int) $nextCurriculum->id);
         }
     }
 
@@ -281,7 +272,10 @@ class CourseTaking extends Component
         }
         $curriculumId = (int)$this->activeCurriculum['id'] ?? 0;
         $sectionId = (int) $this->activeCurriculum['section_id'] ?? 0;
-        $totalDuration = (int) $this->activeCurriculum['content_length'] ?? 0;
+        $totalDuration = (int) ($this->activeCurriculum['content_length'] ?? 0);
+        if ($totalDuration <= 0) {
+            $totalDuration = 60;
+        }
         $watchtime = (new CurriculumService())->getWatchtime($curriculumId, $sectionId);
         if ($watchtime) {
             (new CurriculumService())->updateWatchtime((int) $curriculumId, (int) $sectionId, (int) $totalDuration);
@@ -289,15 +283,10 @@ class CourseTaking extends Component
             (new CurriculumService())->addWatchtime((int) $this->course?->id, (int) $curriculumId, (int) $sectionId, (int) $totalDuration);
         }
 
-        $courseDuration = (new CourseService())->getCourse(
-            courseId: $this->course->id,
-            withSum: [
-                'courseWatchtime' => 'duration'
-            ]
-        );
+        $this->refreshProgress();
 
-        if (!empty($courseDuration->course_watchtime_sum_duration) && !empty($this->course->content_length)) {
-            $this->progress = floor(($courseDuration->course_watchtime_sum_duration / $this->course->content_length) * 100);
+        if ($this->progress >= 100 && $this->role === 'student') {
+            (new CourseService())->markEnrollmentComplete(Auth::id(), $this->course->id);
         }
 
         $this->activeCurriculum['watchtime']['duration'] = $totalDuration;
@@ -316,7 +305,10 @@ class CourseTaking extends Component
 
         $curriculumId = (int)$this->activeCurriculum['id'] ?? 0;
         $sectionId = (int) $this->activeCurriculum['section_id'] ?? 0;
-        $totalDuration = (int) $this->activeCurriculum['content_length'] ?? 0;
+        $totalDuration = (int) ($this->activeCurriculum['content_length'] ?? 0);
+        if ($totalDuration <= 0) {
+            $totalDuration = 60;
+        }
         $isAssigned = false;
         $watchtime = (new CurriculumService())->getWatchtime($curriculumId, $sectionId);
         if ($watchtime) {
@@ -339,19 +331,13 @@ class CourseTaking extends Component
 
             (new CurriculumService())->addWatchtime((int) $this->course?->id, (int) $curriculumId, (int) $sectionId, (int) $updateDuration);
         }
-        // Refresh course data to get updated watchtime values
-        $courseDuration = (new CourseService())->getCourse(
-            courseId: $this->course->id,
-            withSum: [
-                'courseWatchtime' => 'duration'
-            ]
-        );
 
-        if (!empty($courseDuration->course_watchtime_sum_duration) && !empty($this->course->content_length)) {
-            $this->progress = floor(($courseDuration->course_watchtime_sum_duration / $this->course->content_length) * 100);
-        }
+        $this->refreshProgress();
 
         if ($this->progress >= 100) {
+            if ($this->role === 'student') {
+                (new CourseService())->markEnrollmentComplete(Auth::id(), $this->course->id);
+            }
 
             if (isActiveModule('upcertify')  && !empty($this->course?->certificate_id)) {
                 $metaData = $this->course->meta_data ?? null;
@@ -530,5 +516,33 @@ class CourseTaking extends Component
         } else{
             $this->activeCurriculum['media_path'] = null;
         }
+    }
+
+    private function persistEnrollmentState(?int $curriculumId = null): void
+    {
+        if ($this->role !== 'student' || empty($this->course?->id)) {
+            return;
+        }
+
+        $data = ['last_accessed_at' => now()];
+
+        if (!empty($curriculumId)) {
+            $data['last_curriculum_id'] = $curriculumId;
+        }
+
+        (new CourseService())->updateEnrollmentProgress(Auth::id(), $this->course->id, $data);
+    }
+
+    private function refreshProgress(): void
+    {
+        if (empty($this->course?->id)) {
+            $this->progress = 0;
+            return;
+        }
+
+        $this->progress = (new CourseService())->getStudentCourseProgressPercent(
+            $this->course->id,
+            Auth::id()
+        );
     }
 }

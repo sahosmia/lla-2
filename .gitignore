@@ -21,6 +21,18 @@ chatter.log
 /storage/framework/views/*
 !/storage/framework/views/.gitignore
 
+*.zip
+*.rar
+/storage/app/livewire-tmp/*
+/storage/app/public/courses/*
+/storage/app/public/curriculum_videos/*
+/storage/app/public/identity_photo/*
+/storage/app/public/media/*
+/storage/app/public/profile_images/*
+/storage/app/public/profile_videos/*
+/storage/app/public/thumbnails/*
+/storage/framework/cache/*
+
 # OS-specific files
 .DS_Store
 Thumbs.db

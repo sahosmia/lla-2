@@ -471,7 +471,7 @@
                                     <div class="cr-price-section">
                                         <div class="cr-price-wrapper">
                                             <div class="cr-price">
-                                                <span class="cr-amount">{!! formatAmount($course->pricing?->final_price, true) !!}</span>
+                                                <span class="cr-amount">{!! formatCoursePrice($course->pricing?->final_price, true) !!}</span>
                                             </div>
                                             @if(!empty($course->pricing?->price) && !empty($course->pricing?->discount))
                                                 <span class="cr-discount">

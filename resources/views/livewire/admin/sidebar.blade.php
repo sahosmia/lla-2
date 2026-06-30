@@ -78,55 +78,22 @@ new class extends Component
                         'title' => __('sidebar.languages'),
                         'permission' => 'can-manage-languages',
                     ],
-                    // [
-                    //     'route' => 'admin.taxonomy.subjects',
-                    //     'title' => __('sidebar.subjects'),
-                    //     'permission' => 'can-manage-subjects',
-                    // ],
-                    // [
-                    //     'route' => 'admin.taxonomy.subject-groups',
-                    //     'title' => __('sidebar.subject_groups'),
-                    //     'permission' => 'can-manage-subject-groups',
-                    // ],
-                ],
-            ],
-            [
-                'title' => __('general.language_translations'),
-                'icon'  => 'icon-globe',
-                'routes' => [
-                    [
-                        'route' => 'admin.language-translator',
-                        'title' => __('sidebar.languages'),
-                        'permission' => 'can-manage-language-translations',
-                    ],
+                
                 ],
             ],
             // [
-            //     'title' => __('sidebar.manage_packages'),
-            //     'icon'  => 'icon-folder-plus',
-            //     'permission' => 'can-manage-addons',
+            //     'title' => __('general.language_translations'),
+            //     'icon'  => 'icon-globe',
             //     'routes' => [
             //         [
-            //             'route' => 'admin.packages.index',
-            //             'title' => __('sidebar.add_new_package'),
-            //         ],
-            //         [
-            //             'route' => 'admin.packages.installed',
-            //             'title' => __('sidebar.installed_packages'),
+            //             'route' => 'admin.language-translator',
+            //             'title' => __('sidebar.languages'),
+            //             'permission' => 'can-manage-language-translations',
             //         ],
             //     ],
             // ],
-            // [
-            //     'title' => __('sidebar.upgrade'),
-            //     'icon'  => 'icon-upload-cloud',
-            //     'routes' => [
-            //         [
-            //             'route' => 'admin.upgrade',
-            //             'title' => __('sidebar.upgrade'),
-            //             'permission' => 'can-manage-upgrade',
-            //         ],
-            //     ],
-            // ],
+     
+           
             [
                 'title' => __('sidebar.users'),
                 'icon'  => 'icon-users',
@@ -276,6 +243,24 @@ new class extends Component
                     'title' => $menuItem['title'],
                     'icon'  => $menuItem['icon'],
                     'permission' => 'can-manage-courses', 
+                    'routes' => array_map(function ($route, $title) {
+                        return [
+                            'route' => $route,
+                            'title' => $title,
+                        ];
+                    }, array_keys($menuItem['routes']), $menuItem['routes']),
+                ];
+            }, $menu);
+            $this->menuItems = array_merge($this->menuItems, $processedMenu);
+        }
+
+        if (function_exists('isTrainingCalendarModuleEnabled') && isTrainingCalendarModuleEnabled() && function_exists('trainingCalendarMenuOptions')) {
+            $menu = trainingCalendarMenuOptions('admin');
+            $processedMenu = array_map(function ($menuItem) {
+                return [
+                    'title' => $menuItem['title'],
+                    'icon' => $menuItem['icon'],
+                    'permission' => $menuItem['permission'] ?? 'can-manage-training-calendar',
                     'routes' => array_map(function ($route, $title) {
                         return [
                             'route' => $route,

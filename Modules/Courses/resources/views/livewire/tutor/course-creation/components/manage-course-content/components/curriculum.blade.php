@@ -38,7 +38,7 @@
                                 </i>
                             </a>
                             <ul class="am-itemdropdown_list dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                <li wire:click="editCurriculumModal({{ $curriculumItem }})">
+                                <li wire:click="editCurriculumModal(@js($curriculumItem->toArray()))">
                                     <a href="javascript:void(0);">
                                         <i>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
@@ -71,8 +71,8 @@
                     </div>
                     @if (empty($activeCurriculumItem) || $activeCurriculumItem['id'] !== $curriculumItem->id)
                         <div class="cr-actionbox">
-                            <button wire:click="updateActiveCurriculumItem({{ $curriculumItem }})" type="submit" class="am-btn" wire:loading.attr="disabled" wire:target="updateActiveCurriculumItem({{ $curriculumItem }})" wire:loading.class="am-btn_disable">
-                                <svg wire:loading.remove wire:target="updateActiveCurriculumItem({{ $curriculumItem }})" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14"
+                            <button wire:click="updateActiveCurriculumItem(@js($curriculumItem->toArray()))" type="button" class="am-btn" wire:loading.attr="disabled" wire:target="updateActiveCurriculumItem" wire:loading.class="am-btn_disable">
+                                <svg wire:loading.remove wire:target="updateActiveCurriculumItem" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14"
                                     fill="none">
                                     <path
                                         d="M2.91602 6.99984H6.99935M11.0827 6.99984H6.99935M6.99935 6.99984V2.9165M6.99935 6.99984V11.0832"
@@ -103,15 +103,15 @@
                                     <span>{{ __('courses::courses.write_article') }}</span>
                                 </div>
                             </li>
-                            <li>
-                                <div class="cr-curriculum-btnconten">
-                                    <figure>
-                                        <img src="{{ asset('modules/courses/images/live-icon.png') }}" alt="icon" />
-                                    </figure>
-                                    <span>{{ __('courses::courses.live') }}</span>
-                                </div>
-                                <span class="cr-tag">{{ __('courses::courses.coming_soon') }}</span>
-                            </li>
+                            <!--<li>-->
+                            <!--    <div class="cr-curriculum-btnconten">-->
+                            <!--        <figure>-->
+                            <!--            <img src="{{ asset('modules/courses/images/live-icon.png') }}" alt="icon" />-->
+                            <!--        </figure>-->
+                            <!--        <span>{{ __('courses::courses.live') }}</span>-->
+                            <!--    </div>-->
+                            <!--    <span class="cr-tag">{{ __('courses::courses.coming_soon') }}</span>-->
+                            <!--</li>-->
                         </ul>
                         @if($activeCurriculumItem['type'] === 'article')
                             <div class="form-group @error('article_content') cr-invalid @enderror">
@@ -209,7 +209,7 @@
                                     <div class="am-uploadedfile">
                                         <figure>
                                             <div class="cr-expert-video cr-custom-video">
-                                                <video class="video-js d-none" data-setup='{}' onloadeddata="let player = videojs(this); player.removeClass('d-none'); @this.set('duration', Math.round(this.duration), false);" preload="auto" id="video-{{ $section->id .'_'. $curriculumItem->id }}" width="320" height="240"
+                                                <video class="video-js d-none" data-setup='{}' onloadedmetadata="@this.set('duration', Math.max(1, Math.round(this.duration || 0)), false)" onloadeddata="let player = videojs(this); player.removeClass('d-none'); @this.set('duration', Math.max(1, Math.round(this.duration || 0)), false);" preload="auto" id="video-{{ $section->id .'_'. $curriculumItem->id }}" width="320" height="240"
                                                     controls>
                                                     <source
                                                         src="{{ !empty($curriculumItem->media_path) ? Storage::url($curriculumItem->media_path) : (is_object($curriculumVideo) ? $curriculumVideo->temporaryUrl() : '') }}"
@@ -317,8 +317,8 @@
                                 <button wire:click="updateActiveCurriculumItem" class="am-white-btn" wire:loading.attr="disabled" wire:target="updateActiveCurriculumItem" wire:loading.class="am-btn_disable">
                                     {{ __('courses::courses.skip') }}
                                 </button>
-                                <button wire:click="updateCurriculumContent({{ $curriculumItem }})" type="click"
-                                    class="am-btn">
+                                <button wire:click="updateCurriculumContent" type="button"
+                                    class="am-btn" wire:loading.attr="disabled" wire:target="updateCurriculumContent,curriculumVideo">
                                     <span wire:loading.remove wire:target="updateCurriculumContent">{{ __('courses::courses.save') }}</span>
                                     <span wire:loading wire:target="updateCurriculumContent">{{ __('courses::courses.saving') }}</span>
                                 </button>

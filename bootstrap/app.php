@@ -46,6 +46,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->validateCsrfTokens(except: [
             'payfast/webhook',
+            'sslcommerz/ipn',
+            'sslcommerz/fail',
+            'sslcommerz/cancel',
             'payment/success',
             'api/*'
         ]);

@@ -117,15 +117,15 @@ class Navigation extends Component
                 'accessibility' => ['student'],
             ],
 
-            [
-                'studentSortOrder' => 4,
-                'route' => 'find-tutors',
-                'onActiveRoute' => ['find-tutors'],
-                'title' => __('sidebar.find_tutors'),
-                'icon'  => '<i class="am-icon-user-02"></i>',
-                'accessibility' => ['student'],
-                'disableNavigate' => true,
-            ],
+            // [
+            //     'studentSortOrder' => 4,
+            //     'route' => 'find-tutors',
+            //     'onActiveRoute' => ['find-tutors'],
+            //     'title' => __('sidebar.find_tutors'),
+            //     'icon'  => '<i class="am-icon-user-02"></i>',
+            //     'accessibility' => ['student'],
+            //     'disableNavigate' => true,
+            // ],
             [
                 'tutorSortOrder' => 10,
                 'studentSortOrder' => 11,
@@ -191,6 +191,10 @@ class Navigation extends Component
         if (isActiveModule('Quiz') && function_exists('quizMenuOptions')) {
             $quizMenuOptions = quizMenuOptions($this->role);
             $this->menuItems = array_merge($this->menuItems, $quizMenuOptions);
+        }
+
+        if (isTrainingCalendarModuleEnabled() && function_exists('trainingCalendarMenuOptions')) {
+            $this->menuItems = array_merge($this->menuItems, trainingCalendarMenuOptions($this->role));
         }
 
         if(isActiveModule('coursebundles') && function_exists('bundleMenuOptions')) {

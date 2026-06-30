@@ -1,10 +1,6 @@
 @props(['multiLang' => true])
 @php
-    if(!empty(auth()?->user()?->profile->image) && Storage::disk(getStorageDisk())->exists(auth()?->user()?->profile?->image)) {
-        $userImage = resizedImage(auth()?->user()?->profile?->image, 36, 36);
-    } else {
-        $userImage = setting('_general.default_avatar_for_user') ? url(Storage::url(setting('_general.default_avatar_for_user')[0]['path'])) : resizedImage('placeholder.png', 36, 36);
-    }
+    $userImage = profileImageUrl(auth()?->user()?->profile?->image, 36, 36);
     $userRole = getUserRole();
     $userRole = $userRole['roleName'];
 @endphp
@@ -90,6 +86,14 @@
                                                     <div @class(['am-ordersummary_list_info','am-w-full' => (!\Nwidart\Modules\Facades\Module::has('kupondeal') || \Nwidart\Modules\Facades\Module::isDisabled('kupondeal'))])>
                                                         <span x-text="item.options.sub_category"></span>
                                                         <h3><a :href="`{{ route('courses.course-detail', '') }}/${item.options.slug}`" x-text="item.name"></a></h3>
+                                                    </div>
+                                                </template>
+                                            @endif
+                                            @if(\Nwidart\Modules\Facades\Module::has('TrainingCalendar') && \Nwidart\Modules\Facades\Module::isEnabled('TrainingCalendar'))
+                                                <template x-if="item.cartable_type == 'Modules\\TrainingCalendar\\Models\\TrainingCalendar'">
+                                                    <div @class(['am-ordersummary_list_info','am-w-full' => (!\Nwidart\Modules\Facades\Module::has('kupondeal') || \Nwidart\Modules\Facades\Module::isDisabled('kupondeal'))])>
+                                                        <span>{{ __('trainingcalendar::trainingcalendar.training') }}</span>
+                                                        <h3><a :href="`{{ route('trainingcalendar.detail', '') }}/${item.options.slug ?? ''}`" x-text="item.name"></a></h3>
                                                     </div>
                                                 </template>
                                             @endif
@@ -220,7 +224,7 @@
                     @if(auth()->user()->role == 'tutor')
                         <a href={{ route('tutor.dashboard') }}><img src="{{ $userImage }}" alt="{{ auth()?->user()?->profile?->full_name }}"></a>
                     @elseif(auth()->user()->role == 'student')
-                        <a href="{{ route('student.bookings') }}"><img src="{{ $userImage }}" alt="{{ auth()?->user()?->profile?->full_name }}"></a>
+                        <a href="{{ auth()->user()->redirect_after_login }}"><img src="{{ $userImage }}" alt="{{ auth()?->user()?->profile?->full_name }}"></a>
                     @else
                         <a href="{{ auth()->user()->redirect_after_login }}"><img src="{{ $userImage }}" alt="{{ auth()?->user()?->profile?->full_name }}"></a>
                     @endif
@@ -430,7 +434,7 @@ function switchUserRole() {
             if(data.newRole == 'tutor'){
                 window.location.href = "{{ route('tutor.dashboard') }}";
             }else{
-                window.location.href = "{{ route('student.bookings') }}";
+                window.location.href = "{{ route('courses.course-list') }}";
             }
         }
     })

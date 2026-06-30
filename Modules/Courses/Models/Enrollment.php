@@ -32,6 +32,14 @@ class Enrollment extends Model
 
     protected $guarded = [];
 
+    protected function casts(): array
+    {
+        return [
+            'completed_at' => 'datetime',
+            'last_accessed_at' => 'datetime',
+        ];
+    }
+
 
     /**
      * Get and set the status attribute.

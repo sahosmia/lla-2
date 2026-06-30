@@ -191,7 +191,7 @@ class CourseMedia extends Component
             $videoPath = $this->promotionalVideo->store('media/videos', getStorageDisk());
             (new CourseService)->addCourseMedia($this->course, [
                 'mediable_id'       => $this->courseId,
-                'mediable_type'     => 'course',
+                'mediable_type'     => Course::class,
                 'type'              => 'promotional_video',
             ], [
                 'path'              => $videoPath,

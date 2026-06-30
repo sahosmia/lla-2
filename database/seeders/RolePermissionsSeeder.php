@@ -65,7 +65,8 @@ class RolePermissionsSeeder extends Seeder
             'can-manage-course-bundles',
             'can-manage-dispute',
             'can-manage-disputes-list',
-            'can-manage-admin-users'
+            'can-manage-admin-users',
+            'can-manage-training-calendar'
         ];
 
         foreach ($permissions as $permissionName) {

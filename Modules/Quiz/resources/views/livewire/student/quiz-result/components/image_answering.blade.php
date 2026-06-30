@@ -30,7 +30,7 @@
                         <input type="radio" id="{{ 'option_' .$question_number.'_' .$option?->id }}" name="option_{{ $attemptedQuestions?->question?->id }}" value="{{ $option?->id }}" disabled>
                         <label for="{{ 'option_' .$question_number.'_' .$option?->id }}">
                             <span>{{  chr(65 + $loop->index) }}</span>
-                            <img src="{{ url(Storage::disk(getStorageDisk())->url($option->image?->path)) }}" alt="image">
+                            <img src="{{ storageMediaUrl($option->image?->path) ?? asset('demo-content/placeholders/placeholder.png') }}" alt="image">
                         </label>
                     </div>
                 </li>

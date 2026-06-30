@@ -144,10 +144,14 @@ class CreateQuiz extends Component
         ];
 
         if (isActiveModule('Courses')) {
-            $this->quizzable_types[] = [
-                'label' => 'Course',
-                'value' => \Modules\Courses\Models\Course::class,
-            ];
+            $this->form->quizzable_type = \Modules\Courses\Models\Course::class;
+            $data = $this->initOptions($this->form->quizzable_type);
+            $this->dispatch('quizValuesUpdated', options: $data, reset: false);
+            
+             if (empty($quizId)) {
+                $this->form->quizzable_type = \Modules\Courses\Models\Course::class;
+                $this->quizzable_ids = $this->initOptions($this->form->quizzable_type);
+            }
         } else {
             $this->form->quizzable_type = UserSubjectGroupSubject::class;
             $data = $this->initOptions($this->form->quizzable_type);
@@ -326,7 +330,9 @@ class CreateQuiz extends Component
     {
         if ($type == \Modules\Courses\Models\Course::class) {
             $courses = (new \Modules\Courses\Services\CourseService())->getInstructorCourses(Auth::id(), [], ['title', 'id']);
-            return $courses->map(fn($course) => ['text' => $course->title, 'id' => $course->id, 'selected' => !empty($this->form->quizzable_id) ? $this->form->quizzable_id == $course->id : false]) ?? [];
+            // return $courses->map(fn($course) => ['text' => $course->title, 'id' => $course->id, 'selected' => !empty($this->form->quizzable_id) ? $this->form->quizzable_id == $course->id : false]) ?? [];
+            return $courses->map(fn($course) => ['text' => $course->title, 'id' => $course->id, 'selected' => !empty($this->form->quizzable_id) ? $this->form->quizzable_id == $course->id : false])->toArray() ?? [];
+
         } else if ($type == UserSubjectGroupSubject::class) {
             $subjectGroups = $this->subjectService->getUserSubjectGroups(['subjects:id,name', 'group:id,name']);
             $formattedData = [];

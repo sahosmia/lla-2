@@ -1,6 +1,6 @@
 <div class="am-quizlist" wire:init="loadData" x-data="{quizType: 'manual',duplicateQuizId: @entangle('duplicateQuizId')}">
     @php
-        if(!empty(auth()?->user()?->profile->image) && Storage::disk(getStorageDisk())->exists(auth()?->user()?->profile?->image)) {
+        if(!empty(auth()?->user()?->profile?->image) && Storage::disk(getStorageDisk())->exists(auth()?->user()?->profile?->image)) {
             $userImage = resizedImage(auth()?->user()?->profile?->image, 36, 36);
         } else {
             $userImage = resizedImage('placeholder.png', 36, 36);
@@ -373,7 +373,7 @@
                                 }">
                                 <fieldset>
                                     @if(isActiveModule('Courses'))
-                                        <div class="form-group @error('form.quizzable_type') am-invalid @enderror">
+                                        <div class="form-group @error('form.quizzable_type') am-invalid @enderror" style="display: none;">
                                             <x-input-label class="am-important" for="quizzable_type" wire:loading.class="am-disabled">{{ __('quiz::quiz.quiz_type') }}</x-input-label>
                                             <span class="am-select" wire:ignore>
                                                 <select class="am-select2" data-componentid="@this" id="quizzable_type" data-parent="#create-quiz-model" data-live="true" data-wiremodel="form.quizzable_type" data-placeholder="{{ __('quiz::quiz.select_quiz_type') }}">
@@ -389,10 +389,10 @@
                                     <div class="form-group @error('form.quizzable_id') am-invalid @enderror" wire:loading.class="am-disabled" wire:loading.target="form.quizzable_type">
                                         <x-input-label class="am-important" for="quizzable_id">{{ isActiveModule('Courses') ? __('quiz::quiz.select_option') :  __('quiz::quiz.select_subject')}}</x-input-label>
                                         <span class="am-select" wire:ignore>
-                                            <select class="am-select2" data-componentid="@this" id="quizzable_id" data-parent="#create-quiz-model" data-live="true" data-wiremodel="form.quizzable_id" @if(isActiveModule('Courses')) disabled @endif data-placeholder="{{ __('quiz::quiz.select_option') }}">
+                                            <select class="am-select2" data-componentid="@this" id="quizzable_id" data-parent="#create-quiz-model" data-live="true" data-wiremodel="form.quizzable_id" data-placeholder="{{ __('quiz::quiz.select_option') }}">
                                                 <option value="">{{ __('quiz::quiz.select_option') }}</option>
                                                 @foreach ($quizzable_ids as $quiz)
-                                                    <option value="{{ $quiz['id'] }}" @if($form->quizzable_id == $quiz['id']) selected @endif>{{ $quiz['title'] }}</option>
+                                                    <option value="{{ $quiz['id'] }}" @if($form->quizzable_id == $quiz['id']) selected @endif>{{ $quiz['title'] ?? ($quiz['text'] ?? '') }}</option>
                                                 @endforeach
                                             </select>
                                         </span>

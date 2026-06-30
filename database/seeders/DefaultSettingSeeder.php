@@ -568,13 +568,15 @@ class DefaultSettingSeeder extends Seeder
                 'site_email'                    => 'hellow@yourdomain.com',
                 'date_format'                   => 'F j, Y',
                 'address_format'                => 'city_country',
-                'currency'                      => 'USD',
+                'currency'                      => 'BDT',
                 'per_page_record'               => 10,
                 'default_avatar_for_user'       => [uploadObMedia('images/default_avatar.webp')],
                 'enable_multi_currency'         => 'yes',
                 'multi_currency_list'           => [ 
-                    ['code'            => 'INR',
+                    ['code'            => 'BDT',
                     'conversion_rate' => (float) 1.00],
+                    ['code'            => 'USD',
+                    'conversion_rate' => (float) 110.00],
                     ['code'            => 'GBP',
                     'conversion_rate' => (float) 1.00],
                     ['code'            => 'EUR',
@@ -711,12 +713,21 @@ class DefaultSettingSeeder extends Seeder
                 'tiktok'                    => '#',
             ],
             'admin_settings' => [
+                'default_payment_method' => 'sslcommerz',
                 'payment_method' =>  [
+                    'sslcommerz' => [
+                        'currency' => 'BDT',
+                        'store_id' => env('SSLCZ_STORE_ID', ''),
+                        'store_password' => env('SSLCZ_STORE_PASSWORD', ''),
+                        'status' => 'on',
+                        'exchange_rate' => '',
+                        'enable_test_mode' => env('SSLCZ_TESTMODE', true),
+                    ],
                     'stripe' => [
                         'currency' => 'USD',
                         'stripe_key' => env('STRIPE_KEY', ''),
                         'stripe_secret' => env('STRIPE_SECRET', ''),
-                        'status' => 'on',
+                        'status' => 'off',
                         'exchange_rate' => ''
                     ],
                 ],

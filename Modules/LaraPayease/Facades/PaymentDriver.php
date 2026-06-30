@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  *
+ * @method static \Modules\LaraPayease\Drivers\SslCommerz sslcommerz()
  * @method static \Modules\LaraPayease\Drivers\Stripe stripe()
  * @method static \Modules\LaraPayease\Drivers\RazorPay razorpay()
  * @method static \Modules\LaraPayease\Drivers\Flutterwave flutterwave()

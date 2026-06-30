@@ -324,7 +324,7 @@ class Checkout extends Component
                     'ipn_url'       => !empty($ipnUrl) ? route($ipnUrl, ['payment_method' => $this->form->paymentMethod]) : url('/'),
                     'order_id'      => $orderDetail->id,
                     'track'         => Str::random(36),
-                    'cancel_url'    => route('checkout'),
+                    'cancel_url'    => route('sslcommerz.cancel'),
                     'success_url'   => route('thank-you', ['id' => $orderDetail->id]),
                     'email'         => $orderDetail->email,
                     'name'          => $orderDetail->first_name,

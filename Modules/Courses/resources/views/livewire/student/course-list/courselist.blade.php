@@ -117,19 +117,35 @@
                             </div>
                             <div class="cr-usercourse_header_progress">
                                 @php 
-                                    $progress = 0;
-                                    if(!empty($data->course_progress_sum_duration) && !empty($course->content_length)) {
-                                        $progress = floor(($data->course_progress_sum_duration / $course->content_length) * 100);
-                                    }
+                                    $meta = $enrollmentMeta[$data->id] ?? ['progress' => 0, 'is_expired' => false];
+                                    $progress = $meta['progress'];
+                                    $isExpired = $meta['is_expired'];
                                 @endphp
                                 <span>{{ __('courses::courses.course_progress') }}<em>{{ $progress }}%</em></span>
                                 <div class="cr-usercourse_header_progress_bar">
                                     <div class="cr-usercourse_header_progress_bar_inner" style="width: {{ $progress }}%"> </div>
                                 </div>
                             </div>
-                            <a href={{ route('courses.course-taking', ['slug' => $course->slug]) }} class="cr-start-course">
-                                {{ __('courses::courses.start_course') }}
-                            </a>
+                            @php
+                                $ctaLabel = __('courses::courses.start_course');
+                                $ctaClass = 'cr-start-course';
+                                if ($isExpired) {
+                                    $ctaLabel = __('courses::courses.course_expired_label');
+                                    $ctaClass = 'cr-start-course cr-course-expired';
+                                } elseif ($progress >= 100 || !empty($data->completed_at)) {
+                                    $ctaLabel = __('courses::courses.course_completed_label');
+                                    $ctaClass = 'cr-start-course cr-course-completed';
+                                } elseif ($progress > 0) {
+                                    $ctaLabel = __('courses::courses.continue_course');
+                                }
+                            @endphp
+                            @if($isExpired)
+                                <span @class([$ctaClass])>{{ $ctaLabel }}</span>
+                            @else
+                                <a href="{{ route('courses.course-taking', ['slug' => $course->slug]) }}" @class([$ctaClass])>
+                                    {{ $ctaLabel }}
+                                </a>
+                            @endif
                         </div>
                     </div>
                 @endforeach
@@ -146,6 +162,11 @@
             @endif
         @endif
     </div>
+    @if(!$isLoading && $courses instanceof \Illuminate\Pagination\LengthAwarePaginator && $courses->hasPages())
+        <div class="cr-pagination mt-4">
+            {{ $courses->links('pagination.custom') }}
+        </div>
+    @endif
 </div>
 
 

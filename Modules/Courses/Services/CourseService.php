@@ -7,14 +7,16 @@ use Modules\Courses\Models\Curriculum;
 use Modules\Courses\Models\DiscussionForum;
 use Modules\Courses\Models\Enrollment;
 use Modules\Courses\Models\Like;
-use App\Models\User;
 use Modules\Courses\Models\Noticeboard;
 use Modules\Courses\Models\Promotion;
-use App\Models\Language;
 use Modules\Courses\Models\Section;
 use App\Casts\OrderStatusCast;
+use App\Models\Language;
+use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\User;
 use Modules\Courses\Models\Category;
+use Modules\Courses\Models\Watchtime;
 
 use Illuminate\Support\Facades\Auth;
 
@@ -126,6 +128,139 @@ class CourseService
         ->first();
     }
 
+    public function calculateProgressPercent(?int $watchedDuration, ?int $contentLength): int
+    {
+        if (empty($watchedDuration) || empty($contentLength)) {
+            return 0;
+        }
+
+        $progress = (int) floor(($watchedDuration / $contentLength) * 100);
+
+        return $progress >= 99 ? 100 : min($progress, 100);
+    }
+
+    public function getStudentCourseProgressPercent(int $courseId, int $studentId): int
+    {
+        $course = Course::with(['sections.curriculums' => function ($query) {
+            $query->where(function ($subQuery) {
+                $subQuery->whereNotNull('media_path')->orWhereNotNull('article_content');
+            });
+        }])->find($courseId);
+
+        if (!$course) {
+            return 0;
+        }
+
+        $curriculums = $course->sections->flatMap->curriculums;
+
+        if ($curriculums->isEmpty()) {
+            return 0;
+        }
+
+        $watchtimes = Watchtime::where('course_id', $courseId)
+            ->where('user_id', $studentId)
+            ->get()
+            ->keyBy('curriculum_id');
+
+        $totalContentLength = 0;
+        $watchedLength = 0;
+
+        foreach ($curriculums as $curriculum) {
+            $lessonLength = max((int) $curriculum->content_length, 1);
+            $totalContentLength += $lessonLength;
+
+            $watched = (int) ($watchtimes->get($curriculum->id)?->duration ?? 0);
+            $watchedLength += min($watched, $lessonLength);
+        }
+
+        if ($totalContentLength <= 0) {
+            $completedLessons = $curriculums->filter(function ($curriculum) use ($watchtimes) {
+                $watchtime = $watchtimes->get($curriculum->id);
+                $lessonLength = max((int) $curriculum->content_length, 1);
+
+                return $watchtime && (int) $watchtime->duration >= $lessonLength;
+            })->count();
+
+            return $this->calculateProgressPercent($completedLessons, $curriculums->count());
+        }
+
+        return $this->calculateProgressPercent($watchedLength, $totalContentLength);
+    }
+
+    public function getEnrollmentAccessStartDate(Course $course, int $studentId): ?\Carbon\Carbon
+    {
+        $enrollment = $this->getStudentCourse($course->id, $studentId);
+
+        if (!$enrollment) {
+            return null;
+        }
+
+        $course->loadMissing('pricing');
+
+        if ($course->pricing && (float) $course->pricing->price > 0) {
+            $order = Order::where('user_id', $studentId)
+                ->where('status', 'complete')
+                ->whereHas('items', function ($query) use ($course) {
+                    $query->where('orderable_id', $course->id)
+                        ->where('orderable_type', Course::class);
+                })
+                ->orderBy('created_at')
+                ->first();
+
+            if ($order) {
+                return \Carbon\Carbon::parse($order->created_at);
+            }
+        }
+
+        return \Carbon\Carbon::parse($enrollment->created_at);
+    }
+
+    public function getCourseExpirationDate(Course $course, int $studentId): ?\Carbon\Carbon
+    {
+        if (empty($course->validity) || empty($course->validity_type)) {
+            return null;
+        }
+
+        $startDate = $this->getEnrollmentAccessStartDate($course, $studentId);
+
+        if (!$startDate) {
+            return null;
+        }
+
+        return $startDate->copy()->add((int) $course->validity, $course->validity_type);
+    }
+
+    public function isCourseAccessExpired(Course $course, int $studentId): bool
+    {
+        $expirationDate = $this->getCourseExpirationDate($course, $studentId);
+
+        return $expirationDate ? now()->gt($expirationDate) : false;
+    }
+
+    public function syncCourseContentLength(int $courseId): void
+    {
+        $course = Course::with('sections.curriculums')->find($courseId);
+
+        if ($course) {
+            $this->updateCourseContentLength($course);
+        }
+    }
+
+    public function updateEnrollmentProgress(int $studentId, int $courseId, array $data): void
+    {
+        Enrollment::where('student_id', $studentId)
+            ->where('course_id', $courseId)
+            ->update($data);
+    }
+
+    public function markEnrollmentComplete(int $studentId, int $courseId): void
+    {
+        $this->updateEnrollmentProgress($studentId, $courseId, [
+            'completed_at' => now(),
+            'last_accessed_at' => now(),
+        ]);
+    }
+
     /**
      * Delete a course by ID.
      *
@@ -137,7 +272,12 @@ class CourseService
     {
         $curriculum = Curriculum::find($curriculumId);
         if ($curriculum) {
-            return $curriculum->delete();
+            $courseId = Section::where('id', $curriculum->section_id)->value('course_id');
+            $deleted = $curriculum->delete();
+            if ($deleted && $courseId) {
+                $this->syncCourseContentLength($courseId);
+            }
+            return $deleted;
         }
         return false;
     }
@@ -179,7 +319,13 @@ class CourseService
     public function updateCurriculum(int $curriculumId, array $data)
     {
         $curriculum = Curriculum::findOrFail($curriculumId);
+        $courseId = Section::where('id', $curriculum->section_id)->value('course_id');
         $curriculum->update($data);
+
+        if ($courseId) {
+            $this->syncCourseContentLength($courseId);
+        }
+
         return $curriculum;
     }
 
@@ -635,9 +781,11 @@ class CourseService
         });
 
         if ($totalContentLength > 0) {
-            $course->content_length    = $totalContentLength;
-            $course->save();
+            $course->content_length = $totalContentLength;
+        } else {
+            $course->content_length = 0;
         }
+        $course->save();
     }
 
     public function addStudentCourse($courseData = [])

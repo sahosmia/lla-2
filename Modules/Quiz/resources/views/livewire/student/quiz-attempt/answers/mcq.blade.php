@@ -19,6 +19,9 @@
                             <div class="am-radio">
                                 <input wire:model.live="answer" value="{{ $option->id }}" id="{{ $option->id }}" type="radio" name="learning">
                                 <label for="{{ $option->id }}">
+                                    @if(!empty(storageMediaUrl($option->image?->path)))
+                                        <img src="{{ storageMediaUrl($option->image?->path) }}" alt="{{ $option->option_text }}">
+                                    @endif
                                     <span>{{ $option->option_text }}</span>
                                 </label>
                             </div>

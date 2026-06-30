@@ -2,9 +2,10 @@
     <div class="am-quiz-detail_box">
         @if(!empty(setting('_quiz.quiz_start_text')) || !empty(setting('_quiz.quiz_start_banner')))
         @php
-            $bgImage = !empty(setting('_quiz.quiz_start_banner')[0]['path']) ? url(Storage::url(setting('_quiz.quiz_start_banner')[0]['path'])) : asset('modules/quiz/demo-content/quiz-detail-bg.png');
+            $bannerPath = setting('_quiz.quiz_start_banner')[0]['path'] ?? null;
+            $bgImage = storageMediaUrl($bannerPath) ?? asset('modules/quiz/demo-content/quiz-detail-bg.png');
         @endphp
-            <div class="am-quiz-detail_banner" style="background: url('{{ $bgImage }}')">
+            <div class="am-quiz-detail_banner" style="background-image: url('{{ $bgImage }}')">
                 <figure>
                     <x-application-logo :variation="'white'" />
                 </figure>
@@ -15,11 +16,9 @@
         @endif
         <div class="am-quiz-detail_content">
             <div class="am-quiz-detail_info">
-                @if(!empty($quizAttempt?->quiz?->tutor?->profile?->image) && Storage::disk(getStorageDisk())->exists($quizAttempt?->quiz?->tutor?->profile?->image))
-                    <figure>
-                        <img src="{{ resizedImage($quizAttempt?->quiz?->tutor?->profile?->image, 160, 160) }}" alt="{{ $quizAttempt?->quiz?->tutor?->profile?->full_name }}" />
-                    </figure>
-                @endif
+                <figure>
+                    <img src="{{ profileImageUrl($quizAttempt?->quiz?->tutor?->profile?->image, 160, 160) }}" alt="{{ $quizAttempt?->quiz?->tutor?->profile?->full_name }}" />
+                </figure>
                 <h6>
                     {{ $quizAttempt?->quiz?->tutor?->profile?->full_name }}
                     <span>{{ __('quiz::quiz.quiz_author') }}</span>

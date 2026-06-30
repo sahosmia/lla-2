@@ -41,6 +41,11 @@ class CompletePurchaseJob implements ShouldQueue
     public function handle(BookingService $bookingService, OrderService $orderService, WalletService $walletService): void
     {
         try {
+            $this->order = Order::with(['items.orderable', 'orderBy', 'userProfile'])->find($this->order->id);
+            if (empty($this->order)) {
+                return;
+            }
+
             $this->bookingService   = $bookingService;
             $this->orderService     = $orderService;
             $this->walletService    = $walletService;
@@ -159,6 +164,22 @@ class CompletePurchaseJob implements ShouldQueue
                             (new \Modules\Courses\Services\CourseService())->addStudentCourse($courseData);
                             $completeCourseDelay = Carbon::parse(now())->addDays((int)setting('_lernen.clear_course_amount_after_days') ?? 3);
                             dispatch(new \Modules\Courses\Jobs\ClearCourseFundsJob($item->orderable?->instructor_id, $tutorEarning, $this->order->id))->delay($completeCourseDelay);
+                        }
+                    } elseif(Module::has('TrainingCalendar') && Module::isEnabled('TrainingCalendar') && $item->orderable instanceof \Modules\TrainingCalendar\Models\TrainingCalendar) {
+                        $platformFee = getCommission($item->total);
+                        $tutorEarning = $item->total - $platformFee;
+                        $tutorFunds[$item->orderable?->tutor_id] = ($tutorFunds[$item->orderable?->tutor_id] ?? 0) + $tutorEarning;
+                        $this->orderService->updateOrderItem($item, ['platform_fee' => $platformFee, 'options' => array_merge($item->options ?? [], ['tutor_payout' => $tutorEarning])]);
+
+                        (new \Modules\TrainingCalendar\Services\TrainingCalendarService())->completePaidRegistration(
+                            $this->order,
+                            $item->orderable,
+                            $item->options ?? []
+                        );
+
+                        if (Module::has('courses') && Module::isEnabled('courses')) {
+                            $completeCourseDelay = Carbon::parse(now())->addDays((int) setting('_lernen.clear_course_amount_after_days') ?? 3);
+                            dispatch(new \Modules\Courses\Jobs\ClearCourseFundsJob($item->orderable?->tutor_id, $tutorEarning, $this->order->id))->delay($completeCourseDelay);
                         }
                     } elseif(\Nwidart\Modules\Facades\Module::has('CourseBundles') && \Nwidart\Modules\Facades\Module::isEnabled('CourseBundles') && $item->orderable instanceof \Modules\CourseBundles\Models\Bundle) {    
                         $bundleCourses = $item->orderable->courses;

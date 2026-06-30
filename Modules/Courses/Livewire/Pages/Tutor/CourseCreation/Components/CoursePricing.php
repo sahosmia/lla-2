@@ -56,9 +56,21 @@ class CoursePricing extends Component {
     }
 
     public function toggleIsFree() {
-        $this->price        = null;
-        $this->discount     = 0;
-        $this->final_price   = null;
+        if ($this->isFree) {
+            $this->price        = 0;
+            $this->discount     = 0;
+            $this->final_price  = 0;
+            $this->discountAllowed = false;
+        }
+    }
+
+    public function updatedIsFree($value) {
+        if ($value) {
+            $this->price        = 0;
+            $this->discount     = 0;
+            $this->final_price  = 0;
+            $this->discountAllowed = false;
+        }
     }
 
     public function toggleDiscountAllowed() {
@@ -110,12 +122,19 @@ class CoursePricing extends Component {
             $this->dispatch('showAlertMessage', type: 'error', title:  __('general.demosite_res_title') , message: __('general.demosite_res_txt'));
             return;
         }
+
+        if ($this->isFree) {
+            $this->price = 0;
+            $this->discount = 0;
+            $this->final_price = 0;
+        }
+
         $validatedData = $this->validate((new CoursePriceRequest())->rules(), (new CoursePriceRequest())->messages(), (new CoursePriceRequest())->attributes());
         try {
             $data = [
-                "price" => !empty($validatedData['price']) ? $validatedData['price'] : 0,
+                "price" => $this->isFree ? 0 : (float) ($validatedData['price'] ?? 0),
                 "discount" => !empty($validatedData['discount']) ? $validatedData['discount'] : null,
-                "final_price" => !empty($validatedData['final_price']) ? number_format($validatedData['final_price'], 2, '.', '') : 0
+                "final_price" => $this->isFree ? 0 : number_format((float) ($validatedData['final_price'] ?? $validatedData['price'] ?? 0), 2, '.', ''),
             ];
             (new CourseService())->updateCoursePricing($this->course, $data);
             return redirect()->route('courses.tutor.edit-course', ['tab' => 'content', 'id' => $this->courseId]);

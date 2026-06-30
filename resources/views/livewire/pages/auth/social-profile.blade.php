@@ -68,7 +68,7 @@ new #[Layout('layouts.guest')] class extends Component
 
         Auth::login($user);
 
-        $redirect = $user->roles()?->first()?->name == 'tutor' ? 'tutor.dashboard' : 'student.bookings';
+        $redirect = $user->roles()?->first()?->name == 'tutor' ? 'tutor.dashboard' : 'courses.course-list';
 
         $this->redirect(route($redirect, absolute: false));
     }

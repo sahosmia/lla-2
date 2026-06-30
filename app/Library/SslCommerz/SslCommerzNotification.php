@@ -296,24 +296,33 @@ class SslCommerzNotification extends AbstractSslCommerz
         $this->data['product_category'] = $info['product_category']; // string (50)	Mandatory - Mention the product category. It is a open field. Example - clothing,shoes,watches,gift,healthcare, jewellery,top up,toys,baby care,pants,laptop,donation,etc
 
         // Set the SUCCESS, FAIL, CANCEL Redirect URL before setting the other parameters
-        $this->setSuccessUrl();
-        $this->setFailedUrl();
-        $this->setCancelUrl();
-        $this->setIPNUrl();
+        if (!empty($info['success_url'])) {
+            $this->data['success_url'] = $info['success_url'];
+        } else {
+            $this->setSuccessUrl();
+            $this->data['success_url'] = $this->getSuccessUrl();
+        }
 
-        $this->data['success_url'] = $this->getSuccessUrl(); // string (255)	Mandatory - It is the callback URL of your website where user will redirect after successful payment (Length: 255)
-        $this->data['fail_url'] = $this->getFailedUrl(); // string (255)	Mandatory - It is the callback URL of your website where user will redirect after any failure occure during payment (Length: 255)
-        $this->data['cancel_url'] = $this->getCancelUrl(); // string (255)	Mandatory - It is the callback URL of your website where user will redirect if user canceled the transaction (Length: 255)
+        if (!empty($info['fail_url'])) {
+            $this->data['fail_url'] = $info['fail_url'];
+        } else {
+            $this->setFailedUrl();
+            $this->data['fail_url'] = $this->getFailedUrl();
+        }
 
-        /*
-         * IPN is very important feature to integrate with your site(s).
-         * Some transaction could be pending or customer lost his/her session, in such cases back-end IPN plays a very important role to update your backend office.
-         *
-         * Type: string (255)
-         * Important! Not mandatory, however better to use to avoid missing any payment notification - It is the Instant Payment Notification (IPN) URL of your website where SSLCOMMERZ will send the transaction's status (Length: 255).
-         * The data will be communicated as SSLCOMMERZ Server to your Server. So, customer session will not work.
-		*/
-        $this->data['ipn_url'] = $this->getIPNUrl();
+        if (!empty($info['cancel_url'])) {
+            $this->data['cancel_url'] = $info['cancel_url'];
+        } else {
+            $this->setCancelUrl();
+            $this->data['cancel_url'] = $this->getCancelUrl();
+        }
+
+        if (!empty($info['ipn_url'])) {
+            $this->data['ipn_url'] = $info['ipn_url'];
+        } else {
+            $this->setIPNUrl();
+            $this->data['ipn_url'] = $this->getIPNUrl();
+        }
 
         /*
          * Type: string (30)

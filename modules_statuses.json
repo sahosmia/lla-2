@@ -3,5 +3,6 @@
     "LaraPayease": true,
     "Courses": true,
     "Quiz": true,
-    "Upcertify": true
+    "Upcertify": true,
+    "TrainingCalendar": true
 }

@@ -50,7 +50,7 @@ class CourseBasicDetails extends Component
         $this->levels       = Course::LEVEL;
         $this->types        = [
             'video'             => 1,
-            'live'              => 3,
+            // 'live'              => 3,
             'article'           => 4,
             'all'               => 5,
         ];
@@ -134,19 +134,10 @@ class CourseBasicDetails extends Component
             $validatedData['tags']  = array_filter($this->tags, fn($tag) => !empty($tag));
 
             $validatedData['instructor_id'] = Auth::id();
-            
-            
-            if ($this->course_for === 'classroom') {
-                $validatedData['venue'] = $this->venue;
-                $validatedData['date'] = $this->date;
-                $validatedData['time'] = $this->time;
-            } else {
-                $validatedData['venue'] = null;
-                $validatedData['date'] = null;
-                $validatedData['time'] = null;
-                
-            }
-            
+            $validatedData['course_for'] = 'online';
+            $validatedData['venue'] = null;
+            $validatedData['date'] = null;
+            $validatedData['time'] = null;
             
              // Ensure validity fields are null if validity is empty
             if (empty($this->validity)) {

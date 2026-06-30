@@ -90,7 +90,7 @@ class CartService
         return $this->items->map(function ($item) {
             $itemArray = $item->toArray();
             if (!empty($itemArray['options'])) {
-                $itemArray['options']['price'] = formatAmount($itemArray['options']['price'], true);
+                $itemArray['options']['price'] = formatAmount($itemArray['options']['price'] ?? $itemArray['price'], true);
                 if (\Nwidart\Modules\Facades\Module::has('kupondeal') && \Nwidart\Modules\Facades\Module::isEnabled('kupondeal') && !empty($itemArray['discount_amount'])) {
                     $itemArray['discounted_total'] = formatAmount(($itemArray['price'] - $itemArray['discount_amount']), true);
                 }else{

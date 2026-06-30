@@ -59,6 +59,7 @@ class CourseList extends Component
                 'courseProgress' => 'duration'
             ],
             studentId: Auth::id(),
+            perPage: $this->perPage,
         );
 
         return $courses;
@@ -70,8 +71,18 @@ class CourseList extends Component
     public function render()
     {
         $courses = $this->courses;
+        $courseService = new CourseService();
+        $enrollmentMeta = [];
+
+        foreach ($courses as $enrollment) {
+            $enrollmentMeta[$enrollment->id] = [
+                'progress' => $courseService->getStudentCourseProgressPercent($enrollment->course_id, $enrollment->student_id),
+                'is_expired' => $courseService->isCourseAccessExpired($enrollment->course, $enrollment->student_id),
+            ];
+        }
+
         $favCourseIds = Like::where('likeable_type', Course::class)->where('user_id', Auth::id())?->pluck('likeable_id')?->toArray() ?? [];
-        return view('courses::livewire.student.course-list.courselist', compact('courses', 'favCourseIds'));
+        return view('courses::livewire.student.course-list.courselist', compact('courses', 'favCourseIds', 'enrollmentMeta'));
     }
 
     public function loadCoursesData() {

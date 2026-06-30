@@ -289,7 +289,7 @@ if (! function_exists('uploadImage')) {
               // Check if the image is a data URL
         if (preg_match('/^data:image\/(\w+);base64,/', $imageUrl, $type)) {
             $data = substr($imageUrl, strpos($imageUrl, ',') + 1);
-            $type = strtolower($type[1]); // jpg, png, gif
+            $type = strtolower($type[1]);
 
             if (!in_array($type, ['jpg', 'jpeg', 'gif', 'png'])) {
                 throw new \Exception('invalid image type');
@@ -298,8 +298,10 @@ if (! function_exists('uploadImage')) {
             if ($data === false) {
                 throw new \Exception('base64_decode failed');
             }
+        } elseif (is_string($imageUrl) && base64_encode(base64_decode($imageUrl, true)) === $imageUrl) {
+            $data = base64_decode($imageUrl);
         } else {
-            $data = file_get_contents($imageUrl);
+            throw new \Exception('Invalid image data provided');
         }
 
         Storage::disk($disk)->put($dirName . '/' . $fileName, $data);
@@ -410,10 +412,63 @@ if (!function_exists('getStorageDisk')) {
     }
 }
 
+if (!function_exists('storageMediaUrl')) {
+
+    function storageMediaUrl(?string $path): ?string
+    {
+        if (empty($path)) {
+            return null;
+        }
+
+        $disk = getStorageDisk();
+
+        if (!Storage::disk($disk)->exists($path)) {
+            return null;
+        }
+
+        return Storage::disk($disk)->url($path);
+    }
+}
+
+if (!function_exists('profileImageUrl')) {
+
+    function profileImageUrl(?string $path, int $width = 36, int $height = 36): string
+    {
+        if (!empty($path) && Storage::disk(getStorageDisk())->exists($path)) {
+            return resizedImage($path, $width, $height);
+        }
+
+        $default = setting('_general.default_avatar_for_user');
+        if (!empty($default[0]['path'])) {
+            return url(Storage::url($default[0]['path']));
+        }
+
+        return resizedImage('placeholder.png', $width, $height);
+    }
+}
+
+if (!function_exists('formatCoursePrice')) {
+
+    function formatCoursePrice($amount, bool $currencySuperscript = false): string
+    {
+        if ((float) ($amount ?? 0) <= 0) {
+            return __('courses::courses.free');
+        }
+
+        return formatAmount($amount, $currencySuperscript);
+    }
+}
+
 if (!function_exists('resizedImage')) {
 
     function resizedImage(string $image, int $width, int $height)
     {
+        
+        if (filter_var($image, FILTER_VALIDATE_URL)) {
+            return $image;
+        }
+
+        $image = (string) $image;
         $disk = getStorageDisk();
 
         // Check if the original image exists
@@ -2147,15 +2202,38 @@ if (!function_exists('getGatewayObject')) {
     {
 
         $data  = setting('admin_settings.payment_method');
+        $gateways = PaymentDriver::supportedGateways();
+
+        if (!isset($gateways[$gateway])) {
+            return '';
+        }
+
         $settings = $data[$gateway] ?? null;
+
+        if (empty($settings)) {
+            $settings = array_merge(
+                $gateways[$gateway]['keys'] ?? [],
+                [
+                    'currency' => $gateways[$gateway]['currency'] ?? 'BDT',
+                    'exchange_rate' => '',
+                    'enable_test_mode' => filter_var(env('SSLCZ_TESTMODE', false), FILTER_VALIDATE_BOOLEAN),
+                ]
+            );
+        }
+
         if (!empty(getCurrentCurrency())) {
             $settings['base_currency'] = getCurrentCurrency()['code'];
         }
-        $gateways = PaymentDriver::supportedGateways();
-        if (!empty($data)) {
+
+        if (!empty($data) || $gateway === 'sslcommerz') {
             $mode = !empty($settings['enable_test_mode']) ? 'test' : 'live';
 
             $keys = array_intersect_key($settings, $gateways[$gateway]['keys']);
+
+            if ($gateway === 'sslcommerz') {
+                $keys['store_id'] = $keys['store_id'] ?: env('SSLCZ_STORE_ID', '');
+                $keys['store_password'] = $keys['store_password'] ?: env('SSLCZ_STORE_PASSWORD', '');
+            }
 
             if ($gateway == 'payfast') {
                 $keys['webhook_url'] = route('payfast.webhook');

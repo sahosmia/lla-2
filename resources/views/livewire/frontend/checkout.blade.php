@@ -11,7 +11,7 @@
                             {{ __('checkout.checkout') }}
                         @endslot
                         <strong class="am-checkout_logo">
-                            <x-application-logo />
+                            <x-application-logo style="max-width: 150px; height: auto;" />
                         </strong>
                         <h2>{{ __('checkout.you_almost_there') }}</h2>
                         <p>{{ __('checkout.fill_details_mentioned_below_purchase_courses') }}</p>
@@ -199,11 +199,17 @@
                                     @foreach ($content as $item)
                                         <li>
                                             <figure class="am-ordersummary_list_img">
-                                                @if (!empty($item['options']['image']) && Storage::disk(getStorageDisk())->exists($item['options']['image']))
-                                                    <img src="{{ resizedImage($item['options']['image'],34,34) }}" alt="{{$item['options']['image']}}" />
-                                                @else
-                                                    <img src="{{ setting('_general.default_avatar_for_user') ? url(Storage::url(setting('_general.default_avatar_for_user')[0]['path'])) : resizedImage('placeholder.png', 34, 34) }}" alt="default avatar" />
-                                                @endif
+                                                @php
+                                                    $imageUrl = null;
+                                                    if (!empty($item['options']['image']) && Storage::disk(getStorageDisk())->exists($item['options']['image'])) {
+                                                        $imageUrl = resizedImage($item['options']['image'], 34, 34);
+                                                    } elseif ($item['cartable_type'] === 'Modules\Courses\Models\Course') {
+                                                        $imageUrl = asset('modules/courses/images/course.png');
+                                                    } else {
+                                                        $imageUrl = resizedImage('placeholder.png', 34, 34);
+                                                    }
+                                                @endphp
+                                                <img src="{{ $imageUrl }}" alt="{{ $item['name'] }}" />
                                             </figure>
                                             <div class="am-ordersummary_list_title">
                                                 <div @class(['am-ordersummary_list_info','am-w-full' => (!\Nwidart\Modules\Facades\Module::has('kupondeal') || \Nwidart\Modules\Facades\Module::isDisabled('kupondeal'))])>
@@ -213,6 +219,9 @@
                                                         <span>{{$item['options']['subject_group']}}</span>
                                                     @elseif($item['cartable_type'] == 'Modules\Courses\Models\Course')
                                                         <span>{{$item['options']['sub_category']}}</span>
+                                                        <h3><a href="javascript:void(0);">{{ $item['name'] }}</a></h3>
+                                                    @elseif($item['cartable_type'] == 'Modules\TrainingCalendar\Models\TrainingCalendar')
+                                                        <span>{{ ucfirst($item['options']['type'] ?? 'training') }}</span>
                                                         <h3><a href="javascript:void(0);">{{ $item['name'] }}</a></h3>
                                                     @elseif($item['cartable_type'] == 'Modules\Subscriptions\Models\Subscription')
                                                         <span>{{ $item['options']['period'] }}</span>
@@ -234,6 +243,8 @@
                                                                 <span>/{{ __('checkout.session') }}</span>
                                                             @elseif($item['cartable_type'] == 'Modules\Courses\Models\Course')
                                                                 <span>{{ __('tutor.per_course') }}</span>
+                                                            @elseif($item['cartable_type'] == 'Modules\TrainingCalendar\Models\TrainingCalendar')
+                                                                <span>{{ __('trainingcalendar::trainingcalendar.training') }}</span>
                                                             @elseif($item['cartable_type'] == 'Modules\CourseBundles\Models\Bundle')
                                                                 <span>{{ __('coursebundles::bundles.per_bundle') }}</span>                                                                
                                                             @endif

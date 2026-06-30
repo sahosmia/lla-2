@@ -47,7 +47,7 @@
                                 <em>{{ $key + 1 }}.</em>
                                 <span><span>{{ $section->title }}</span>
                                     <em> 
-                                        {{ $section->curriculums->where('watchtime', '>=', 'content_length')->count() }} /
+                                        {{ $section->curriculums->filter(fn ($curriculum) => $curriculum->watchtime && (int) $curriculum->watchtime->duration >= (int) $curriculum->content_length)->count() }} /
                                         {{ $section->curriculums->count() }} | 
                                         {{ getCourseDuration($section->curriculums->sum('content_length')) }}
                                     </em>

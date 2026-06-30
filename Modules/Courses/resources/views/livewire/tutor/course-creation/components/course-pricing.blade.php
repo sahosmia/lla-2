@@ -14,7 +14,7 @@
                                 <label for="cr-free-course-toggle">{{ __('courses::courses.free_course') }}</label>
                                 <p>{{ __('courses::courses.free_course_description') }}</p>
                             </div>
-                            <input type="checkbox" wire:click='toggleIsFree' id="cr-free-course-toggle" class="cr-toggle" wire:model='isFree' wire:ignore>
+                            <input type="checkbox" wire:model.live="isFree" id="cr-free-course-toggle" class="cr-toggle">
                         </div>
                     </div>
 
