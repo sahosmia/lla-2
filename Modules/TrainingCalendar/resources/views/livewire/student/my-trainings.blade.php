@@ -7,10 +7,11 @@
     </div>
 
     <div class="cr-allcourses_list">
-        @if($registrations->isNotEmpty())
-            @foreach($registrations as $registration)
-                @php $training = $registration->training; @endphp
-                @if($training)
+        @if(!$isLoading)
+            @if($registrations->isNotEmpty())
+                @foreach($registrations as $registration)
+                    @php $training = $registration->training; @endphp
+                    @if($training)
                     <div class="cr-card">
                         <figure class="cr-image-wrapper">
                             <img src="{{ asset('modules/trainingcalendar/images/training-placeholder.png') }}" alt="{{ $training->title }}" class="cr-background-image" onerror="this.src='{{ asset('demo-content/placeholders/placeholder.png') }}'">
@@ -50,21 +51,43 @@
                                 <a href="{{ route('trainingcalendar.student.training-detail', $registration->id) }}" class="am-btn w-100 justify-content-center">
                                     {{ __('general.view_details') }}
                                 </a>
+                                </div>
                             </div>
                         </div>
+                    @endif
+                @endforeach
+            @else
+                <div class="cr-courses-emptycase">
+                    <div class="cr-no-record-container">
+                        <figure>
+                            <img src="{{ asset('modules/courses/images/empty-view.png') }}" alt="empty-view">
+                        </figure>
+                        <h6>{{ __('trainingcalendar::trainingcalendar.no_registrations_found') }}</h6>
+                        <p>{{ __('trainingcalendar::trainingcalendar.no_registrations_found_desc') }}</p>
                     </div>
-                @endif
-            @endforeach
-        @else
-            <div class="cr-courses-emptycase">
-                <div class="cr-no-record-container">
-                    <figure>
-                        <img src="{{ asset('modules/courses/images/empty-view.png') }}" alt="empty-view">
-                    </figure>
-                    <h6>{{ __('trainingcalendar::trainingcalendar.no_registrations_found') }}</h6>
-                    <p>{{ __('trainingcalendar::trainingcalendar.no_registrations_found_desc') }}</p>
                 </div>
-            </div>
+            @endif
+        @else
+            @for ($i = 0; $i < 6; $i++)
+                <div class="cr-card cr-card-skeleton">
+                    <div class="cr-image-wrapper" style="height: 200px;"></div>
+                    <div class="cr-course-card">
+                        <div class="cr-course-header">
+                            <div class="cr-instructor-info">
+                                <div class="cr-instructor-details">
+                                    <div class="cr-instructor-name">
+                                        <div class="cr-userimg" style="width: 24px; height: 24px;"></div>
+                                        <div class="cr-username" style="width: 80px; height: 12px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="cr-course-title" style="width: 100%; height: 20px; margin-top: 10px;"></div>
+                            <div class="cr-course-category" style="width: 60%; height: 12px; margin-top: 5px;"></div>
+                        </div>
+                        <div class="cr-cardbtn" style="width: 100%; height: 40px; margin-top: 20px;"></div>
+                    </div>
+                </div>
+            @endfor
         @endif
     </div>
 

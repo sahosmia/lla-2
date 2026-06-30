@@ -84,8 +84,9 @@
 
     <div class="am-table-area">
         <div class="am-courses-table">
-            @if($trainings->isNotEmpty())
-                <table class="am-table">
+            @if(!$isLoading)
+                @if($trainings->isNotEmpty())
+                    <table class="am-table">
                     <thead>
                         <tr>
                             <th>{{ __('trainingcalendar::trainingcalendar.title') }}</th>
@@ -166,20 +167,25 @@
                                 </td>
                             </tr>
                         @endforeach
-                    </tbody>
-                </table>
-                <div class="am-pagination am-quiz-pagination">
-                    {{ $trainings->links('pagination.custom') }}
-                </div>
-            @else
-                <div class="am-emptyview">
-                    <figure class="am-emptyview_img">
-                        <img src="{{ asset('modules/quiz/images/quiz-list/empty.png') }}" alt="img description">
-                    </figure>
-                    <div class="am-emptyview_title">
-                        <h3>{{ __('trainingcalendar::trainingcalendar.no_trainings') }}</h3>
-                        <p>{{ __('trainingcalendar::trainingcalendar.no_trainings_found_desc') }}</p>
+                        </tbody>
+                    </table>
+                    <div class="am-pagination am-quiz-pagination">
+                        {{ $trainings->links('pagination.custom') }}
                     </div>
+                @else
+                    <div class="am-emptyview">
+                        <figure class="am-emptyview_img">
+                            <img src="{{ asset('modules/quiz/images/quiz-list/empty.png') }}" alt="img description">
+                        </figure>
+                        <div class="am-emptyview_title">
+                            <h3>{{ __('trainingcalendar::trainingcalendar.no_trainings') }}</h3>
+                            <p>{{ __('trainingcalendar::trainingcalendar.no_trainings_found_desc') }}</p>
+                        </div>
+                    </div>
+                @endif
+            @else
+                <div class="am-quizlist_wrap">
+                    @include('quiz::skeletons.quiz-listing-skeleton', ['total' => 10])
                 </div>
             @endif
         </div>

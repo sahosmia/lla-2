@@ -73,7 +73,7 @@
                                             <ul class="tb-action-icon">
                                                 <li>
                                                     <div class="am-custom-tooltip">
-                                                        <span class="am-tooltip-text">{{ __('courses::courses.view_details') }}</span>
+                                                        <span class="am-tooltip-text">{{ __('general.view_details') }}</span>
                                                         <a href="{{ route('trainingcalendar.detail', $registration->training?->slug) }}" target="_blank">
                                                             <i class="icon-eye"></i>
                                                         </a>

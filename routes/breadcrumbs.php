@@ -404,3 +404,56 @@ if(\Nwidart\Modules\Facades\Module::has('KuponDeal') &&\Nwidart\Modules\Facades\
         $trail->push(__('kupondeal::kupondeal.coupons'), route('kupondeal.coupon-list'));
     });
 }
+
+
+if(\Nwidart\Modules\Facades\Module::has('TrainingCalendar') && \Nwidart\Modules\Facades\Module::isEnabled('TrainingCalendar')){
+    Breadcrumbs::for('trainingcalendar.tutor.trainings', function (BreadcrumbTrail $trail) {
+        $trail->push(__('general.dashboard'), route('tutor.dashboard'));
+        $trail->push(__('trainingcalendar::trainingcalendar.training_list'), route('trainingcalendar.tutor.trainings'));
+    });
+
+    Breadcrumbs::for('trainingcalendar.tutor.create', function (BreadcrumbTrail $trail) {
+        $trail->parent('trainingcalendar.tutor.trainings');
+        $trail->push(__('trainingcalendar::trainingcalendar.create_training'), route('trainingcalendar.tutor.create'));
+    });
+
+    Breadcrumbs::for('trainingcalendar.tutor.edit', function (BreadcrumbTrail $trail, $trainingId) {
+        $trail->parent('trainingcalendar.tutor.trainings');
+        $trail->push(__('trainingcalendar::trainingcalendar.edit_training'), route('trainingcalendar.tutor.edit', $trainingId));
+    });
+
+    Breadcrumbs::for('trainingcalendar.tutor.registrations', function (BreadcrumbTrail $trail, $trainingId) {
+        $trail->parent('trainingcalendar.tutor.trainings');
+        $trail->push(__('trainingcalendar::trainingcalendar.registrations'), route('trainingcalendar.tutor.registrations', $trainingId));
+    });
+
+    Breadcrumbs::for('trainingcalendar.tutor.send-notice', function (BreadcrumbTrail $trail, $trainingId) {
+        $trail->parent('trainingcalendar.tutor.trainings');
+        $trail->push(__('trainingcalendar::trainingcalendar.send_notice'), route('trainingcalendar.tutor.send-notice', $trainingId));
+    });
+
+    Breadcrumbs::for('trainingcalendar.student.my-trainings', function (BreadcrumbTrail $trail) {
+        $trail->push(__('general.profile_settings'), route('student.profile.personal-details'));
+        $trail->push(__('trainingcalendar::trainingcalendar.my_trainings'), route('trainingcalendar.student.my-trainings'));
+    });
+
+    Breadcrumbs::for('trainingcalendar.student.training-detail', function (BreadcrumbTrail $trail, $registrationId) {
+        $trail->parent('trainingcalendar.student.my-trainings');
+        $trail->push(__('trainingcalendar::trainingcalendar.event_details'), route('trainingcalendar.student.training-detail', $registrationId));
+    });
+
+    Breadcrumbs::for('trainingcalendar.admin.trainings', function (BreadcrumbTrail $trail) {
+        $trail->parent('admin.insights');
+        $trail->push(__('trainingcalendar::trainingcalendar.all_trainings'), route('trainingcalendar.admin.trainings'));
+    });
+
+    Breadcrumbs::for('trainingcalendar.admin.registrations', function (BreadcrumbTrail $trail) {
+        $trail->parent('admin.insights');
+        $trail->push(__('trainingcalendar::trainingcalendar.all_registrations'), route('trainingcalendar.admin.registrations'));
+    });
+
+    Breadcrumbs::for('trainingcalendar.admin.settings', function (BreadcrumbTrail $trail) {
+        $trail->parent('admin.insights');
+        $trail->push(__('trainingcalendar::trainingcalendar.module_settings'), route('trainingcalendar.admin.settings'));
+    });
+}

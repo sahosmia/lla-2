@@ -94,4 +94,10 @@ return [
     'pending' => 'Pending',
     'training' => 'Training',
     'tutor' => 'Tutor',
+    'no_notices_found' => 'No notices have been sent yet.',
+    'all_status' => 'All Status',
+    'id' => 'ID',
+    'all' => 'All',
+    'manage_registrations' => 'Manage Registrations',
+    'manage_registrations_desc' => 'View and manage participants who have registered for your training sessions.',
 ];
