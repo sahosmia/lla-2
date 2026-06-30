@@ -74,7 +74,7 @@ class TrainingCalendarService
     public function getPublishedTrainings(array $filters = []): LengthAwarePaginator
     {
         $query = TrainingCalendar::query()
-            ->where('status', TrainingCalendar::STATUS_PUBLISHED)
+            ->openRegistration()
             ->with('tutor.profile')
             ->withCount('paidRegistrations')
             ->latest('event_datetime');

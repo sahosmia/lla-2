@@ -70,6 +70,39 @@ class TrainingCalendar extends Model
         return $this->status === self::STATUS_PUBLISHED;
     }
 
+    public function scopeOpenRegistration($query)
+    {
+        $query->where('status', self::STATUS_PUBLISHED);
+
+        if (trainingCalendarSetting('enforce_registration_deadline', 'yes') === 'yes') {
+            $query->where(function ($q) {
+                $q->whereNull('registration_deadline')
+                    ->orWhere('registration_deadline', '>', now());
+            });
+        }
+
+        if (trainingCalendarSetting('enable_seat_limit', 'yes') === 'yes') {
+            $defaultMaxSeats = (int) trainingCalendarSetting('default_max_seats', 50);
+            $table = $this->getTable();
+            $regTable = (new TrainingRegistration())->getTable();
+            $paidStatus = TrainingRegistration::PAYMENT_PAID;
+
+            $query->whereRaw("
+                (CASE
+                    WHEN {$table}.max_seats IS NULL OR {$table}.max_seats = 0 THEN {$defaultMaxSeats}
+                    ELSE {$table}.max_seats
+                END) > (
+                    SELECT COUNT(*)
+                    FROM {$regTable}
+                    WHERE {$regTable}.training_calendar_id = {$table}.id
+                    AND {$regTable}.payment_status = ?
+                )
+            ", [$paidStatus]);
+        }
+
+        return $query;
+    }
+
     public function isRegistrationOpen(): bool
     {
         if (!$this->isPublished()) {
@@ -77,7 +110,7 @@ class TrainingCalendar extends Model
         }
 
         if (trainingCalendarSetting('enforce_registration_deadline', 'yes') === 'yes') {
-            if (now()->greaterThan($this->registration_deadline)) {
+            if ($this->registration_deadline && now()->greaterThan($this->registration_deadline)) {
                 return false;
             }
         }

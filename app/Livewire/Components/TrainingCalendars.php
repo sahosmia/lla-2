@@ -21,14 +21,14 @@ class TrainingCalendars extends Component
         }
 
         return TrainingCalendar::query()
-            ->where('status', TrainingCalendar::STATUS_PUBLISHED)
+            ->openRegistration()
             ->exists();
     }
 
     public function render()
     {
         $trainings = TrainingCalendar::query()
-            ->where('status', TrainingCalendar::STATUS_PUBLISHED)
+            ->openRegistration()
             ->with('tutor.profile')
             ->withCount('paidRegistrations')
             ->orderBy('event_datetime')
