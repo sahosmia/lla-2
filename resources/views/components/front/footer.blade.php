@@ -38,7 +38,7 @@
                                     @endif
                                     @if(!empty(setting('_front_page_settings.footer_email')))
                                         <li>
-                                            <a href="mailto:hello@gmail.com"><i class="am-icon-email-01"></i>{!! setting('_front_page_settings.footer_email') !!}</a>
+                                            <a href="mailto:{!! setting('_front_page_settings.footer_email') !!}"><i class="am-icon-email-01"></i>{!! setting('_front_page_settings.footer_email') !!}</a>
                                         </li>
                                     @endif
                                     @if(!empty(setting('_front_page_settings.footer_address')))
