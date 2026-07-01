@@ -19,16 +19,17 @@ class SendNotificationJob implements ShouldQueue
     public string $template;
     public User $recipient;
     public array $templateData;
+    public array $attachments;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(string $template, User $user, array $templateData)
+    public function __construct(string $template, User $user, array $templateData, array $attachments = [])
     {
         $this->template         = $template;
         $this->recipient        = $user;
         $this->templateData     = $templateData;
-   
+        $this->attachments      = $attachments;
     }
 
     /**
@@ -38,7 +39,7 @@ class SendNotificationJob implements ShouldQueue
     {
         $template = $notifyService->parseEmailTemplate($this->template, $this->recipient->role, $this->templateData);
         if (!empty($template)) {
-           $this->recipient->notify(new EmailNotification($template));
+           $this->recipient->notify(new EmailNotification($template, $this->attachments));
         }
     }
 }

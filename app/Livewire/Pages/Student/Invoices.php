@@ -58,7 +58,7 @@ class Invoices extends Component
 
     public function viewInvoice($id)
     {
-        $this->invoice = $this->orderService->getOrdeWrWithItem($id, ['items', 'userProfile', 'countryDetails']);
+        $this->invoice = $this->orderService->getOrderWithItem($id, ['items', 'userProfile', 'countryDetails']);
         $this->dispatch('openInvoiceModal', id: 'invoicePreviewModal', action: 'show');
     }
 }

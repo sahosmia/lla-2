@@ -436,7 +436,7 @@ class SiteController extends Controller
             $company_name       = setting('_general.company_name');
             $company_email      = setting('_general.company_email');
             $company_address    = setting('_general.company_address');
-            $invoice            = (new OrderService())->getOrdeWrWithItem($id, ['items', 'userProfile', 'countryDetails']);
+            $invoice            = (new OrderService())->getOrderWithItem($id, ['items', 'userProfile', 'countryDetails']);
 
             if (empty($invoice)) {
                 return response()->json(['error' => __('general.no_orders_received')], 400);

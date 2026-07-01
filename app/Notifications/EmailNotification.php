@@ -13,14 +13,17 @@ class EmailNotification extends Notification //implements ShouldQueue
 
     public $template;
     public $emailSetting;
+    public $attachments;
+
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct($template) {
+    public function __construct($template, $attachments = []) {
         $this->template = $template;
         $this->emailSetting = setting('_email');
+        $this->attachments = $attachments;
     }
 
     /**
@@ -48,12 +51,24 @@ class EmailNotification extends Notification //implements ShouldQueue
         if (!empty($this->template['subject']))
             $mail->subject($this->template['subject']);
 
-        return  $mail->view('emails.template', [
+        $mail->view('emails.template', [
             'greeting'      => $this->template['greeting'],
             'content'       => $this->template['content'],
             'signature'     => $this->emailSetting['sender_signature'] ?? '',
             'copyright'     => $this->emailSetting['footer_text'] ?? '',
         ]);
+
+        if (!empty($this->attachments)) {
+            foreach ($this->attachments as $attachment) {
+                if (!empty($attachment['data']) && !empty($attachment['name'])) {
+                    $mail->attachData($attachment['data'], $attachment['name'], [
+                        'mime' => $attachment['mime'] ?? 'application/pdf',
+                    ]);
+                }
+            }
+        }
+
+        return $mail;
     }
 
     /**

@@ -145,7 +145,16 @@ class CompleteFreePurchaseJob implements ShouldQueue
                 }
 
                 if (!empty($emailData['courses']) || !empty($emailData['bookings'])) {
-                    dispatch(new SendNotificationJob('sessionBooking', $this->order?->orderBy, $emailData));
+                    $invoicePdf = $this->orderService->generateInvoicePdf($this->order->id);
+                    $attachments = [];
+                    if ($invoicePdf) {
+                        $attachments[] = [
+                            'data' => $invoicePdf,
+                            'name' => 'invoice-' . $this->order->id . '.pdf',
+                            'mime' => 'application/pdf',
+                        ];
+                    }
+                    dispatch(new SendNotificationJob('sessionBooking', $this->order?->orderBy, $emailData, $attachments));
                     dispatch(new SendDbNotificationJob('sessionBooking', $this->order?->orderBy, ['bookingLink' => route('student.bookings')]));
                 }
 

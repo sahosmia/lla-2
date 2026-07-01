@@ -204,7 +204,7 @@ class OrderService
         return $orders;
     }
 
-    public function getOrdeWrWithItem($id, $with = [])
+    public function getOrderWithItem($id, $with = [])
     {
         $order = Order::with($with)->find($id);
         if ($order) {
@@ -289,5 +289,21 @@ class OrderService
 
             return true;
         }
+    }
+
+    public function generateInvoicePdf($orderId)
+    {
+        $logo               = setting('_general.invoice_logo');
+        $company_logo       = !empty($logo[0]['path']) ? \Illuminate\Support\Facades\Storage::disk(getStorageDisk())->path($logo[0]['path']) : asset('demo-content/logo-default.svg');
+
+        $company_name       = setting('_general.company_name');
+        $company_email      = setting('_general.company_email');
+        $company_address    = setting('_general.company_address');
+        $invoice            = $this->getOrderWithItem($orderId, ['items', 'userProfile', 'countryDetails']);
+
+        if (empty($invoice)) {
+            return null;
+        }
+        return \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.invoice-list', compact('invoice', 'company_logo', 'company_name', 'company_email', 'company_address'))->output();
     }
 }
