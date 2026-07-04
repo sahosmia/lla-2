@@ -271,6 +271,7 @@ return [
     'explore_courses'                               => 'Explore our top-rated and most popular courses, handpicked to help you achieve your learning goals.',
     'create_course'                                 => 'Create Course',
     'active_courses'                                => 'Active Courses',
+    'edit_course'                                   => 'Edit Course',
     'draft_courses'                                 => 'Draft Courses',
     'inactive_courses'                              => 'In-Active Courses',
     'under_review'                                  => 'Under review',
