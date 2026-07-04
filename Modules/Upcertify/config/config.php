@@ -26,7 +26,7 @@ return [
     'wildcards'                     => [ 
         'tutor_name', 'student_name', 'gender', 'tutor_tagline', 'issued_by', 'platform_name','platform_email', 'meeting_platform', 'subject_name', 'subject_group_name', 
         'session_date', 'session_time', 'issue_date', 'student_email', 'tutor_email', 'session_fee',
-        'course_title', 'course_subtitle', 'course_category', 'course_subcategory', 'course_description', 'course_type', 'course_level',  'course_language', 'free_course',
+        'course_title', 'course_subtitle', 'course_category', 'course_subcategory', 'course_description', 'course_type', 'course_level', 'free_course',
         'course_price', 'course_discount' ,
     ]
 ];

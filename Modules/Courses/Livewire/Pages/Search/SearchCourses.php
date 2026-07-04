@@ -5,7 +5,6 @@ namespace Modules\Courses\Livewire\Pages\Search;
 use Modules\Courses\Models\Category;
 use Modules\Courses\Models\Course;
 use Modules\Courses\Services\CourseService;
-use App\Models\Language;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -19,7 +18,6 @@ class SearchCourses extends Component
     public $showClearFilters = false;
 
     public $perPage;
-    public $languages;
     public $levels;
     public $categories;
     public $totalCourses;
@@ -29,8 +27,6 @@ class SearchCourses extends Component
     public $user;
     #[Url]
     public $searchCategories    = [];
-    #[Url]
-    public $searchLanguages     = [];
 
     public $ratingCounts        = [];
     public $durationCounts      = [];
@@ -43,7 +39,6 @@ class SearchCourses extends Component
         'keyword'           => '',
         'category'          => '',
         'levels'            => [],
-        'languages'         => [],
         'per_page'          => '',
         'min_price'         => null,
         'max_price'         => null,
@@ -65,7 +60,6 @@ class SearchCourses extends Component
 
         $this->categories   = (new CourseService())->getCategories();
         $this->levels       = (new CourseService())->getLevels();
-        $this->languages    = (new CourseService())->getLanguages();
         $ratingCounts = (new CourseService())->getCourseByRating()
             ->pluck('average_rating')
             ->filter(function ($value) {
@@ -106,15 +100,13 @@ class SearchCourses extends Component
     {
         if (!empty($this->filters['keyword']) || 
             !empty($this->filters['levels']) ||
-            !empty($this->filters['languages']) ||
             !empty($this->filters['per_page']) ||
             !is_null($this->filters['min_price']) ||
             !is_null($this->filters['max_price']) ||
             $this->filters['sort'] !== 'desc' ||
             !empty($this->filters['avg_rating']) ||
             !empty($this->filters['duration']) ||
-            !empty($this->searchCategories) ||
-            !empty($this->searchLanguages)
+            !empty($this->searchCategories)
         ) {
             $this->showClearFilters = true;
         } else {
@@ -130,7 +122,6 @@ class SearchCourses extends Component
             with: [
                 'category',
                 'pricing',
-                'language',
                 'promotionalVideo',
                 'instructor',
                 'instructor.profile',
@@ -141,7 +132,7 @@ class SearchCourses extends Component
             withAvg: [
                 'ratings' => 'rating',
             ],
-            filters: array_merge($this->filters, ['categories' => $this->searchCategories, 'languages' => $this->searchLanguages, 'status' => 'active',]),
+            filters: array_merge($this->filters, ['categories' => $this->searchCategories, 'status' => 'active',]),
             perPage: $this->perPage
         );
 
@@ -194,12 +185,6 @@ class SearchCourses extends Component
         $this->resetPage();
     }
 
-    public function updatedSearchLanguages()
-    {
-        $this->toggleShowClearFilters();
-        $this->resetPage();
-    }
-
     public function resetFilters()
     {
 
@@ -208,7 +193,6 @@ class SearchCourses extends Component
             'keyword'       => '',
             'category'      => '',
             'levels'        => [],
-            'languages'     => [],
             'per_page'      => '',
             'min_price'     => null,
             'max_price'     => null,
@@ -217,7 +201,6 @@ class SearchCourses extends Component
             'duration'      => [],
         ];
 
-        $this->searchLanguages  = [];
         $this->searchCategories = [];
 
         $this->showClearFilters = false;

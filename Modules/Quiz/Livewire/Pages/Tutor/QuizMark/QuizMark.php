@@ -269,7 +269,6 @@ class QuizMark extends Component
             'course_subcategory' => $this->course?->subCategory?->name ?? '',
             'course_type'        => $this->course?->type ?? '',
             'course_level'       => $this->course?->level ?? '',
-            'course_language'    => $this->course?->language?->name ?? '',
             'free_course'        => $this->course?->is_free ? 'Yes' : 'No',
             'course_price'       => $this->course?->pricing?->price ? formatAmount($this->course?->pricing?->price) : '',
             'course_discount'    => $this->course?->pricing?->discount ? formatAmount($this->course?->pricing?->discount) : '',

@@ -1712,7 +1712,6 @@ class CoursesDatabaseSeeder extends Seeder
                 'type'                              => 'video',
                 'level'                             => ['beginner', 'intermediate', 'expert', 'all'][array_rand(['beginner', 'intermediate', 'expert', 'all'])],
                 'discussion_forum'                  => (bool)random_int(0, 1),
-                'language_id'                       => 23,
                 'learning_objectives'               => $courseData['learning_objectives'],
                 'prerequisites'                     => $courseData['prerequisites'],
                 'status'                            => 'active',

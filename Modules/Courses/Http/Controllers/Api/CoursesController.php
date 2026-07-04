@@ -8,7 +8,6 @@ use Modules\Courses\Http\Resources\CategoriesResource;
 use Modules\Courses\Http\Resources\CoursesCollection;
 use Modules\Courses\Http\Resources\EnrolledcoursesCollection;
 use Modules\Courses\Http\Resources\EnrolledcoursesResource;
-use Modules\Courses\Http\Resources\LanguageResource;
 use Symfony\Component\HttpFoundation\Response;
 use Modules\Courses\Services\CourseService;
 use Modules\Courses\Services\CurriculumService;
@@ -46,7 +45,7 @@ class CoursesController extends Controller
     {
       
         $allowedParams = [
-            'keyword', 'category', 'levels', 'languages', 'per_page', 
+            'keyword', 'category', 'levels', 'per_page',
             'min_price', 'max_price', 'sort', 'avg_rating', 'duration', 'page','pricing_type'
         ];
     
@@ -63,7 +62,7 @@ class CoursesController extends Controller
         $perPage = !empty($request->get('per_page')) ? $request->get('per_page') : 3;
 
         $courses = $this->courseService->getCourses(
-            with: ['category','pricing','language',
+            with: ['category','pricing',
                    'promotionalVideo','instructor',
                    'instructor.profile','likes',
                    'thumbnail',
@@ -138,11 +137,6 @@ class CoursesController extends Controller
         return $this->success(data: $price, code: Response::HTTP_OK);
     }
 
-    public function getLanguages(){
-        $languages = $this->courseService->getLanguages();
-        return $this->success(data: LanguageResource::collection($languages), code: Response::HTTP_OK);
-    }
-
     public function getCourseDetail($slug){
 
         $isCourseExist = $this->courseService->getCourseBySlug($slug);
@@ -155,12 +149,10 @@ class CoursesController extends Controller
             relations: [
                 'category',
                 'instructor',
-                'instructor.languages',
                 'instructor.profile',
                 'instructor.socialProfiles',
                 'instructor.address',
                 'subCategory',
-                'language',
                 'thumbnail',
                 'faqs',
                 'promotionalVideo',
@@ -240,12 +232,10 @@ class CoursesController extends Controller
             relations: [
                 'category',
                 'instructor',
-                'instructor.languages',
-                'instructor.profile:id,user_id,first_name,last_name,image,slug,tagline,gender,native_language,description,verified_at',
+                'instructor.profile:id,user_id,first_name,last_name,image,slug,tagline,gender,description,verified_at',
                 'instructor.socialProfiles',
                 'instructor.address',
                 'subCategory',
-                'language',
                 'thumbnail',
                 'promotionalVideo',
                 'pricing',

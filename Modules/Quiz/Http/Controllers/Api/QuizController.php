@@ -1243,7 +1243,6 @@ class QuizController extends Controller
             'course_subcategory' => $course?->subCategory?->name ?? '',
             'course_type'        => $course?->type ?? '',
             'course_level'       => $course?->level ?? '',
-            'course_language'    => $course?->language?->name ?? '',
             'free_course'        => $course?->is_free ? 'Yes' : 'No',
             'course_price'       => $course?->pricing?->price ? formatAmount($course?->pricing?->price) : '',
             'course_discount'    => $course?->pricing?->discount ? formatAmount($course?->pricing?->discount) : '',

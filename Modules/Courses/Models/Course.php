@@ -2,7 +2,6 @@
 
 namespace Modules\Courses\Models;
 
-use App\Models\Language;
 use App\Models\OrderItem;
 use App\Models\Rating;
 use App\Models\User;
@@ -48,7 +47,6 @@ class Course extends Model
         'tags',
         'learning_objectives',
         'prerequisites',
-        'language_id',
         'content_length',
         'meta_data',
         'created_at',
@@ -190,16 +188,6 @@ class Course extends Model
     public function subCategory(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'sub_category_id');
-    }
-
-    /**
-     * Get language.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
-     */
-    public function language(): BelongsTo
-    {
-        return $this->belongsTo(Language::class);
     }
 
     /**
