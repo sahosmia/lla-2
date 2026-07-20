@@ -11,7 +11,6 @@ use Modules\Courses\Models\Noticeboard;
 use Modules\Courses\Models\Promotion;
 use Modules\Courses\Models\Section;
 use App\Casts\OrderStatusCast;
-use App\Models\Language;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User;
@@ -546,7 +545,6 @@ class CourseService
             ->when(!empty($filters['statuses']), fn($query) => 
                 $query->whereIn('status', array_map(fn($status) => Course::STATUSES[$status], $filters['statuses']))
             )
-            ->when(!empty($filters['languages']), fn($query) => $query->whereIn('language_id', $filters['languages']))
             ->when(!empty($filters['min_price']), fn($query) => 
                 $query->whereHas('pricing', fn($q) => $q->where('final_price', '>=', $filters['min_price']))
             )
@@ -858,7 +856,6 @@ class CourseService
             ->with([
                 'category',
                 'pricing',
-                'language',
                 'promotionalVideo',
                 'instructor',
                 'instructor.profile',
@@ -870,7 +867,7 @@ class CourseService
     public function getUser($userId)
     {
         $user = User::where('id', $userId)
-            ->with(['profile:id,user_id,slug,first_name,last_name,image,native_language',
+            ->with(['profile:id,user_id,slug,first_name,last_name,image',
                     'address:id,addressable_id,addressable_type,country_id'])
             ->withAvg('reviews', 'rating')
             ->first();
@@ -928,14 +925,6 @@ class CourseService
         }
 
         return $levels;
-    }
-
-    public function getLanguages(){
-
-        $languages    = Language::withCount('activeCourses')->whereStatus('active')->get();
-        $languages    = $languages->sortByDesc('active_courses_count')->values();
-        
-        return $languages;
     }
 
     public function getCourseBySlug($slug){

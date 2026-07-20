@@ -27,9 +27,7 @@ return [
     'select_a_category'                             => 'Select a category',
     'select_a_subcategory'                          => 'Select a subcategory',
     'select_level'                                  => 'Select level',
-    'select_language'                               => 'Select language',
     'level'                                         => 'Level',
-    'language'                                      => 'Language',
     'course_description'                            => 'Course Description',
     'enter_course_description'                      => 'Enter course description',
      'course_validity'                               => 'Course Validity',
@@ -338,7 +336,6 @@ return [
     'course_duration'                               => 'Course Duration',
     'duration_hour'                                 => ':duration Hour',
 
-    'course_language'                               => 'Course Language',
     'course_level'                                  => 'Course Level',
     'add_to_cart'                                   => 'Add to Cart',
     'buy_now'                                       => 'Buy Now',

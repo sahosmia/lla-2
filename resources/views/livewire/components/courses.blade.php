@@ -31,10 +31,10 @@
                                                 <div class="cr-info-item">
                                                     <span><em>{{ $course?->curriculums?->count() }}</em> {{ __('general.lessons') }}</span>
                                                 </div>
-                                                <div class="cr-info-item">
+                                                {{-- <div class="cr-info-item">
                                                     <i class="am-icon-globe"></i>
                                                     <span>{{ $course?->language?->name }}</span>
-                                                </div>
+                                                </div> --}}
                                                 <div class="cr-info-item">
                                                     <i class="am-icon-time"></i>
                                                     @if (!empty($course?->content_length))
@@ -132,11 +132,11 @@
                                                     <span>{{ __('courses::courses.level') }}</span>
                                                     <em>{{ __('courses::courses.'. $course->level) }}</em>
                                                 </div>
-                                                <div class="cr-info-item">
+                                                {{-- <div class="cr-info-item">
                                                     <i class="am-icon-globe"></i>
                                                     <span>{{ __('courses::courses.language') }}</span>
                                                     <em>{{ $course?->language?->name }}</em>
-                                                </div>
+                                                </div> --}}
                                             </div>
                                             <div class="cr-price-wrap">
                                                 @auth
@@ -199,11 +199,11 @@
                                                 <span>{{ __('courses::courses.level') }}</span>
                                                 <em>{{ __('courses::courses.'. $course->level) }}</em>
                                             </div>
-                                            <div class="cr-info-item">
+                                            {{-- <div class="cr-info-item">
                                                 <i class="am-icon-globe"></i>
                                                 <span>{{ __('courses::courses.language') }}</span>
                                                 <em>{{ $course?->language?->name }}</em>
-                                            </div>
+                                            </div> --}}
                                             <div class="cr-info-item">
                                                 <i class="am-icon-time"></i>
                                                 <span>{{ __('courses::courses.duration') }}</span>

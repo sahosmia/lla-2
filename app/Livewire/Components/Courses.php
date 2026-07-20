@@ -41,7 +41,7 @@ class Courses extends Component
         return Course::with([
             'category',
             'pricing',
-            'language',
+            // 'language',
             'promotionalVideo',
             'instructor',
             'instructor.profile',

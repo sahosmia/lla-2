@@ -17,23 +17,4 @@ class Language extends Model {
     protected static function booted() {
         static::addGlobalScope(new ActiveScope);
     }
-    /**
-     * Get all courses for the language
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function courses(): HasMany
-    {
-        return $this->hasMany(\Modules\Courses\Models\Course::class);
-    }
-
-    /**
-     * Get all active courses for the language
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function activeCourses(): HasMany
-    {
-        return $this->hasMany(\Modules\Courses\Models\Course::class)->where('status', \Modules\Courses\Models\Course::STATUSES['active']);
-    }
 }

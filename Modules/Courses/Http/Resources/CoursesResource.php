@@ -48,12 +48,6 @@ class CoursesResource extends JsonResource
                 ];
             }),
 
-            'language'              => $this->whenLoaded('language', function () {
-                return [
-                    'name'          => $this->language?->name ?? null,
-                ];
-            }),
-
             'thumbnail'             => $this->whenLoaded('thumbnail', function () {
                 return [    
                     'url'           => $this->thumbnail?->path ? url(Storage::url($this->thumbnail?->path)) : url(Storage::url('placeholder.png')),

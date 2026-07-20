@@ -29,13 +29,11 @@ class CourseList extends Component
     public $showClearFilters = false;
 
   
-    public $languages;
     public $levels;
     public $categories;
     public $totalCourses;
     public $paidCourses;
     public $searchCategories    = [];
-    public $searchLanguages     = [];
     public $ratingCounts        = [];
     public $durationCounts      = [];
     public $priceTypeCounts     = [];

@@ -2,7 +2,6 @@
 
 namespace Modules\Courses\Livewire\Pages\Tutor\CourseCreation\Components;
 
-use App\Models\Language;
 use App\Traits\PrepareForValidation;
 use Illuminate\Support\Facades\Auth;
 use Modules\Courses\Http\Requests\CourseBasicDetailRequest;
@@ -24,9 +23,7 @@ class CourseBasicDetails extends Component
     public $tags = [];
     public $type;
     public $level;
-    public $language_id;
     public $categories;
-    public $languages;
     public $validity;
     public $validity_type;
     public $levels;
@@ -46,7 +43,6 @@ class CourseBasicDetails extends Component
         $this->courseId = request()->route('id');
    
         $this->categories   = Category::whereParentId(null)->whereNull('deleted_at')->get();
-        $this->languages    = Language::all();
         $this->levels       = Course::LEVEL;
         $this->types        = [
             'video'             => 1,
@@ -90,7 +86,6 @@ class CourseBasicDetails extends Component
         $this->tags                     = $course->tags;
         $this->type                     = $course->type;
         $this->level                    = $course->level;
-        $this->language_id              = $course->language_id;
         $this->template_id              = $course?->certificate_id ?? '';
         $this->assign_quiz_certificate  = !empty($course?->meta_data['assign_quiz_certificate']) ? $course?->meta_data['assign_quiz_certificate'] : 'any';
         $this->learning_objectives      = !empty($course->learning_objectives) ?  $course->learning_objectives : [''];

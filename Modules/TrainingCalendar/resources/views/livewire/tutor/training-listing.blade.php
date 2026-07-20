@@ -53,7 +53,8 @@
 
     <div class="am-quizsearuch_header">
         <div class="am-quizlist_search">
-            <input type="text" wire:model.live.debounce.400ms="keyword" class="form-control" placeholder="{{ __('general.search') }}">
+            <input type="text" wire:model.live.debounce.400ms="keyword" class="form-control"
+                placeholder="{{ __('general.search') }}">
             <i class="am-icon-search-02"></i>
         </div>
         <div class="am-slots_wrap">
@@ -64,7 +65,8 @@
                     </button>
                 </li>
                 <li>
-                    <button wire:click="$set('status', 'published')" class="{{ $status === 'published' ? 'active' : '' }}">
+                    <button wire:click="$set('status', 'published')"
+                        class="{{ $status === 'published' ? 'active' : '' }}">
                         {{ __('trainingcalendar::trainingcalendar.published') }}
                     </button>
                 </li>
@@ -74,7 +76,8 @@
                     </button>
                 </li>
                 <li>
-                    <button wire:click="$set('status', 'cancelled')" class="{{ $status === 'cancelled' ? 'active' : '' }}">
+                    <button wire:click="$set('status', 'cancelled')"
+                        class="{{ $status === 'cancelled' ? 'active' : '' }}">
                         {{ __('trainingcalendar::trainingcalendar.cancelled') }}
                     </button>
                 </li>
@@ -83,80 +86,105 @@
     </div>
 
     <div class="am-table-area">
-        <div class="am-courses-table">
-            @if(!$isLoading)
-                @if($trainings->isNotEmpty())
-                    <table class="am-table">
-                    <thead>
-                        <tr>
-                            <th>{{ __('trainingcalendar::trainingcalendar.title') }}</th>
-                            <th>{{ __('trainingcalendar::trainingcalendar.type') }}</th>
-                            <th>{{ __('trainingcalendar::trainingcalendar.event_datetime') }}</th>
-                            <th>{{ __('trainingcalendar::trainingcalendar.registrations') }}</th>
-                            <th>{{ __('trainingcalendar::trainingcalendar.price') }}</th>
-                            <th>{{ __('trainingcalendar::trainingcalendar.status') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($trainings as $training)
-                            <tr>
-                                <td data-label="{{ __('trainingcalendar::trainingcalendar.title') }}">
-                                    <div class="cr-image-and-text">
-                                        <figure>
-                                            <img src="{{ asset('modules/trainingcalendar/images/training-placeholder.png') }}" alt="training image" onerror="this.src='{{ asset('demo-content/placeholders/placeholder.png') }}'">
-                                        </figure>
-                                        {{ $training->title }}
+        @if (!$isLoading)
+            @if ($trainings->isNotEmpty())
+                <div class="cr-allcourses_list">
+                    @foreach ($trainings as $training)
+                        <div class="cr-card">
+                            {{-- <figure class="cr-image-wrapper">
+                                <img src="{{ asset('modules/trainingcalendar/images/training-placeholder.png') }}"
+                                    alt="{{ $training->title }}" class="cr-background-image"
+                                    onerror="this.src='{{ asset('demo-content/placeholders/placeholder.png') }}'">
+                                <figcaption>
+                                    <span class="am-quizstatus am-quizstatus_published">
+                                        {{ ucfirst($training->type) }}
+                                    </span>
+                                </figcaption>
+                            </figure> --}}
+                            <div class="cr-course-card">
+                                <div class="cr-course-header">
+                                    <a class="cr-course-title"
+                                        href="{{ route('trainingcalendar.tutor.edit', $training->id) }}">{{ $training->title }}</a>
+                                    <div class="cr-course-category">
+                                        <span>
+                                            <i class="am-icon-calender-day"></i>
+                                            {{ $training->event_datetime?->format('M d, Y • h:i A') }}
+                                        </span>
                                     </div>
-                                </td>
-                                <td data-label="{{ __('trainingcalendar::trainingcalendar.type') }}">{{ ucfirst($training->type) }}</td>
-                                <td data-label="{{ __('trainingcalendar::trainingcalendar.event_datetime') }}">{{ $training->event_datetime?->format('M d, Y • h:i A') }}</td>
-                                <td data-label="{{ __('trainingcalendar::trainingcalendar.registrations') }}">{{ $training->paid_registrations_count }} / {{ $training->max_seats ?? '∞' }}</td>
-                                <td data-label="{{ __('trainingcalendar::trainingcalendar.price') }}">{{ formatAmount($training->price) }}</td>
-                                <td data-label="{{ __('trainingcalendar::trainingcalendar.status') }}">
-                                    <div class="cr-status-wrap">
+                                    <div class="cr-course-category mt-2">
+                                        <span>
+                                            <i class="am-icon-user-01"></i>
+                                            {{ $training->paid_registrations_count }} /
+                                            {{ $training->max_seats ?? '∞' }}
+                                            {{ __('trainingcalendar::trainingcalendar.registrations') }}
+                                        </span>
+                                    </div>
+                                    <div class="cr-course-category mt-2">
+                                        <span class="am-quizstatus am-quizstatus_published">
+                                            {{ ucfirst($training->type) }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="cr-status-wrap mt-3">
+                                    <div class="cr-course-category">
+                                        <span class="cr-price"
+                                            style="font-size: 15px; font-weight: 700; color: #272727;">
+                                            {{ formatAmount($training->price) }}
+                                        </span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
                                         @php
-                                            $dotClass = match ($training->status) {
-                                                'published' => 'active',
-                                                'draft' => '',
-                                                'cancelled' => 'cancelled',
-                                                default => '',
-                                            };
                                             $dotColor = match ($training->status) {
                                                 'published' => '#008000',
                                                 'draft' => '#ff9f43',
                                                 'cancelled' => '#ff4d4f',
                                                 default => '#585858',
                                             };
+                                            $dotClass = match ($training->status) {
+                                                'published' => 'active',
+                                                'draft' => '',
+                                                'cancelled' => 'cancelled',
+                                                default => '',
+                                            };
                                         @endphp
                                         <span class="cr-status">
-                                            <span style="background-color: {{ $dotColor }};" class="cr-dot {{ $dotClass }}"></span>
+                                            <span style="background-color: {{ $dotColor }};"
+                                                class="cr-dot {{ $dotClass }}"></span>
                                             {{ ucfirst($training->status) }}
                                         </span>
                                         <div class="am-itemdropdown">
-                                            <a href="javascript:void(0);" id="am-itemdropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <a href="javascript:void(0);" id="am-itemdropdown" data-bs-toggle="dropdown"
+                                                aria-haspopup="true" aria-expanded="false">
                                                 <i class="am-icon-ellipsis-vertical-02"></i>
                                             </a>
-                                            <ul class="am-itemdropdown_list dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                            <ul class="am-itemdropdown_list dropdown-menu"
+                                                aria-labelledby="dropdownMenuLink">
                                                 <li>
-                                                    <a href="{{ route('trainingcalendar.tutor.edit', $training->id) }}">
+                                                    <a
+                                                        href="{{ route('trainingcalendar.tutor.edit', $training->id) }}">
                                                         <i class="am-icon-pencil-02"></i>
                                                         {{ __('trainingcalendar::trainingcalendar.update') }}
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a href="{{ route('trainingcalendar.tutor.registrations', $training->id) }}">
+                                                    <a
+                                                        href="{{ route('trainingcalendar.tutor.registrations', $training->id) }}">
                                                         <i class="am-icon-user-01"></i>
                                                         {{ __('trainingcalendar::trainingcalendar.view_registrations') }}
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a href="{{ route('trainingcalendar.tutor.send-notice', $training->id) }}">
+                                                    <a
+                                                        href="{{ route('trainingcalendar.tutor.send-notice', $training->id) }}">
                                                         <i class="am-icon-email"></i>
                                                         {{ __('trainingcalendar::trainingcalendar.send_notice') }}
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a href="javascript:void(0);" wire:click="deleteTraining({{ $training->id }})" wire:confirm="{{ __('trainingcalendar::trainingcalendar.confirm_delete') }}" class="am-del-btn">
+                                                    <a href="javascript:void(0);"
+                                                        wire:click="deleteTraining({{ $training->id }})"
+                                                        wire:confirm="{{ __('trainingcalendar::trainingcalendar.confirm_delete') }}"
+                                                        class="am-del-btn">
                                                         <i class="am-icon-trash-02"></i>
                                                         {{ __('trainingcalendar::trainingcalendar.delete') }}
                                                     </a>
@@ -164,31 +192,42 @@
                                             </ul>
                                         </div>
                                     </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                        </tbody>
-                    </table>
-                    <div class="am-pagination am-quiz-pagination">
-                        {{ $trainings->links('pagination.custom') }}
-                    </div>
-                @else
-                    <div class="am-emptyview">
-                        <figure class="am-emptyview_img">
-                            <img src="{{ asset('modules/quiz/images/quiz-list/empty.png') }}" alt="img description">
-                        </figure>
-                        <div class="am-emptyview_title">
-                            <h3>{{ __('trainingcalendar::trainingcalendar.no_trainings') }}</h3>
-                            <p>{{ __('trainingcalendar::trainingcalendar.no_trainings_found_desc') }}</p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                @endif
+                    @endforeach
+                </div>
+                <div class="am-pagination am-quiz-pagination mt-4">
+                    {{ $trainings->links('pagination.custom') }}
+                </div>
             @else
-                <div class="am-quizlist_wrap">
-                    @include('quiz::skeletons.quiz-listing-skeleton', ['total' => 10])
+                <div class="am-emptyview">
+                    <figure class="am-emptyview_img">
+                        <img src="{{ asset('modules/quiz/images/quiz-list/empty.png') }}" alt="img description">
+                    </figure>
+                    <div class="am-emptyview_title">
+                        <h3>{{ __('trainingcalendar::trainingcalendar.no_trainings') }}</h3>
+                        <p>{{ __('trainingcalendar::trainingcalendar.no_trainings_found_desc') }}</p>
+                    </div>
                 </div>
             @endif
-        </div>
+        @else
+            <div class="cr-allcourses_list">
+                @for ($i = 0; $i < 8; $i++)
+                    <div class="cr-card cr-card-skeleton">
+                        <div class="cr-image-wrapper" style="height: 180px; background: #eee;"></div>
+                        <div class="cr-course-card">
+                            <div class="cr-course-header">
+                                <div style="width: 100%; height: 20px; background: #eee; margin-bottom: 10px;"></div>
+                                <div style="width: 60%; height: 15px; background: #eee; margin-bottom: 10px;"></div>
+                                <div style="width: 40%; height: 15px; background: #eee;"></div>
+                            </div>
+                            <div style="width: 100%; height: 30px; background: #eee; margin-top: 20px;"></div>
+                        </div>
+                    </div>
+                @endfor
+            </div>
+        @endif
     </div>
 </div>
 
@@ -199,11 +238,53 @@
         .am-training-list .cr-stats-arae {
             margin-bottom: 30px;
         }
-        .am-training-list .am-table .cr-image-and-text figure img {
-            width: 40px;
-            height: 40px;
-            border-radius: 4px;
+
+        .am-training-list .cr-image-wrapper img {
             object-fit: cover;
+            height: 180px;
+            width: 100%;
+        }
+
+        .am-training-list .am-quizstatus {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #e6f9f1;
+            color: #00b96b;
+        }
+
+        .am-training-list .cr-status-wrap {
+            display: flex;
+
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+
+        .cr-card ul li,
+        .cr-card-skeleton ul li {
+            font-size: 14px;
+            margin-bottom: 8px;
+            padding-left: 8px;
+            position: relative;
+        }
+
+        .cr-card ul li::before,
+        .cr-card-skeleton ul li::before {
+
+            display: none
+        }
+
+        .cr-allcourses_list .cr-card .cr-course-card .cr-course-header .cr-course-category span,
+        .cr-allcourses_list .cr-card-skeleton .cr-course-card .cr-course-header .cr-course-category span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
     </style>
 @endpush

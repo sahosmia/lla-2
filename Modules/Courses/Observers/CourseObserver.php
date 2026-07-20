@@ -13,22 +13,43 @@ class CourseObserver
      * @param  \Modules\Courses\Models\Course  $course
      * @return void
      */
-    public function created(Course $course)
+    public function creating(Course $course)
     {
-        $slug            = Str::slug($course->title);
-        $course->slug    = $this->uniqueSlug($slug, $course);
+        if (empty($course->slug)) {
+            $course->slug = Str::slug($course->title);
+        }
+        $course->slug = $this->uniqueSlug($course->slug);
+    }
 
-        $course->save();
+    /**
+     * Handle the Course "updating" event.
+     *
+     * @param  \Modules\Courses\Models\Course  $course
+     * @return void
+     */
+    public function updating(Course $course)
+    {
+        if ($course->isDirty('slug')) {
+            $course->slug = $this->uniqueSlug($course->slug, $course->id);
+        }
     }
 
     /**
      * Create unique slug automatically
      * @return string unique slug
      */
-    protected function uniqueSlug($slug, $course)
+    protected function uniqueSlug($slug, $ignoreId = null)
     {
-        if (Course::whereSlug($slug)->whereNot('id', $course->id)->exists()) {
-            $slug = $slug . "-" . $course->id;
+        $originalSlug = $slug;
+        $counter = 1;
+        while (Course::withTrashed()
+            ->where('slug', $slug)
+            ->when($ignoreId, function ($query, $ignoreId) {
+                return $query->where('id', '!=', $ignoreId);
+            })
+            ->exists()) {
+            $slug = $originalSlug . '-' . $counter;
+            $counter++;
         }
         return $slug;
     }

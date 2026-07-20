@@ -96,12 +96,10 @@ class CourseDetails extends Component
             relations: [
                 'category',
                 'instructor',
-                'instructor.languages',
                 'instructor.profile',
                 'instructor.socialProfiles',
                 'instructor.address',
                 'subCategory',
-                'language',
                 'thumbnail',
                 'promotionalVideo',
                 'pricing',

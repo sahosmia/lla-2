@@ -5,6 +5,7 @@
 /storage/*.key
 /vendor
 .env
+.sql
 .env.backup
 .env.production
 chatter.log
@@ -23,6 +24,7 @@ chatter.log
 
 *.zip
 *.rar
+*.sql
 /storage/app/livewire-tmp/*
 /storage/app/public/courses/*
 /storage/app/public/curriculum_videos/*

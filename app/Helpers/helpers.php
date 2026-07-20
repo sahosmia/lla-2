@@ -434,8 +434,15 @@ if (!function_exists('profileImageUrl')) {
 
     function profileImageUrl(?string $path, int $width = 36, int $height = 36): string
     {
-        if (!empty($path) && Storage::disk(getStorageDisk())->exists($path)) {
-            return resizedImage($path, $width, $height);
+        if (!empty($path)) {
+            $disk = getStorageDisk();
+            if (Storage::disk($disk)->exists($path)) {
+                return resizedImage($path, $width, $height);
+            }
+            // Fallback: check public disk in case files were stored locally
+            if ($disk !== 'public' && Storage::disk('public')->exists($path)) {
+                return resizedImage($path, $width, $height);
+            }
         }
 
         $default = setting('_general.default_avatar_for_user');

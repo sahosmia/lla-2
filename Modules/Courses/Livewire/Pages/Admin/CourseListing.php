@@ -53,7 +53,7 @@ class CourseListing extends Component
     #[Layout('layouts.admin-app')]
     public function render()
     {
-        $with       = ['category:id,name', 'subCategory:id,name', 'language:id,name', 'instructor.profile:id,user_id,first_name,last_name,verified_at'];
+        $with       = ['category:id,name', 'subCategory:id,name', 'instructor.profile:id,user_id,first_name,last_name,verified_at'];
         $courses    = $this->courseService->getCourses(with: $with, filters: $this->filters);
 
         return view('courses::livewire.admin.course-listing', [

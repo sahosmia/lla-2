@@ -20,12 +20,6 @@
                     <h3>{{$user?->profile?->full_name}}</h3>
                 </div>
                 <ul class="am-resume_item_info">
-                    <li>
-                        <span>
-                            <i class="am-icon-book-1"></i>
-                            {{ $user?->profile?->native_language }}
-                        </span>
-                    </li>
                     @if ($user?->address?->country?->short_code)
                     <li>
                         <span>
@@ -230,31 +224,6 @@
                                 </div>
                             @endif
                         </div>
-                        @if (!empty($languages))
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="panelsStayOpen-headingSix">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseSix" aria-expanded="true" aria-controls="panelsStayOpen-collapseSix">
-                                        {{ __('courses::courses.language') }}
-                                        <i class="am-icon-chevron-down"></i>
-                                    </button>
-                                </h2>
-                                <div wire:ignore id="panelsStayOpen-collapseSix" class="accordion-collapse collapse show" aria-labelledby="panelsStayOpen-headingSix">
-                                    <div class="accordion-body">
-                                        <div class="cr-filter-options">
-                                            @foreach ($languages as $language)
-                                                <div class="cr-filter-option">
-                                                    <input wire:model.live="searchLanguages" type="checkbox" value="{{ $language->id }}" id="language-{{ $language->id }}" class="cr-checkbox" aria-label="{{ $language->name }}">
-                                                    <label for="language-{{ $language->id }}" class="cr-option-details">
-                                                        <span class="cr-option-label">{{ $language->name }}</span>
-                                                    </label>
-                                                    <span class="cr-option-count">({{ number_format($language->active_courses_count) }})</span>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
                     </div>
                 </div>
                 @if ($showClearFilters)
@@ -312,10 +281,10 @@
                         @include('courses::skeletons.search-courses', ['total' => 6])
                     </div>
                 @else
-                    <div class="d-none row" wire:loading.class.remove="d-none" wire:target="updateFiltersAvgRating, perPage, searchCategories, searchLanguages, ratingCounts, durationCounts, priceTypeCounts, filters">
+                    <div class="d-none row" wire:loading.class.remove="d-none" wire:target="updateFiltersAvgRating, perPage, searchCategories, ratingCounts, durationCounts, priceTypeCounts, filters">
                         @include('courses::skeletons.search-courses',  ['total' => 6])
                     </div>
-                    <div wire:loading.class="d-none" class="cr-search-list-container" wire:target="updateFiltersAvgRating, perPage, searchCategories, searchLanguages, ratingCounts, durationCounts, priceTypeCounts, filters">
+                    <div wire:loading.class="d-none" class="cr-search-list-container" wire:target="updateFiltersAvgRating, perPage, searchCategories, ratingCounts, durationCounts, priceTypeCounts, filters">
                         @if ($courses->isNotEmpty())  
                             <div class="gy-4 row">
                                 @foreach ($courses as $course)
@@ -429,10 +398,6 @@
                                                         <div class="cr-info-item">
                                                             <i class="am-icon-bar-chart-04"></i>
                                                             <span>{{ __('courses::courses.'. $course->level) }}</span>
-                                                        </div>
-                                                        <div class="cr-info-item">
-                                                            <i class="am-icon-dribbble-01"></i>
-                                                            <span>{{ $course->language->name }}</span>
                                                         </div>
                                                     </div>
                                                     <div class="cr-lesson-count">

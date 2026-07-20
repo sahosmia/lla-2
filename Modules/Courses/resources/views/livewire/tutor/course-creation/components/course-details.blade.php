@@ -192,20 +192,6 @@
                                 </span>
                                 <x-input-error field_name='level' />
                             </div>
-                            <div class="form-contro_wrap @error('language_id') cr-invalid @enderror">
-                                <x-input-label class="am-important" for="language">{{ __('courses::courses.language') }}</x-input-label>
-                                <span class="am-select" wire:ignore>
-                                    <select class="am-select2" data-placeholder="{{ __('courses::courses.select_language') }}" data-componentid="@this" data-live="true" data-searchable="true" id="language" data-wiremodel="language_id">
-                                        <option></option>
-                                    @if (!empty($languages))
-                                        @foreach($languages as $language)
-                                            <option wire:key="{{ $language->id }}" value="{{ $language->id }}" @if ($language_id === $language->id) selected @endif>{{ $language->name }}</option>
-                                        @endforeach
-                                    @endif
-                                    </select>
-                                </span>
-                                <x-input-error field_name='language_id' />
-                            </div>
                         </div>
                     </div>
                     <div class="form-group" wire:sortable="updateLearningObjectivePosition">

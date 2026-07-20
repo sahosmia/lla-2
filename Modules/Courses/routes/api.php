@@ -6,7 +6,6 @@ use Modules\Courses\Http\Controllers\Api\CoursesController;
 
 Route::get('courses',                     [CoursesController::class, 'getCourses']);
 Route::get('categories',                  [CoursesController::class, 'getCategories']);
-Route::get('languages',                   [CoursesController::class, 'getLanguages']);
 Route::get('levels',                      [CoursesController::class, 'getLevels']);
 Route::get('prices',                      [CoursesController::class, 'getPrices']);
 Route::get('ratings',                     [CoursesController::class, 'getRatings']);

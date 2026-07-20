@@ -24,7 +24,6 @@ return [
     'course_subcategory'                            => "Course subcategory",
     'course_type'                                   => "Course type",
     'course_level'                                  => "Course level",
-    'course_language'                               => "Course language",
     'free_course'                                   => "Free course",
     'course_price'                                  => "Course price",
     'course_discount'                               => "Course discount",

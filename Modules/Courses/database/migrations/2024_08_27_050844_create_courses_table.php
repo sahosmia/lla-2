@@ -26,7 +26,6 @@ return new class extends Migration {
             $table->unsignedTinyInteger('type')->default(1);
             $table->unsignedTinyInteger('level')->default(1);
             $table->unsignedTinyInteger('discussion_forum')->default(0);
-            $table->unsignedBigInteger('language_id');
             $table->json('learning_objectives')->nullable();
             $table->text('prerequisites')->nullable();
             $table->unsignedTinyInteger('status')->default(1);

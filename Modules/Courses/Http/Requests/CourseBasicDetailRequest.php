@@ -24,7 +24,6 @@ class CourseBasicDetailRequest extends FormRequest
             'tags.*'                => 'required|string',
             'type'                  => 'required|in:video,audio,live,article,all',
             'level'                 => 'required|in:beginner,intermediate,expert,all',
-            'language_id'           => 'required|exists:languages,id',
             'learning_objectives'   => 'nullable|array',
             'learning_objectives.*' => 'string',
             'validity'              => 'nullable|integer|min:1',
@@ -43,7 +42,6 @@ class CourseBasicDetailRequest extends FormRequest
             'type'              => 'course type',
             'category_id'       => 'category',
             'sub_category_id'   => 'sub category',
-            'language_id'       => 'language',
         ];
     }
 }

@@ -484,25 +484,6 @@
                                                     </div>
                                                 </div>
                                             @endif
-                                            @if (!empty($course->language))
-                                                <div class="cr-stat-item">
-                                                    <div class="cr-stat-icon-wrapper">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="15"
-                                                            height="16" viewBox="0 0 15 16" fill="none">
-                                                            <path opacity="0.7"
-                                                                d="M13.75 8C13.75 11.4518 10.9518 14.25 7.5 14.25M13.75 8C13.75 4.54822 10.9518 1.75 7.5 1.75M13.75 8C13.75 6.61929 10.9518 5.5 7.5 5.5C4.04822 5.5 1.25 6.61929 1.25 8M13.75 8C13.75 9.38071 10.9518 10.5 7.5 10.5C4.04822 10.5 1.25 9.38071 1.25 8M7.5 14.25C4.04822 14.25 1.25 11.4518 1.25 8M7.5 14.25C8.88071 14.25 10 11.4518 10 8C10 4.54822 8.88071 1.75 7.5 1.75M7.5 14.25C6.11929 14.25 5 11.4518 5 8C5 4.54822 6.11929 1.75 7.5 1.75M1.25 8C1.25 4.54822 4.04822 1.75 7.5 1.75"
-                                                                stroke="#585858" stroke-width="1.25"
-                                                                stroke-linecap="round" stroke-linejoin="round" />
-                                                        </svg>
-                                                    </div>
-                                                    <div class="cr-stat-content">
-                                                        <span
-                                                            class="cr-stat-label">{{ __('courses::courses.language') }}</span>
-                                                        <span
-                                                            class="cr-stat-value">{{ $course->language?->name }}</span>
-                                                    </div>
-                                                </div>
-                                            @endif
                                             <div class="cr-stat-item">
                                                 <div class="cr-stat-icon-wrapper">
                                                     <i class="am-icon-user-group"></i>
@@ -861,53 +842,6 @@
                                             <span> {{ number_format($this->instructorCoursesCount) }}
                                                 <em>{{ $this->instructorCoursesCount == 1 ? __('courses::courses.course') : __('courses::courses.courses') }}</em></span>
                                         </div>
-                                    </li>
-                                    <li>
-                                        <div class="am-tutorreview-item">
-                                            <div class="am-tutorreview-item_icon">
-                                                <i class="am-icon-megaphone-01"></i>
-                                            </div>
-                                            <span> <em>{{ __('courses::courses.i_can_speak') }}</em></span>
-                                        </div>
-                                        @if (!empty($course->instructor->languages))
-                                            <div class="am-tutorreview-item">
-                                                <div class="wa-tags-list">
-                                                    <ul x-data="{ open: false }">
-                                                        @if (!empty($course->instructor->profile?->native_language))
-                                                            <li>
-                                                                <span>
-                                                                    {{ ucfirst($course->instructor->profile->native_language) }}
-                                                                    <em>{{ __('courses::courses.native') }}</em>
-                                                                </span>
-                                                            </li>
-                                                        @endif
-
-                                                        @foreach ($course->instructor->languages as $index => $language)
-                                                            @if ($index < 2)
-                                                                <li><span>{{ ucfirst($language->name) }}</span></li>
-                                                            @else
-                                                                <li x-show="open">
-                                                                    <span>{{ ucfirst($language->name) }}</span></li>
-                                                            @endif
-                                                        @endforeach
-
-                                                        @if ($course->instructor->languages->count() > 2)
-                                                            <li>
-                                                                <a href="javascript:void(0);" @click="open = !open">
-                                                                    <span x-show="!open">
-                                                                        +{{ $course->instructor->languages->count() - 2 }}
-                                                                        {{ __('courses::courses.more') }}
-                                                                    </span>
-                                                                    <span x-show="open">
-                                                                        {{ __('courses::courses.show_less') }}
-                                                                    </span>
-                                                                </a>
-                                                            </li>
-                                                        @endif
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        @endif
                                     </li>
                                 </ul>
                                 @if (!empty($course->instructor?->profile?->description))
