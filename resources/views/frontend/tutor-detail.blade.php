@@ -351,10 +351,6 @@
                                                                     <i class="am-icon-bar-chart-04"></i>
                                                                     <span>{{ __('courses::courses.'. $course->level) }}</span>
                                                                 </div>
-                                                                <div class="cr-info-item">
-                                                                    <i class="am-icon-dribbble-01"></i>
-                                                                    <span>{{ $course->language->name }}</span>
-                                                                </div>
                                                             </div>
                                                             <div class="cr-lesson-count">
                                                                 <i class="am-icon-book-1"></i>

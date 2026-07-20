@@ -118,17 +118,6 @@
                                     <option value="desc" {{ (($filters['sort_by'] ?? '') == 'desc' ? 'selected' : '') }}>{{ __('general.sort_by_z_a') }}</option>
                                 </select>
                             </span>
-                            <span class="am-select am-languageselect">
-                                <span class="am-select_title">{{ __('general.language') }}:</span>
-                                <select class="am-select2" id="language_id" data-searchable="true" multiple
-                                    data-class="am-sort_dp_option" data-placeholder="{{ __('general.select_lang') }}">
-                                    <option> </option>
-                                    @foreach ($languages as $lang)
-                                    <option value="{{ $lang->id }}" {{ in_array($lang->id, $filters['language_id'] ??
-                                        []) ? 'selected' : '' }}>{{ $lang->name }}</option>
-                                    @endforeach
-                                </select>
-                            </span>
                         </div>
                     </div>
                 </div>
@@ -297,7 +286,6 @@
                     $('#group_id')?.val(null).trigger('change');
                     $('#subject_id')?.val(null).trigger('change');
                     $('#tutor_country')?.val(null)?.trigger('change');
-                    $('#language_id')?.val(null)?.trigger('change');
                     $('#clear_filters').parent().addClass('d-none');
                     applySearchFilter(false);
                     let newUrl = `${window.location.pathname}`;
@@ -328,15 +316,6 @@
                     applySearchFilter()
                 });
 
-                jQuery(document).on('change', '#language_id', function (e){
-                    let value = $('#language_id').select2("val");
-                    if(value?.length > 0){
-                        filter_record['language_id'] = value[0]?.length > 0 ? value : [];
-                    } else {
-                        filter_record['language_id'] = [];
-                    }
-                    applySearchFilter()
-                });
 
                 
                
