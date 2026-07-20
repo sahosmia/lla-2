@@ -69,18 +69,6 @@ new class extends Component
                     ],
                 ],
             ],
-            [
-                'title' => __('sidebar.taxonomies'),
-                'icon'  => 'icon-database',
-                'routes' => [
-                    [
-                        'route' => 'admin.taxonomy.languages',
-                        'title' => __('sidebar.languages'),
-                        'permission' => 'can-manage-languages',
-                    ],
-                
-                ],
-            ],
             // [
             //     'title' => __('general.language_translations'),
             //     'icon'  => 'icon-globe',
