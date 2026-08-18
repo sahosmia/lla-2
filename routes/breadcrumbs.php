@@ -8,7 +8,6 @@ $roleInfo = getUserRole();
 
 $role = !empty($roleInfo) ? $roleInfo['roleName'] : '';
 
-$disputeId = request()->route('id') ?? null;
 Breadcrumbs::for('tutor.dashboard', function (BreadcrumbTrail $trail) {
     $trail->push(__('general.dashboard'), route('tutor.dashboard'));
     $trail->push(__('general.my_earnings'), route('tutor.dashboard'));
@@ -51,46 +50,8 @@ Breadcrumbs::for($role.'.profile.identification', function (BreadcrumbTrail $tra
 });
 
 
-Breadcrumbs::for('tutor.bookings', function (BreadcrumbTrail $trail) {
-    $trail->push(__('general.manage_bookings'), route('tutor.bookings.subjects'));
-});
-
-Breadcrumbs::for('student.tuition-settings', function (BreadcrumbTrail $trail) {
-    $trail->push(__('sidebar.tuition_settings'), route('student.tuition-settings'));
-});
-
-Breadcrumbs::for('tutor.bookings.subjects', function (BreadcrumbTrail $trail) {
-    $trail->parent('tutor.bookings');
-    $trail->push(__('subject.subject_title'), route('tutor.bookings.subjects'));
-});
-
-Breadcrumbs::for('tutor.bookings.tuition-settings', function (BreadcrumbTrail $trail) {
-    $trail->parent('tutor.bookings');
-    $trail->push(__('sidebar.tuition_settings'), route('tutor.bookings.tuition-settings'));
-});
-
-Breadcrumbs::for('tutor.bookings.manage-sessions', function (BreadcrumbTrail $trail) {
-    $trail->parent('tutor.bookings');
-    $trail->push(__('calendar.title'), route('tutor.bookings.manage-sessions'));
-});
-
-Breadcrumbs::for('tutor.bookings.upcoming-bookings', function (BreadcrumbTrail $trail) {
-    $trail->parent('tutor.bookings');
-    $trail->push(__('sidebar.upcomming_bookings'), route('tutor.bookings.upcoming-bookings'));
-});
-
-Breadcrumbs::for('tutor.bookings.session-detail', function (BreadcrumbTrail $trail) {
-    $trail->parent('tutor.bookings');
-    $trail->push(__('calendar.title'), route('tutor.bookings.manage-sessions'));
-});
-
 Breadcrumbs::for('student.billing-detail', function (BreadcrumbTrail $trail) {
     $trail->push(__('sidebar.billing_detail'), route('student.billing-detail'));
-});
-
-Breadcrumbs::for('student.bookings', function (BreadcrumbTrail $trail) {
-    $trail->push(__('general.profile_settings'), route('student.profile.personal-details'));
-    $trail->push(__('sidebar.bookings'), route('student.bookings'));
 });
 
 Breadcrumbs::for($role.'.invoices', function (BreadcrumbTrail $trail) use ($role) {
@@ -109,11 +70,6 @@ Breadcrumbs::for('student.favourites', function (BreadcrumbTrail $trail) {
     $trail->push(__('sidebar.favourites'), route('student.favourites'));
 });
 
-Breadcrumbs::for('student.reschedule-session', function (BreadcrumbTrail $trail) {
-    $trail->push(__('sidebar.bookings'), route('student.bookings'));
-    $trail->push(__('calendar.reschedule_session'));
-});
-
 Breadcrumbs::for('laraguppy.messenger', function (BreadcrumbTrail $trail) use ($role) {
     if($role == 'tutor'){
         $trail->push(__('general.dashboard'), route('tutor.dashboard'));
@@ -127,22 +83,6 @@ Breadcrumbs::for('tutor.payouts', function (BreadcrumbTrail $trail) use ($role) 
     $trail->push(__('general.dashboard'), route('tutor.dashboard'));
     $trail->push(__('tutor.payouts_history'), route('tutor.payouts'));
 });
-Breadcrumbs::for($role.'.disputes', function (BreadcrumbTrail $trail) use ($role) {
-    if($role == 'admin'){
-        $trail->parent('admin.insights');
-    } elseif($role == 'tutor') {
-        $trail->push(__('general.dashboard'), route('tutor.dashboard'));
-    }elseif($role == 'student') {
-        $trail->push(__('general.profile_settings'), route('student.profile.personal-details'));
-    }
-    $trail->push(__('sidebar.disputes_system'), route($role.'.disputes'));
-});
-
-Breadcrumbs::for($role.'.manage-dispute', function (BreadcrumbTrail $trail) use ($role, $disputeId) {
-    $trail->parent($role.'.disputes');
-    $trail->push(__('sidebar.manage-dispute'), route($role.'.manage-dispute', ['id' => $disputeId]));
-});
-
 Breadcrumbs::for('admin.insights', function (BreadcrumbTrail $trail) {
     $trail->push(__('general.insights'), route('admin.insights'));
 });
@@ -230,11 +170,6 @@ Breadcrumbs::for('admin.identity-verification', function (BreadcrumbTrail $trail
 Breadcrumbs::for('admin.reviews', function (BreadcrumbTrail $trail) {
     $trail->parent('admin.insights');
     $trail->push(__('admin/sidebar.reviews'), route('admin.reviews'));
-});
-
-Breadcrumbs::for('admin.bookings', function (BreadcrumbTrail $trail) {
-    $trail->parent('admin.insights');
-    $trail->push(__('general.bookings'), route('admin.bookings'));
 });
 
 Breadcrumbs::for('admin.withdraw-requests', function (BreadcrumbTrail $trail) {

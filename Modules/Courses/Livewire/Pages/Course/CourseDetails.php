@@ -7,7 +7,6 @@ use Modules\Courses\Services\CourseService;
 use App\Facades\Cart;
 use App\Models\Rating;
 use App\Models\User;
-use App\Services\BookingService;
 use App\Services\OrderService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -305,7 +304,7 @@ class CourseDetails extends Component
             );
             return;
         }
-        $response = (new BookingService(Auth::user()))->enrollFreeCourse($this->course->id);
+        $response = (new CourseService())->enrollFreeCourse($this->course->id);
 
         if (empty($response['success'])) {
             return $this->dispatch(

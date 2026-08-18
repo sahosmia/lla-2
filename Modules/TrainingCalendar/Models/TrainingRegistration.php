@@ -17,6 +17,13 @@ class TrainingRegistration extends Model
 
     protected $guarded = [];
 
+    protected function casts(): array
+    {
+        return [
+            'attended_at' => 'datetime',
+        ];
+    }
+
     public function __construct(array $attributes = [])
     {
         $this->table = (config('trainingcalendar.db_prefix') ?? 'training_calendar_') . 'training_registrations';
@@ -36,5 +43,15 @@ class TrainingRegistration extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function issuedCertificate(): BelongsTo
+    {
+        return $this->belongsTo(\Modules\Upcertify\Models\Certificate::class, 'issued_certificate_id');
+    }
+
+    public function isAttended(): bool
+    {
+        return !empty($this->attended_at);
     }
 }

@@ -69,18 +69,18 @@ new class extends Component
                     ],
                 ],
             ],
-            [
-                'title' => __('sidebar.taxonomies'),
-                'icon'  => 'icon-database',
-                'routes' => [
-                    [
-                        'route' => 'admin.taxonomy.languages',
-                        'title' => __('sidebar.languages'),
-                        'permission' => 'can-manage-languages',
-                    ],
+            // [
+            //     'title' => __('sidebar.taxonomies'),
+            //     'icon'  => 'icon-database',
+            //     'routes' => [
+            //         [
+            //             'route' => 'admin.taxonomy.languages',
+            //             'title' => __('sidebar.languages'),
+            //             'permission' => 'can-manage-languages',
+            //         ],
                 
-                ],
-            ],
+            //     ],
+            // ],
             // [
             //     'title' => __('general.language_translations'),
             //     'icon'  => 'icon-globe',
@@ -107,17 +107,6 @@ new class extends Component
                         'route' => 'admin.users',
                         'title' => __('sidebar.users'),
                         'permission' => 'can-manage-users',
-                    ],
-                ],
-            ],
-            [
-                'title' => __('admin/general.identity_verification'),
-                'icon'  => 'icon-user-check',
-                'routes' => [
-                    [
-                        'route' => 'admin.identity-verification',
-                        'title' => __('identity-verification'),
-                        'permission' => 'can-manage-identity-verification',
                     ],
                 ],
             ],
@@ -374,15 +363,6 @@ new class extends Component
                         </li>
                     @endif
                 @endforeach
-                {{-- Disputes Menu --}}
-                @if(auth()->user()->can('view_disputes')) 
-                    <li class="{{ request()->routeIs('admin.disputes') || request()->routeIs('admin.manage-dispute') ? 'active' : '' }}">
-                        <a href="{{ route('admin.disputes') }}" class="tb-menuitm">
-                            <i class="icon-alert-triangle"></i>
-                            <span class="tb-navdashboard__title">{{ __('sidebar.disputes') }}</span>
-                        </a>
-                    </li>
-                @endif
             </ul>
             <div class="admin-sidebar-footer">
                 @if(auth()->user()->can('can-manage-insights'))

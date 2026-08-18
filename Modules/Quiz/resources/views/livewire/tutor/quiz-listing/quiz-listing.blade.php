@@ -320,74 +320,10 @@
                     </div>
                     <div class="am-modal-body">
                         <div>
-                            <form class="am-createquiz_details_form" id="create-quiz-form"
-                                x-data="{
-                                    selectedValues: {{ !empty($selectedSubjectSlots) ? json_encode($selectedSubjectSlots) : '[]' }},
-                                    init() {
-                                        console.log(this.selectedValues)
-                                        this.selectedValues = Array.isArray(this.selectedValues)
-                                        ? this.selectedValues
-                                        : Object.values(this.selectedValues);
-                                        let selectElement = document.getElementById('user_subject_slots');
-                                        Livewire.on('slotsList', () => {
-                                            setTimeout(() => {
-                                                $('#user_subject_slots').select2().on('change', (e)=>{
-                                                    let textInput = jQuery(e.target).siblings('span').find('textarea');
-                                                    if(textInput){
-                                                        setTimeout(() => {
-                                                            textInput.val('');
-                                                            textInput.attr('placeholder', 'Select session');
-                                                        }, 50);
-                                                    }
-                                                    this.updateSelectedValues()
-                                                });
-                                            }, 50);
-                                        });
-                                        $('#user_subject_slots').select2().on('change', ()=>{
-                                            this.updateSelectedValues()
-                                        });
-                                    },
-                                    updateSelectedValues(){
-                                    let selectElement = document.getElementById('user_subject_slots');
-                                        this.selectedValues = Array.from(selectElement.selectedOptions)
-                                            .filter(option => option.value)
-                                            .map(option => ({
-                                                value: option.value,
-                                                text: option.text,
-                                                price: option.getAttribute('data-price')
-                                            })
-                                        );
-                                    },
-                                    removeValue(value) {
-                                        const selectElement = document.getElementById('user_subject_slots');
-                                        const optionToDeselect = Array.from(selectElement.options).find(option => option.value === value);
-                                        if (optionToDeselect) {
-                                            optionToDeselect.selected = false;
-                                            $(selectElement).trigger('change');
-                                        }
-                                    },
-                                    submitFilter() {
-                                        const selectElement = document.getElementById('user_subject_slots');
-                                        @this.set('subjectGroupIds', $(selectElement).select2('val'));
-                                    }
-                                }">
+                            <form class="am-createquiz_details_form" id="create-quiz-form">
                                 <fieldset>
-                                    @if(isActiveModule('Courses'))
-                                        <div class="form-group @error('form.quizzable_type') am-invalid @enderror" style="display: none;">
-                                            <x-input-label class="am-important" for="quizzable_type" wire:loading.class="am-disabled">{{ __('quiz::quiz.quiz_type') }}</x-input-label>
-                                            <span class="am-select" wire:ignore>
-                                                <select class="am-select2" data-componentid="@this" id="quizzable_type" data-parent="#create-quiz-model" data-live="true" data-wiremodel="form.quizzable_type" data-placeholder="{{ __('quiz::quiz.select_quiz_type') }}">
-                                                    <option value="">{{ __('quiz::quiz.select_quiz_type') }}</option>
-                                                    @foreach ($quizzable_types as $quizzable_type)
-                                                        <option value="{{ $quizzable_type['value'] }}" @if($form?->quizzable_type == $quizzable_type['value']) selected @endif>{{ $quizzable_type['label'] }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </span>
-                                            <x-quiz::input-error field_name='form.quizzable_type' />
-                                        </div>
-                                    @endif
                                     <div class="form-group @error('form.quizzable_id') am-invalid @enderror" wire:loading.class="am-disabled" wire:loading.target="form.quizzable_type">
-                                        <x-input-label class="am-important" for="quizzable_id">{{ isActiveModule('Courses') ? __('quiz::quiz.select_option') :  __('quiz::quiz.select_subject')}}</x-input-label>
+                                        <x-input-label class="am-important" for="quizzable_id">{{ __('quiz::quiz.select_option') }}</x-input-label>
                                         <span class="am-select" wire:ignore>
                                             <select class="am-select2" data-componentid="@this" id="quizzable_id" data-parent="#create-quiz-model" data-live="true" data-wiremodel="form.quizzable_id" data-placeholder="{{ __('quiz::quiz.select_option') }}">
                                                 <option value="">{{ __('quiz::quiz.select_option') }}</option>
@@ -398,36 +334,6 @@
                                         </span>
                                         <x-quiz::input-error field_name='form.quizzable_id' />
                                     </div>
-                                    @if($form->quizzable_type == 'App\Models\UserSubjectGroupSubject')
-                                        <div class="form-group am-knowlanguages @error('form.user_subject_slots') am-invalid @enderror" wire:loading.class="am-disabled" wire:loading.target="form.quizzable_id">
-                                            <x-input-label for="Slots" class="am-important" :value="__('quiz::quiz.select_session')" />
-                                            <div class="form-group-two-wrap am-nativelang">
-                                                <div id="user_slot" wire:ignore>
-                                                    <span class="am-select am-multiple-select">
-                                                        <select data-componentid="@this" data-disable_onchange="true" data-parent="#create-quiz-model" class="slots am-select2" data-hide_search_opt="true" id="user_subject_slots" @if(!$form->quizzable_id) disabled @endif data-wiremodel="form.user_subject_slots" multiple data-placeholder="{{ __('quiz::quiz.select_session') }}">
-                                                            <option value="" >{{ __('quiz::quiz.select_session') }}</option>
-                                                            @foreach($slots as $slot)
-                                                                <option @if(!empty($slot['selected'])) selected @endif value="{{ $slot['id'] }}">{{ $slot['text']  }}</option>      
-                                                            @endforeach
-                                                        </select>
-                                                        <template x-if="selectedValues.length > 0">
-                                                            <ul class="am-subject-tag-list">
-                                                                <template x-for="(subject, index) in selectedValues">
-                                                                    <li>
-                                                                        <a href="javascript:void(0)" class="am-subject-tag" @click="removeValue(subject.value)">
-                                                                            <span x-text="`${subject.text}`"></span>
-                                                                            <i class="am-icon-multiply-02"></i>
-                                                                        </a>
-                                                                    </li>
-                                                                </template>
-                                                            </ul>
-                                                        </template>
-                                                    </span>
-                                                </div>
-                                                <x-quiz::input-error field_name='form.user_subject_slots' />
-                                            </div>
-                                        </div>                        
-                                    @endif
                                     <template x-if="quizType === 'manual'">
                                         <div>
                                             <div class="form-group @error('form.title') am-invalid @enderror">
@@ -555,13 +461,10 @@
     <script type="text/javascript">
 
         window.addEventListener('editQuiz', (event) => {
-            const {quizzable_type, option_list, session_slots} = event.detail.eventData;
+            const {option_list} = event.detail.eventData;
             Livewire.dispatch('initSelect2', { target: '.am-select2', timeOut: 150 });
             setTimeout(() => {
                 initOptionList(option_list);
-                if(quizzable_type === '{{ UserSubjectGroupSubject::class }}'){
-                    initOption(session_slots);
-                }
             }, 300);
 
         });
@@ -573,33 +476,6 @@
                 jQuery('#quizzable_id').val('').trigger('change');
             }
         });
-
-        window.addEventListener('addSlotsOptions', (event) => {
-            let {options = []} = event.detail;
-            const listItem = Object?.values(options) ?? []
-            initOption(listItem);
-        });
-
-        function initOption (optionList) {
-            let $select = jQuery('#user_subject_slots');
-            if ($select.hasClass('select2-hidden-accessible')) {
-                $select.select2('destroy').empty();
-            }
-
-            $select.select2({ 
-                data: [{
-                    id: '', 
-                    text: 'Select an option'
-                }, ...optionList],
-                theme: 'default',
-                disabled: false
-            });
-
-            setTimeout(() => {
-                const event = new CustomEvent('slotsList', { detail: { } });
-                document.dispatchEvent(event);
-            }, 1000);
-        }
 
         function initOptionList (options) {
             let $select = jQuery('#quizzable_id');

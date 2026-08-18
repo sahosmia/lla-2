@@ -191,20 +191,6 @@ class DbNotificationService
         return $emailTemplate;
     }
 
-    public function getDisputeResolutionNotification($content, $data)
-    {
-        $emailTemplate = array();
-        foreach ($content as $key => &$value) {
-            $content[$key] = Str::replace('{studentName}', $data['studentName'], $value);
-            $content[$key] = Str::replace('{tutorName}', $data['tutorName'], $value);
-            $content[$key] = Str::replace('{sessionDateTime}', \Carbon\Carbon::parse($data['sessionDateTime'])->format('F j, Y, g:i A'), $value);
-            $content[$key] = Str::replace('{paymentAmount}', $data['paymentAmount'], $value);
-            $content[$key] = Str::replace('{disputeReason}', $data['disputeReason'], $value);
-        }
-        $emailTemplate = $content;
-        return $emailTemplate;
-    }
-
     public function getAssignedQuizNotification($content, $data)
     {
        

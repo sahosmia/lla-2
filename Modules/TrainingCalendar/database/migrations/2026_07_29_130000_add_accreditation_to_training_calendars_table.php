@@ -1,0 +1,27 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        $prefix = config('trainingcalendar.db_prefix', 'training_calendar_');
+
+        Schema::table($prefix . 'training_calendars', function (Blueprint $table) {
+            $table->string('accreditation_body')->nullable()->after('thumbnail');
+            $table->decimal('pdu_points', 6, 2)->nullable()->after('accreditation_body');
+        });
+    }
+
+    public function down(): void
+    {
+        $prefix = config('trainingcalendar.db_prefix', 'training_calendar_');
+
+        Schema::table($prefix . 'training_calendars', function (Blueprint $table) {
+            $table->dropColumn(['accreditation_body', 'pdu_points']);
+        });
+    }
+};

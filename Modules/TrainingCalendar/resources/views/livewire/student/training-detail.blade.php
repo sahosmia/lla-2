@@ -17,8 +17,16 @@
                 </h6>
             </div>
             <div class="am-quiz-detail_description">
+                <figure class="am-training-detail_thumb" style="margin: 0 0 16px; width: 100%; height: 220px; overflow: hidden; border-radius: 12px;">
+                    <img src="{{ !empty($registration->training?->thumbnail) ? resizedImage($registration->training->thumbnail, 700, 300) : asset('modules/trainingcalendar/images/training.png') }}" alt="{{ $registration->training?->title }}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                </figure>
                 @if($registration->training?->title)
                     <h3>{{ $registration->training->title }}</h3>
+                @endif
+                @if($registration->training?->hasAccreditation())
+                    <span class="am-quizstatus mb-3" style="display: inline-block; background: #eef2ff; color: #4338ca;">
+                        {{ $registration->training->accreditation_body }}{{ $registration->training->accreditation_body && $registration->training->formatted_pdu_points ? ' · ' : '' }}{{ $registration->training->formatted_pdu_points ? $registration->training->formatted_pdu_points . ' PDU' : '' }}
+                    </span>
                 @endif
                 <div class="am-course-stats">
                     <div class="am-stat-item">
@@ -57,12 +65,12 @@
                     <p>{!! nl2br(e($registration->training?->description)) !!}</p>
                 </div>
 
-                <div class="am-instructions mt-4">
-                    <h6>
-                        <i class="am-icon-exclamation-01"></i>
-                        {{ __('trainingcalendar::trainingcalendar.notices') }}
-                    </h6>
-                    @if($registration->training?->notices?->isNotEmpty())
+                @if($registration->training?->notices?->isNotEmpty())
+                    <div class="am-instructions mt-4">
+                        <h6>
+                            <i class="am-icon-exclamation-01"></i>
+                            {{ __('trainingcalendar::trainingcalendar.notices') }}
+                        </h6>
                         <ul class="am-notice-list">
                             @foreach($registration->training->notices as $notice)
                                 <li class="mb-4 p-3 border rounded bg-light">
@@ -89,10 +97,8 @@
                                 </li>
                             @endforeach
                         </ul>
-                    @else
-                        <p class="text-muted">{{ __('trainingcalendar::trainingcalendar.no_notices_found') }}</p>
-                    @endif
-                </div>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
@@ -101,11 +107,20 @@
 @push('styles')
     <link href="{{ asset('modules/quiz/css/main.css') }}" rel="stylesheet">
     <style>
+        /* This page reuses the quiz-details classes but renders inside the dashboard
+           layout, which already provides its own fixed-height scroll area. Reset the
+           viewport-height assumptions from the quiz layout so content isn't clipped. */
+        .am-training-detail.am-quiz-detail {
+            height: auto;
+            min-height: 0;
+        }
         .am-training-detail .am-quiz-detail_box {
             background: #fff;
             border-radius: 20px;
             overflow: hidden;
             border: 1px solid #eee;
+            height: auto;
+            min-height: 0;
         }
         .am-notice-list {
             list-style: none;

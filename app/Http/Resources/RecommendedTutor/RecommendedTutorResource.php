@@ -24,7 +24,6 @@ class RecommendedTutorResource extends JsonResource
             'min_price'                      => $this->whenHas('min_price', function ($min_price) {
                 return formatAmount($min_price);
             }),
-            'active_students'                => $this->whenHas('active_students'),
             'is_online'                      => $this?->is_online,
             'sessions'                       => $this->whenLoaded('subjects', function () {
                 $totalSessions = 0;

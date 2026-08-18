@@ -7,7 +7,7 @@
         <div class="filter-search-wrapper row g-3 mb-4">
             <div class="col-md-8 col-lg-6">
                 <div class="search-input-box">
-                    <i class="am-icon-search search-icon"></i>
+                    <i class="am-icon-search-02 search-icon"></i>
                     <input type="text" class="form-control modern-filter-input icon-padding" wire:model.live.debounce.400ms="keyword" placeholder="{{ __('general.search') }}...">
                 </div>
             </div>
@@ -24,11 +24,21 @@
             @forelse($trainings as $training)
                 <div class="col-md-6 col-lg-4">
                     <div class="modern-training-card h-100">
+                        <figure class="training-card-thumb">
+                            <img src="{{ !empty($training->thumbnail) ? resizedImage($training->thumbnail, 400, 220) : asset('modules/trainingcalendar/images/training.png') }}" alt="{{ $training->title }}">
+                        </figure>
                         <div class="card-body-content">
                             <div class="card-top-meta">
-                                <span class="am-coursetag detail-tag-{{ $training->type }}">
-                                    {{ ucfirst($training->type) }}
-                                </span>
+                                <div class="card-top-tags">
+                                    <span class="am-coursetag detail-tag-{{ $training->type }}">
+                                        {{ ucfirst($training->type) }}
+                                    </span>
+                                    @if($training->hasAccreditation())
+                                        <span class="accreditation-badge">
+                                            {{ $training->accreditation_body }}{{ $training->accreditation_body && $training->formatted_pdu_points ? ' · ' : '' }}{{ $training->formatted_pdu_points ? $training->formatted_pdu_points . ' PDU' : '' }}
+                                        </span>
+                                    @endif
+                                </div>
                                 <span class="registered-badge">
                                     <i class="am-icon-user-01"></i> {{ $training->paid_registrations_count }} Joined
                                 </span>
@@ -114,21 +124,32 @@
     }
 
     /* ফিল্টার অ্যান্ড কাস্টম ইনপুট */
-    .modern-filter-input, 
+    .modern-filter-input,
     .modern-filter-select {
-        border: 1px solid #cbd5e1;
+        border: 1px solid #cbd5e1 !important;
         border-radius: 10px;
-        padding: 12px 16px;
+        height: 46px !important;
+        padding: 0 16px !important;
         font-size: 0.95rem;
-        transition: all 0.2s ease;
-        background-color: #ffffff;
+        line-height: 44px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        background-color: #ffffff !important;
+        background-position: right 12px center !important;
     }
 
-    .modern-filter-input:focus, 
+    .modern-filter-input:hover,
+    .modern-filter-select:hover {
+        background-color: #ffffff !important;
+        border-color: #cbd5e1 !important;
+        box-shadow: none;
+    }
+
+    .modern-filter-input:focus,
     .modern-filter-select:focus {
-        border-color: var(--primary-brand);
+        border-color: var(--primary-brand, #4f46e5) !important;
         box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
         outline: none;
+        background-color: #ffffff !important;
     }
 
     .search-input-box {
@@ -165,6 +186,21 @@
         border-color: #e2e8f0;
     }
 
+    .training-card-thumb {
+        margin: 0;
+        width: 100%;
+        height: 180px;
+        overflow: hidden;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .training-card-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
     .card-body-content {
         padding: 28px;
         display: flex;
@@ -177,6 +213,15 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 16px;
+        gap: 8px;
+    }
+
+    .card-top-tags {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        min-width: 0;
     }
 
     .registered-badge {
@@ -278,6 +323,16 @@
     }
     .detail-tag-online { background: #e0f2fe; color: #0369a1; }
     .detail-tag-offline { background: #fef3c7; color: #92400e; }
+
+    .accreditation-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 30px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        background: #eef2ff;
+        color: #4338ca;
+    }
 
     .no-data-wrapper {
         background: #ffffff;

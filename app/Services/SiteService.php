@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Casts\BookingStatus;
 use App\Casts\UserStatusCast;
 use App\Models\Country;
 use App\Models\Language;
@@ -11,9 +10,7 @@ use App\Models\Rating;
 use App\Models\Setting;
 use App\Models\CountryState;
 use App\Models\MenuItem;
-use App\Models\SlotBooking;
 use App\Models\User;
-use App\Models\UserSubjectSlot;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
@@ -27,23 +24,11 @@ class SiteService
             ->where('status', array_search('active', (new UserStatusCast)->getStatus()))
             ->whereHas('roles', fn($query)  => $query->whereName('tutor'));
         $instructors->with(['subjects' => function ($query) {
-            $query->withCount(['slots as sessions' => fn($query) => $query->where('end_time', '>=', now())]);
             $query->with('subject:id,name');
         }, 'languages:id,name', 'address']);
         if (!empty($data['language_id'])) {
             $instructors->whereHas('languages', function ($query) use ($data) {
                 $query->whereIn('language_id', $data['language_id']);
-            });
-        }
-        if (!empty($data['session_type'])) {
-            $instructors->whereHas('subjects.slots', function ($slot) use ($data) {
-                $slot->where(function ($slot) use ($data) {
-                    if ($data['session_type'] == 'one') {
-                        $slot->where('spaces', '=', 1);
-                    } else {
-                        $slot->where('spaces', '>', 1);
-                    }
-                });
             });
         }
 
@@ -111,8 +96,7 @@ class SiteService
 
         $instructors->withMin('subjects as min_price', 'hour_rate')
             ->withAvg('reviews as avg_rating', 'rating')
-            ->withCount('reviews as total_reviews')
-            ->withCount('bookingSlots as active_students');
+            ->withCount('reviews as total_reviews');
 
         if (!empty($data['sort_by'])) {
             if ($data['sort_by'] == 'newest') {
@@ -137,7 +121,6 @@ class SiteService
     {
         $tutors = User::select('id')->role('tutor');
         $tutors->with(['subjects' => function ($query) {
-            $query->withCount(['slots as sessions' => fn($query) => $query->where('end_time', '>=', now())]);
             $query->with('subject:id,name');
         }, 'languages:id,name']);
 
@@ -150,10 +133,7 @@ class SiteService
 
         $tutors->withMin('subjects as min_price', 'hour_rate')
             ->withAvg('reviews as avg_rating', 'rating')
-            ->withCount('reviews as total_reviews')
-            ->withCount(['bookingSlots as active_students' => function ($query) {
-                $query->whereStatus(BookingStatus::$statuses['active']);
-            }]);
+            ->withCount('reviews as total_reviews');
         $tutors->withWhereHas('profile', function ($query) {
             $query->whereNotNull('verified_at');
             $query->whereNotNull('intro_video');
@@ -166,14 +146,6 @@ class SiteService
 
         return $tutors->get()->take(!empty($filters['total']) ? $filters['total'] : 10);
     }
-
-    // public function getActiveUsers($slug) {
-    //     $slots = UserSubjectSlot::select('id','start_time','spaces','total_booked')
-    //     ->whereHas('subjectGroupSubjects', function($groupSubjects) {
-    //         $groupSubjects->select('id','user_subject_group_id');
-    //         $groupSubjects->whereHas('userSubjectGroup', fn($query)=>$query->select('id','user_id')->whereUserId($this->user->id));
-    //     })->get();
-    // }
 
     public function getUserRole($slug)
     {
@@ -193,9 +165,6 @@ class SiteService
             ->when(\Nwidart\Modules\Facades\Module::has('starup') && \Nwidart\Modules\Facades\Module::isEnabled('starup'), function ($query) {
                 $query->with('badges:id,name,image');
             })
-            ->with('subjects', function ($query) {
-                $query->withCount(['slots as sessions' => fn($query) => $query->where('end_time', '>=', now())]);
-            })
             ->with(['address' => function ($query) {
                 $query->select('id', 'addressable_id', 'addressable_type', 'country_id')
                     ->with(['country' => function ($countryQuery) {
@@ -212,7 +181,6 @@ class SiteService
             })
             ->withAvg('reviews as avg_rating', 'rating')
             ->withCount('reviews as total_reviews')
-            ->withCount('bookingSlots as active_students')
             ->with('socialProfiles')
             ->first();
     }
@@ -334,9 +302,6 @@ class SiteService
             ->where('id', '!=', $user->id)
             ->withAvg('reviews as avg_rating', 'rating')
             ->withCount('reviews as total_reviews')
-            ->withCount(['bookingSlots as active_students' => function ($query) {
-                $query->whereStatus(BookingStatus::$statuses['active']);
-            }])
             ->where('status', 1)
             ->get()->take(4);
     }
@@ -357,9 +322,7 @@ class SiteService
                 },
                 'educations',
                 'subjects.subject',
-            ])->withCount(['bookingSlots as active_students' => function ($query) {
-                $query->whereStatus(BookingStatus::$statuses['active']);
-            }])
+            ])
             ->withMin('subjects as min_price', 'hour_rate')
             ->withAvg('reviews as avg_rating', 'rating')
             ->withCount('reviews as total_reviews')

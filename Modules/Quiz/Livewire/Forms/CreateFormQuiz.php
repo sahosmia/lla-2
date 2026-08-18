@@ -18,7 +18,6 @@ class CreateFormQuiz extends Form
     public $quizzable_id    = '';
     public $title           = '';
     public $description     = '';
-    public $user_subject_slots = [];
     public $question_types = [];
     public $status = 'draft';
     
@@ -60,7 +59,6 @@ class CreateFormQuiz extends Form
         $this->quizzable_id        = $quiz['quizzable_id'] ?? '';
         $this->title               = $quiz['title'] ?? '';
         $this->description         = $quiz['description'] ?? '';
-        $this->user_subject_slots  = !empty($quiz['user_subject_slots']) ? array_values($quiz['user_subject_slots']) : [];
         $this->status         = $quiz['status'] ?? 'draft';
     }
 
@@ -72,7 +70,6 @@ class CreateFormQuiz extends Form
             'quizzable_id'                 => $this->quizzable_id,
             'title'                        => $this->title,
             'description'                  => $this->description,
-            'user_subject_slots'           => !empty($this->user_subject_slots) ? $this->user_subject_slots : null,
             'status'                       => $this->status
         ];
         

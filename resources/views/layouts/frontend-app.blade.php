@@ -77,11 +77,11 @@
         @endif
     @endauth
     @livewireScripts()
-    <script src="{{ asset('js/jquery.min.js') }}"></script>
-    <script defer src="{{ asset('js/bootstrap.min.js') }}"></script>
-    <script defer src="{{ asset('js/select2.min.js') }}"></script>
-    <script defer src="{{ asset('js/splide.min.js') }}"></script>
-    <script defer src="{{ asset('js/main.js') }}"></script>
+    <script src="{{ asset('js/jquery.min.js') }}" data-navigate-once></script>
+    <script defer src="{{ asset('js/bootstrap.min.js') }}" data-navigate-once></script>
+    <script defer src="{{ asset('js/select2.min.js') }}" data-navigate-once></script>
+    <script defer src="{{ asset('js/splide.min.js') }}" data-navigate-once></script>
+    <script defer src="{{ asset('js/main.js') }}" data-navigate-once></script>
     @stack('scripts')
     <script>
         document.addEventListener("DOMContentLoaded", () => {

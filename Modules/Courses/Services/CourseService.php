@@ -11,13 +11,20 @@ use Modules\Courses\Models\Noticeboard;
 use Modules\Courses\Models\Promotion;
 use Modules\Courses\Models\Section;
 use App\Casts\OrderStatusCast;
+use App\Jobs\CompleteFreePurchaseJob;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User;
+use App\Services\OrderService;
 use Modules\Courses\Models\Category;
 use Modules\Courses\Models\Watchtime;
+use Modules\CourseBundles\Models\Bundle;
+use Modules\CourseBundles\Services\BundleService;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class CourseService
 {
@@ -954,5 +961,218 @@ class CourseService
         }
 
         return $query->first();
+    }
+
+    public function enrollFreeCourse($resourceId)
+    {
+        if (empty($resourceId)) {
+            return [
+                'success' => false,
+                'message' => __('courses::courses.course_not_found')
+            ];
+        }
+
+        $course = $this->getCourse($resourceId);
+
+        if (empty($course)) {
+            return [
+                'success' => false,
+                'message' => __('courses::courses.course_not_found')
+            ];
+        }
+
+        try {
+
+            DB::beginTransaction();
+
+            $order = $this->createOrder();
+
+            $orderItems = [
+                [
+                    'order_id'       => $order->id,
+                    'title'          => $course->title,
+                    'quantity'       => 1,
+                    'options'        => [
+                        'id'                => $course->id,
+                        'title'            => $course->title,
+                        'sub_category'      => $course->subCategory?->name,
+                        'category'          => $course->category?->name,
+                        'image'             => $course->thumbnail?->path,
+                        'price'             => 0,
+                        'tutor_id'          => $course->instructor_id,
+                        'currency_symbol'   => setting('_general.currency') ?? '',
+                    ],
+                    'price'          => 0,
+                    'total'          => 0,
+                    'orderable_id'   => $course->id,
+                    'orderable_type' => Course::class,
+                ]
+            ];
+
+            (new OrderService())->storeOrderItems($order->id, $orderItems);
+
+            $courseData = [
+                'student_id'        => Auth::user()->id,
+                'course_id'         => $course->id,
+                'tutor_id'          => $course->instructor_id,
+                'course_price'      => 0,
+                'course_discount'   => 0,
+                'status'            => 'active',
+            ];
+
+            $this->addStudentCourse($courseData);
+
+            DB::commit();
+
+            dispatch(new CompleteFreePurchaseJob($order));
+
+            return [
+                'success' => true,
+                'message' => _('courses::courses.course_enrolled_successfully'),
+                'order'   => $order
+            ];
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error($th);
+
+            return [
+                'success' => false,
+                'message' => __('general.went_wrong')
+            ];
+        }
+    }
+
+    public function getFreeBundle($bundleId)
+    {
+        if (empty($bundleId)) {
+            return [
+                'success' => false,
+                'message' => __('coursebundles::bundles.bundle_not_found')
+            ];
+        }
+
+        $bundle = (new BundleService())->getBundle(
+            bundleId: $bundleId,
+            relations: ['courses:id,instructor_id,title,slug,status']
+        );
+
+        if (empty($bundle)) {
+            return [
+                'success' => false,
+                'message' => __('courses::courses.bundle_not_found')
+            ];
+        }
+
+        try {
+
+            DB::beginTransaction();
+
+            $order = $this->createOrder();
+
+            $orderItems = [
+                [
+                    'order_id'       => $order->id,
+                    'title'          => $bundle->title,
+                    'quantity'       => 1,
+                    'options'        => [
+                        'id'                => $bundle->id,
+                        'title'            => $bundle->title,
+                        'image'             => $bundle->thumbnail?->path,
+                        'price'             => 0,
+                        'tutor_id'          => $bundle->instructor_id,
+                        'currency_symbol'   => setting('_general.currency') ?? '',
+                    ],
+                    'price'          => 0,
+                    'total'          => 0,
+                    'orderable_id'   => $bundle->id,
+                    'orderable_type' => Bundle::class,
+                ]
+            ];
+
+            (new OrderService())->storeOrderItems($order->id, $orderItems);
+
+            (new BundleService())->addBundlePurchase([
+                'student_id'        => $order->user_id,
+                'tutor_id'          => $bundle->instructor_id,
+                'bundle_id'         => $bundle->id,
+                'purchased_price'   => 0
+            ]);
+
+            $courseData = [
+                'student_id'        => Auth::user()->id,
+                'course_id'         => $bundle->id,
+                'tutor_id'          => $bundle->instructor_id,
+                'course_price'      => 0,
+                'course_discount'   => 0,
+                'status'            => 'active',
+            ];
+
+            if (!empty($bundle->courses)) {
+                foreach ($bundle->courses as $course) {
+                    $alreadyHaveCourse = $this->getStudentCourse(
+                        courseId: $course->id,
+                        studentId: $order->user_id,
+                        tutorId: $course->instructor_id
+                    );
+                    if ($alreadyHaveCourse) {
+                        continue;
+                    }
+                    $courseData = [
+                        'student_id'        => $order->user_id,
+                        'course_id'         => $course->id,
+                        'tutor_id'          => $course->instructor_id,
+                        'course_price'      => $course->pricing?->price,
+                        'course_discount'   => $course?->pricing?->discount,
+                        'status'            => 'active',
+                    ];
+                    $this->addStudentCourse($courseData);
+                }
+            }
+
+            DB::commit();
+
+            dispatch(new CompleteFreePurchaseJob($order));
+
+            return [
+                'success' => true,
+                'message' => _('courses::courses.course_enrolled_successfully'),
+                'order'   => $order
+            ];
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            Log::error($th);
+
+            return [
+                'success' => false,
+                'message' => __('general.went_wrong')
+            ];
+        }
+    }
+
+    private function createOrder()
+    {
+        $billingDetail = [
+            'user_id'                   => Auth::user()->id,
+            'first_name'                => Auth::user()->profile?->first_name,
+            'unique_payment_id'         => Str::uuid(),
+            'amount'                    => 0,
+            'currency'                  => setting('_general.currency') ?? '',
+            'used_wallet_amt'           => 0,
+            'last_name'                 => Auth::user()->profile?->last_name,
+            'email'                     => Auth::user()->email,
+            'phone'                     => Auth::user()->profile?->phone_number ?? '',
+            'country'                   => Auth::user()->address?->country?->name,
+            'state'                     => Auth::user()->address?->state?->name ?? '',
+            'city'                      => Auth::user()->address?->city,
+            'postal_code'               => Auth::user()->address?->zipcode,
+            'company'                   => '',
+            'payment_method'            => 'free',
+            'status'                    => 'complete',
+        ];
+
+        $order = (new OrderService())->createOrder($billingDetail);
+
+        return $order;
     }
 }

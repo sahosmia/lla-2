@@ -49,9 +49,6 @@ class SearchController extends Controller
             abort('404');
         }
 
-        $totalSlots = $tutor->subjects->flatMap(function ($subject) {
-            return $subject->slots;
-        })->count();
         $user = Auth::user();
         $userService = new UserService($user);
         $isFavourite = $userService->isFavouriteUser($tutor?->id ?? 0);
@@ -66,7 +63,7 @@ class SearchController extends Controller
             $pageDescription = $tutor->profile?->description;
             $metaImage = $tutor->profile?->image;
             $pageKeywords = $tutor->subjects?->pluck('subject.name')->implode(', ') ? $tutor->subjects?->pluck('subject.name')->implode(', ') : $tutor->profile?->keywords;
-            return view('frontend.tutor-detail', compact('tutor','reviews', 'isFavourite','totalSlots','courses','pageTitle','pageDescription','pageKeywords','metaImage'));
+            return view('frontend.tutor-detail', compact('tutor','reviews', 'isFavourite','courses','pageTitle','pageDescription','pageKeywords','metaImage'));
         }
         abort('404'); 
     }

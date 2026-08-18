@@ -41,7 +41,8 @@
                         <div class="am-checkout_perinfo">
                             <p>{!! __('thank_you.thanks_detail') !!}</p> 
                         </div>
-                        <div class="am-checkout-details">
+                        <div class="am-checkout-details" style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+                            <a href="{{ route('download.invoice', $orderId) }}" target="_blank" class="am-btn am-white-btn">{{ __('thank_you.download_invoice') }}</a>
                             <a href="{{ $continueUrl }}" class="am-btn">{{ $continueLabel }}</a>
                         </div>
                     </div>

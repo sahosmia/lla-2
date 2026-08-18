@@ -48,6 +48,7 @@
                 }">
                     <div class="am-checkout_box">
                         <div class="am-checkout_methods">
+                            @if($totalAmount > 0)
                             <div class="am-checkout_methods_title">
                                 <h3>{{ __('checkout.payment_methods') }} </h3>
                                 <p>{{ __('checkout.secure_and_convenient_payment_purchase') }}</p>
@@ -111,6 +112,11 @@
                                 <p>{{ __('checkout.personal_data') }}</p>
                             </div>
                             <x-input-error field_name="form.paymentMethod" />
+                            @else
+                            <div class="am-checkout_methods_title">
+                                <p>{{ __('checkout.free_order_no_payment_required') }}</p>
+                            </div>
+                            @endif
                             <form class="am-themeform am-checkout_form">
                                 <fieldset>
                                     <div class="form-group">
@@ -161,6 +167,14 @@
                                     <div @class(['form-group form-group-3half', 'am-invalid' => $errors->has('form.zipcode')])>
                                         <input wire:model="form.zipcode" type="text" class="form-control"  placeholder="Add postcode/zip">
                                         <x-input-error field_name="form.zipcode" />
+                                    </div>
+                                    <div @class(['form-group form-group-half', 'am-invalid' => $errors->has('form.profession')])>
+                                        <input wire:model="form.profession" type="text" class="form-control"  placeholder="{{ __('checkout.profession') }}">
+                                        <x-input-error field_name="form.profession" />
+                                    </div>
+                                    <div @class(['form-group form-group-half', 'am-invalid' => $errors->has('form.organization')])>
+                                        <input wire:model="form.organization" type="text" class="form-control"  placeholder="{{ __('checkout.organization') }}">
+                                        <x-input-error field_name="form.organization" />
                                     </div>
                                 </fieldset>
                             </form>

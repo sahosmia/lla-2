@@ -42,8 +42,6 @@ class Reviews extends Component
         $allTutorReviews->getCollection()->each(function ($rating) {
             if ($rating->ratingable_type === Modules\Courses\Models\Course::class) {
                 $rating->ratingable->load('media');
-            } elseif ($rating->ratingable_type === App\Models\SlotBooking::class) {
-                $rating->ratingable->load('slot.subjectGroupSubjects.subject');
             }
         });
 

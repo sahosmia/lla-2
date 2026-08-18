@@ -357,11 +357,11 @@
 
         </script>
         @livewireScripts
-        <script src="{{ asset('js/jquery.min.js') }}"></script>
-        <script defer src="{{ asset('js/bootstrap.min.js') }}"></script>
-        <script defer src="{{ asset('js/select2.min.js') }} "></script>
-        <script defer src="{{ asset('js/mCustomScrollbar.min.js') }}"></script>
-        <script defer src="{{ asset('js/main.js')}}"></script>
+        <script src="{{ asset('js/jquery.min.js') }}" data-navigate-once></script>
+        <script defer src="{{ asset('js/bootstrap.min.js') }}" data-navigate-once></script>
+        <script defer src="{{ asset('js/select2.min.js') }} " data-navigate-once></script>
+        <script defer src="{{ asset('js/mCustomScrollbar.min.js') }}" data-navigate-once></script>
+        <script defer src="{{ asset('js/main.js')}}" data-navigate-once></script>
         <script defer src="{{ asset('js/admin-app.js')}}"></script>
         @if(session('success'))
             <script>

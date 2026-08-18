@@ -32,36 +32,14 @@
                                     </div>
                                 </div>
                                 <ul class="am-tutorreviews-list">
-                                    @if(isPaidSystem())
-                                        <li>
-                                            <div class="am-tutorreview-item">
-                                                <span class="am-uniqespace am-currency_conversion">{!! formatAmount($item->min_price) !!}<em>{{ __('tutor.session_text') }}</em></span>
-                                            </div>
-                                        </li>
-                                    @endif
+                                    {{-- Per-session price teaser hidden: session booking feature disabled on this platform --}}
                                     <li>
                                         <div class="am-tutorreview-item">
                                             <div class="am-tutorreview-item_icon"><i class="am-icon-star-01"></i></div>
                                             <span class="am-uniqespace">{{ number_format($item->avg_rating, 1) }} <em>/5.0 ({{ $item->total_reviews == 1 ? __('general.review_count') : __('general.reviews_count', ['count' => $item->total_reviews] ) }})</em></span>
                                         </div>
                                     </li>
-                                    <li>
-                                        <div class="am-tutorreview-item">
-                                            <div class="am-tutorreview-item_icon"><i class="am-icon-user-group"></i></div>
-                                            <span>{{$item->active_students}} <em>{{ $item->active_students == '1' ? __('tutor.active_student') : __('tutor.active_students', ['count' => $item->active_students ]) }}</em></span>
-                                        </div>
-                                    </li>
-                                    <li>
-                                        <div class="am-tutorreview-item">
-                                            <div class="am-tutorreview-item_icon"><i class="am-icon-menu-2"></i></div>
-                                            @php
-                                                $totalSessions = $item->subjects->flatMap(function ($subject) {
-                                                    return $subject->slots;
-                                                })->count();
-                                            @endphp
-                                            <span> {{ $totalSessions }} <em>{{ $totalSessions == 1 ? __('tutor.session') : __('tutor.sessions',) }}</em></span>
-                                        </div>
-                                    </li>
+                                    {{-- Total sessions teaser hidden: session booking feature disabled on this platform --}}
                                     @if(!empty($item?->languages))
                                         <li>
                                             <div class="am-tutorreview-item">

@@ -10,10 +10,6 @@ use Modules\TrainingCalendar\Services\TrainingCalendarService;
 class TrainingDetail extends Component
 {
     public ?TrainingCalendar $training = null;
-    public string $name = '';
-    public string $email = '';
-    public string $phone = '';
-    public string $profession = '';
     public bool $alreadyRegistered = false;
 
     protected TrainingCalendarService $service;
@@ -33,9 +29,6 @@ class TrainingDetail extends Component
 
         if (Auth::check()) {
             $user = Auth::user();
-            $this->name = $user->profile?->full_name ?? '';
-            $this->email = $user->email ?? '';
-            $this->phone = $user->profile?->phone ?? '';
             $this->alreadyRegistered = $this->service->userAlreadyRegistered($training->id, $user->id);
         }
     }
@@ -57,32 +50,7 @@ class TrainingDetail extends Component
             return;
         }
 
-        $this->validate([
-            'name' => 'required|string|max:150',
-            'email' => 'required|email|max:150',
-            'phone' => 'required|string|max:30',
-            'profession' => 'nullable|string|max:150',
-        ]);
-
-        $data = [
-            'name' => $this->name,
-            'email' => $this->email,
-            'phone' => $this->phone,
-            'profession' => $this->profession,
-        ];
-
-        if ($this->training->isFree()) {
-            $response = $this->service->registerFree($this->training, $data, Auth::user());
-            $this->dispatch('showAlertMessage', type: $response['success'] ? 'success' : 'error', message: $response['message']);
-
-            if ($response['success']) {
-                $this->alreadyRegistered = true;
-            }
-
-            return;
-        }
-
-        $response = $this->service->addToCart($this->training, $data, Auth::user());
+        $response = $this->service->addToCart($this->training, Auth::user());
         $this->dispatch('showAlertMessage', type: $response['success'] ? 'success' : 'error', message: $response['message']);
 
         if ($response['success']) {

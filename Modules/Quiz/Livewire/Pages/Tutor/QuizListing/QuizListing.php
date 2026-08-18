@@ -2,9 +2,6 @@
 
 namespace Modules\Quiz\Livewire\Pages\Tutor\QuizListing;
 
-use App\Models\UserSubjectGroupSubject;
-use App\Services\BookingService;
-use App\Services\SubjectService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
@@ -50,15 +47,11 @@ class QuizListing extends Component
 
 
     protected QuizService $quizService;
-    protected BookingService $bookingService;
-    protected SubjectService $subjectService;
 
     public function boot(QuizService $quizService)
     {
         $this->user = Auth::user();
         $this->quizService = $quizService;
-        $this->bookingService   = new BookingService($this->user);
-        $this->subjectService   = new SubjectService($this->user);
     }
 
     public function mount()
@@ -70,13 +63,6 @@ class QuizListing extends Component
         $this->dateFormat       = setting('_general.date_format');
         $this->timeFormat       = setting('_lernen.time_format');
 
-        $this->quizzable_types = [
-            [
-                'label' => 'Subject',
-                'value' => UserSubjectGroupSubject::class,
-            ],
-        ];
-
         $this->statuses = [
             Quiz::STATUS_DRAFT              => Quiz::STATUS_DRAFT,
             Quiz::STATUS_PUBLISHED          => Quiz::STATUS_PUBLISHED,
@@ -85,19 +71,8 @@ class QuizListing extends Component
 
         $this->form->setQuestionTypes();
 
-        if (isActiveModule('Courses')) {
-            $this->quizzable_types[] = [
-                'label' => 'Course',
-                'value' => \Modules\Courses\Models\Course::class,
-            ];
-            
-            $this->form->quizzable_type = \Modules\Courses\Models\Course::class;
-            $this->quizzable_ids = $this->initOptions($this->form->quizzable_type);
-        } else {
-            $this->form->quizzable_type = UserSubjectGroupSubject::class;
-            $data = $this->initOptions($this->form->quizzable_type);
-            $this->dispatch('quizValuesUpdated', options: $data, reset: false);
-        }
+        $this->form->quizzable_type = \Modules\Courses\Models\Course::class;
+        $this->quizzable_ids = $this->initOptions($this->form->quizzable_type);
     }
 
     #[Layout('layouts.app')]
@@ -192,14 +167,6 @@ class QuizListing extends Component
         if ($key == 'quizzable_type' && (!empty($this->form->quizzable_type))) {
             $data = $this->initOptions($value);
             $this->dispatch('quizValuesUpdated', options: $data, reset: true);
-            if ($value == 'App\Models\UserSubjectGroupSubject') {
-                $this->dispatch('initSelect2', target: '.am-select2');
-                $this->dispatch('slotsList');
-            }
-        } elseif ($key == 'quizzable_id') {
-
-            $this->slots = $this->bookingService->getAvailableSubjectSlots($value, $this->dateFormat, $this->timeFormat);
-            $this->dispatch('addSlotsOptions', options: $this->slots);
         }
     }
 
@@ -207,34 +174,7 @@ class QuizListing extends Component
     {
         if ($type == \Modules\Courses\Models\Course::class) {
             $courses = (new \Modules\Courses\Services\CourseService())->getInstructorCourses(Auth::id(), [], ['title', 'id']);
-            // return $courses->map(fn($course) => ['text' => $course->title, 'id' => $course->id, 'selected' => !empty($this->form->quizzable_id) ? $this->form->quizzable_id == $course->id : false]) ?? [];
             return $courses->map(fn($course) => ['text' => $course->title, 'id' => $course->id, 'selected' => !empty($this->form->quizzable_id) ? $this->form->quizzable_id == $course->id : false])->toArray() ?? [];
-
-        } else if ($type == UserSubjectGroupSubject::class) {
-            $subjectGroups = $this->subjectService->getUserSubjectGroups(['subjects:id,name', 'group:id,name']);
-            $formattedData = [];
-            foreach ($subjectGroups as $sbjGroup) {
-                if ($sbjGroup->subjects->isEmpty()) {
-                    continue;
-                }
-                $groupData = [
-                    'text' => $sbjGroup->group->name,
-                    'children' => []
-                ];
-
-                if ($sbjGroup->subjects) {
-                    foreach ($sbjGroup->subjects as $sbj) {
-                        $groupData['children'][] = [
-                            'id' => $sbj->pivot->id,
-                            'text' => $sbj->name,
-                            'selected' => !empty($this->form->quizzable_id) ? $this->form->quizzable_id == $sbj->pivot->id : false
-                        ];
-                    }
-                }
-                $formattedData[] = $groupData;
-            }
-
-            return $formattedData;
         }
     }
 

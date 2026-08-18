@@ -4,12 +4,10 @@ namespace Modules\Quiz\Livewire\Pages\Tutor\QuizCreation;
 
 
 use Illuminate\Support\Facades\Auth;
-use App\Services\SubjectService;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Modules\Quiz\Livewire\Forms\CreateFormQuiz;
-use App\Services\BookingService;
 use Illuminate\Support\Facades\Route;
 use Livewire\Attributes\Renderless;
 use Modules\Quiz\Livewire\Forms\FillInBlanksForm;
@@ -45,7 +43,7 @@ class CreateQuestion extends Component
     public $isUpdate = false;
     public $quizzable_ids = [];
     public $slots = [];
-    protected $quizService, $subjectService, $questionService, $bookingService;
+    protected $quizService, $questionService;
     public $sessions = [];
     public $selectedSubjectSlots = [];
     public $activeForm = null;
@@ -89,8 +87,6 @@ class CreateQuestion extends Component
     public function boot()
     {
         $this->user = Auth::user();
-        $this->subjectService   = new SubjectService($this->user);
-        $this->bookingService   = new BookingService($this->user);
         $this->quizService      = new QuizService();
         $this->questionService  = new QuestionService();
     }
@@ -367,7 +363,16 @@ class CreateQuestion extends Component
             message: $this->questionId ? __('quiz::quiz.question_updated_successfully') : __('quiz::quiz.question_added_successfully')
         );
 
-        return redirect()->route('quiz.tutor.question-manager', ['quizId' => $this->quizId]);
+        if (empty($this->questionId)) {
+            // Newly created question: reset the form in place so the tutor can
+            // keep adding questions of the same type without losing their scroll position.
+            $this->question_count++;
+            $this->questionMedia = null;
+            $this->mediaType = null;
+            $this->getForm($this->questionType);
+            $this->activeForm->reset();
+            $this->resetQuestionSettings();
+        }
     }
 
     public function resetQuestionSettings()

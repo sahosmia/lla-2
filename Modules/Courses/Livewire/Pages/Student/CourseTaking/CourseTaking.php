@@ -505,8 +505,11 @@ class CourseTaking extends Component
     {
         if(!empty($this->activeCurriculum['media_path'])) {
             if(getStorageDisk() !== 's3') {
-                // $this->activeCurriculum['media_path'] = $this->getCourseSingedUrl($this->activeCurriculum['media_path'], $this->activeCurriculum['content_length']);
-                $this->activeCurriculum['media_path'] = Storage::url($this->activeCurriculum['media_path']);
+                // Stream through our own Range-request-capable controller instead of the
+                // raw storage URL - php artisan serve (and some hosts) don't support HTTP
+                // Range on statically-served files, which breaks progress-bar/arrow-key
+                // seeking (it restarts the video instead of jumping to the clicked time).
+                $this->activeCurriculum['media_path'] = route('courses.curriculum-video', ['curriculumId' => $this->activeCurriculum['id']]);
             }else {
                 $this->activeCurriculum['media_path'] = Storage::url($this->activeCurriculum['media_path']);
             }

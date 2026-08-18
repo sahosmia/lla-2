@@ -3,9 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Order;
-use App\Models\SlotBooking;
 use App\Models\User;
-use App\Services\BookingService;
 use App\Services\OrderService;
 use App\Services\WalletService;
 use Carbon\Carbon;
@@ -23,7 +21,6 @@ class CompletePurchaseJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected Order $order;
-    protected BookingService $bookingService;
     protected OrderService $orderService;
     protected WalletService $walletService;
 
@@ -38,7 +35,7 @@ class CompletePurchaseJob implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(BookingService $bookingService, OrderService $orderService, WalletService $walletService): void
+    public function handle(OrderService $orderService, WalletService $walletService): void
     {
         try {
             $this->order = Order::with(['items.orderable', 'orderBy', 'userProfile'])->find($this->order->id);
@@ -46,7 +43,6 @@ class CompletePurchaseJob implements ShouldQueue
                 return;
             }
 
-            $this->bookingService   = $bookingService;
             $this->orderService     = $orderService;
             $this->walletService    = $walletService;
             $studentSubscription = $tutorSubscriptions = null;
@@ -56,76 +52,12 @@ class CompletePurchaseJob implements ShouldQueue
                $studentRemainingCredits = $studentSubscription?->remaining_credits ?? [];
             }
             $tutorBookings = $tutorFunds = [];
+            $clearFundsJobs = [];
 
             DB::beginTransaction();
             if (!empty($this->order->items)) {
                 foreach($this->order->items as $item) {
-                    if ($item->orderable instanceof SlotBooking) {
-
-                        $this->bookingService->updateBooking($item->orderable, ['status' => 'active']);
-                        $this->bookingService->addBookingLog($item->orderable, [
-                            'activityable_id'   => $item->orderable->student_id,
-                            'activityable_type' => User::class,
-                            'type'              => 'active'
-                        ]);
-
-                        //Calculate tutor funds
-                        $platformFee = getCommission($item->total);
-
-                        $tutorEarning = $item->total - $platformFee;
-                        
-                        if (Module::has('subscriptions') && Module::isEnabled('subscriptions')) {
-                            if (!empty($this->order->subscription_id)) {
-                                if ( !empty($studentSubscription) && ($studentRemainingCredits['sessions'] ?? 0) > 0) {
-                                    $studentRemainingCredits['sessions'] = $studentRemainingCredits['sessions'] - 1;
-                                    $tutorEarning = (new \Modules\Subscriptions\Services\SubscriptionService())->getSubscriptionTutorPayout($studentSubscription);
-                                    $platformFee = 0;
-                                }   
-                            } else {
-                                $tutorSubscription = (new \Modules\Subscriptions\Services\SubscriptionService())->getUserSubscription(userId:$item->orderable?->bookee?->id)->first();
-                                $tutorRemainingCredits[$tutorSubscription?->id] = $tutorSubscription?->remaining_credits ?? [];
-                                if(!empty($tutorSubscription) && ($tutorRemainingCredits[$tutorSubscription?->id]['sessions'] ?? 0) > 0) {
-                                    $tutorRemainingCredits[$tutorSubscription?->id]['sessions'] = $tutorRemainingCredits[$tutorSubscription?->id]['sessions'] - 1;
-                                    $tutorEarning = $item->price;
-                                    $platformFee = 0;
-                                }
-                                $tutorSubscriptions[] = $tutorSubscription;
-                            }
-                        }
-
-                        //Update platform fee in order_items table
-                        $this->orderService->updateOrderItem($item, ['platform_fee'=> $platformFee, 'options' => array_merge($item->options, ['tutor_payout' => $tutorEarning])]);
-                        $tutorFunds[$item->orderable?->bookee?->id] = ($tutorFunds[$item->orderable?->bookee?->id]??0) + $tutorEarning ;
-
-                        //Update tutorBookings
-                        $tutorBookings[$item->orderable?->bookee?->id][] = $item;
-
-                        $this->bookingService->createBookingEventGoogleCalendar($item->orderable);
-                        $this->bookingService->createSlotEventGoogleCalendar($item->orderable);
-                        $this->bookingService->createMeetingLink($item->orderable);
-                        // Calculate delay until the end time of the booking
-                        $endTime = $item->orderable?->end_time;
-                        $delay = now()->diffInSeconds($endTime, false);
-                        if ($delay > 0) {
-                            dispatch(new SendNotificationJob('bookingCompletionRequest',$item->orderable?->booker, [
-                                'tutorName'           => $item->orderable?->tutor?->full_name,
-                                'userName'            => $item->orderable?->student?->full_name,
-                                'sessionDateTime'     => $this->bookingService->getBookingTime($item->orderable, 'booker'),
-                                'completeBookingLink' => route('student.complete-booking', $item->orderable?->id),
-                                'days'                => setting('_lernen.complete_booking_after_days') ?? 3    
-                            ]))->delay($delay);
-                            
-                            dispatch(new SendDbNotificationJob('bookingCompletionRequest', $item->orderable?->booker, [
-                                'tutorName'           => $item->orderable?->tutor?->full_name,
-                                'sessionDateTime'     => $this->bookingService->getBookingTime($item->orderable, 'booker'),
-                                'completeBookingLink' => route('student.complete-booking', $item->orderable?->id),
-                                'days'                => setting('_lernen.complete_booking_after_days') ?? 3    
-                            ]))->delay($delay);
-                        }
-
-                        $completeBookingDelay = Carbon::parse($endTime)->addDays((int)setting('_lernen.complete_booking_after_days') ?? 3);
-                        dispatch(new CompleteBookingJob($item->orderable))->delay($completeBookingDelay);
-                    } elseif(\Nwidart\Modules\Facades\Module::has('courses') && \Nwidart\Modules\Facades\Module::isEnabled('courses') && $item->orderable instanceof \Modules\Courses\Models\Course) {
+                    if(\Nwidart\Modules\Facades\Module::has('courses') && \Nwidart\Modules\Facades\Module::isEnabled('courses') && $item->orderable instanceof \Modules\Courses\Models\Course) {
                         $tutorBookings[$item->orderable?->instructor_id][] = $item;
                         //Calculate tutor funds
                         $platformFee = getCommission($item->total, 'courses');
@@ -163,9 +95,10 @@ class CompletePurchaseJob implements ShouldQueue
                             ];
                             (new \Modules\Courses\Services\CourseService())->addStudentCourse($courseData);
                             $completeCourseDelay = Carbon::parse(now())->addDays((int)setting('_lernen.clear_course_amount_after_days') ?? 3);
-                            dispatch(new \Modules\Courses\Jobs\ClearCourseFundsJob($item->orderable?->instructor_id, $tutorEarning, $this->order->id))->delay($completeCourseDelay);
+                            $clearFundsJobs[] = ['tutorId' => $item->orderable?->instructor_id, 'amount' => $tutorEarning, 'delay' => $completeCourseDelay];
                         }
                     } elseif(Module::has('TrainingCalendar') && Module::isEnabled('TrainingCalendar') && $item->orderable instanceof \Modules\TrainingCalendar\Models\TrainingCalendar) {
+                        $tutorBookings[$item->orderable?->tutor_id][] = $item;
                         $platformFee = getCommission($item->total);
                         $tutorEarning = $item->total - $platformFee;
                         $tutorFunds[$item->orderable?->tutor_id] = ($tutorFunds[$item->orderable?->tutor_id] ?? 0) + $tutorEarning;
@@ -179,7 +112,7 @@ class CompletePurchaseJob implements ShouldQueue
 
                         if (Module::has('courses') && Module::isEnabled('courses')) {
                             $completeCourseDelay = Carbon::parse(now())->addDays((int) setting('_lernen.clear_course_amount_after_days') ?? 3);
-                            dispatch(new \Modules\Courses\Jobs\ClearCourseFundsJob($item->orderable?->tutor_id, $tutorEarning, $this->order->id))->delay($completeCourseDelay);
+                            $clearFundsJobs[] = ['tutorId' => $item->orderable?->tutor_id, 'amount' => $tutorEarning, 'delay' => $completeCourseDelay];
                         }
                     } elseif(\Nwidart\Modules\Facades\Module::has('CourseBundles') && \Nwidart\Modules\Facades\Module::isEnabled('CourseBundles') && $item->orderable instanceof \Modules\CourseBundles\Models\Bundle) {    
                         $bundleCourses = $item->orderable->courses;
@@ -217,7 +150,7 @@ class CompletePurchaseJob implements ShouldQueue
                         }
 
                         $completeCourseDelay = Carbon::parse(now())->addDays((int)setting('_coursebundle.clear_course_bundle_amount_after_days') ?? 3);
-                        dispatch(new \Modules\Courses\Jobs\ClearCourseFundsJob($item->orderable?->instructor_id, $tutorEarning, $this->order->id))->delay($completeCourseDelay);
+                        $clearFundsJobs[] = ['tutorId' => $item->orderable?->instructor_id, 'amount' => $tutorEarning, 'delay' => $completeCourseDelay];
                     } elseif(Module::has('subscriptions') && Module::isEnabled('subscriptions') && $item->orderable instanceof \Modules\Subscriptions\Models\Subscription) {
                         if ($item->orderable?->role_id == getRoleByName('tutor')) {
                             $tutorBookings[$this->order?->user_id][] = $item;
@@ -257,6 +190,12 @@ class CompletePurchaseJob implements ShouldQueue
                     }
                 }
 
+                // Dispatched only after the pending_available wallet records above exist,
+                // since some queue connections (e.g. sync) run jobs immediately and ignore ->delay().
+                foreach ($clearFundsJobs as $clearFundsJob) {
+                    dispatch(new \Modules\Courses\Jobs\ClearCourseFundsJob($clearFundsJob['tutorId'], $clearFundsJob['amount'], $this->order->id))->delay($clearFundsJob['delay']);
+                }
+
                 //Tutor bookings
                 if (!empty($tutorBookings)) {
                     $tutorForEmail = null;
@@ -264,16 +203,7 @@ class CompletePurchaseJob implements ShouldQueue
                         $emailData = [];
                         $emailData['emailFor']  = 'tutor';
                         foreach($bookings as $booking) {
-                            if($booking->orderable instanceof SlotBooking) {
-                                $emailData['tutorName'] = $booking->orderable?->tutor?->full_name;
-                                $tutorForEmail = $booking->orderable?->bookee;
-                                $emailData['bookings'][]=[
-                                    'studentName' => $booking->orderable?->student?->full_name,
-                                    'studentImg'  => $booking->orderable?->student?->image,
-                                    'subjectName' => $booking->options['subject_group'] . ' <br /> ' . $booking->options['subject'],
-                                    'sessionTime' => $this->bookingService->getBookingTime($booking->orderable, 'bookee', true)
-                                ];
-                            } elseif(\Nwidart\Modules\Facades\Module::has('courses') && \Nwidart\Modules\Facades\Module::isEnabled('courses') && $booking->orderable instanceof \Modules\Courses\Models\Course) {
+                            if(\Nwidart\Modules\Facades\Module::has('courses') && \Nwidart\Modules\Facades\Module::isEnabled('courses') && $booking->orderable instanceof \Modules\Courses\Models\Course) {
                                 $emailData['tutorName'] = $booking->orderable->instructor?->profile?->full_name;
                                 $tutorForEmail = $booking->orderable->instructor;
                                 $emailData['courses'][]=[
@@ -310,10 +240,20 @@ class CompletePurchaseJob implements ShouldQueue
                                     'subscriptionPeriod' => $item->orderable?->period,
                                     'expires_at'         => getSubscriptionExpiry($item->orderable)
                                 ];
+                            } elseif (Module::has('TrainingCalendar') && Module::isEnabled('TrainingCalendar') && $booking->orderable instanceof \Modules\TrainingCalendar\Models\TrainingCalendar) {
+                                $emailData['tutorName'] = $booking->orderable?->tutor?->profile?->full_name;
+                                $tutorForEmail = $booking->orderable?->tutor;
+                                $emailData['trainings'][] = [
+                                    'studentName'   => $this->order?->userProfile?->full_name,
+                                    'studentImg'    => $this->order?->userProfile?->image,
+                                    'trainingTitle' => $booking->orderable?->title,
+                                    'eventDatetime' => $booking->orderable?->event_datetime?->format('M d, Y h:i A'),
+                                    'trainingPrice' => $booking->orderable?->price,
+                                ];
                             }
                         }
                         dispatch(new SendNotificationJob('sessionBooking',$tutorForEmail, $emailData));
-                        dispatch(new SendDbNotificationJob('sessionBooking', $tutorForEmail, ['bookingLink' => route('tutor.bookings.upcoming-bookings')]));
+                        dispatch(new SendDbNotificationJob('sessionBooking', $tutorForEmail, ['bookingLink' => route('courses.tutor.courses')]));
                     }
                 }
 
@@ -322,14 +262,7 @@ class CompletePurchaseJob implements ShouldQueue
                 $emailData['emailFor']  = 'student';
                 $emailData['studentName'] = $this->order?->userProfile?->full_name;
                 foreach ($this->order?->items as $item) {
-                    if($item->orderable instanceof SlotBooking) {
-                        $emailData['bookings'][] = [
-                            'tutorName'   => $item->orderable?->tutor?->full_name,
-                            'tutorImg'    => $item->orderable?->tutor?->image,
-                            'subjectName' => $item->options['subject_group'] . ' <br /> ' . $item->options['subject'],
-                            'sessionTime' => $this->bookingService->getBookingTime($item->orderable, 'booker', true)
-                        ];
-                    } elseif(Module::has('courses') && Module::isEnabled('courses') && $item->orderable instanceof \Modules\Courses\Models\Course) {
+                    if(Module::has('courses') && Module::isEnabled('courses') && $item->orderable instanceof \Modules\Courses\Models\Course) {
                         $emailData['studentName'] = $this->order?->userProfile?->full_name;
                         $emailData['courses'][] = [
                             'tutorName'   => $item->orderable?->instructor?->profile?->full_name,
@@ -362,12 +295,20 @@ class CompletePurchaseJob implements ShouldQueue
                             'subscriptionPeriod' => $item->orderable?->period,
                             'expires_at'         => getSubscriptionExpiry($item->orderable)
                         ];
+                    } elseif (Module::has('TrainingCalendar') && Module::isEnabled('TrainingCalendar') && $item->orderable instanceof \Modules\TrainingCalendar\Models\TrainingCalendar) {
+                        $emailData['trainings'][] = [
+                            'tutorName'     => $item->orderable?->tutor?->profile?->full_name,
+                            'tutorImg'      => $item->orderable?->tutor?->profile?->image,
+                            'trainingTitle' => $item->orderable?->title,
+                            'eventDatetime' => $item->orderable?->event_datetime?->format('M d, Y h:i A'),
+                            'trainingPrice' => $item->orderable?->price,
+                        ];
                     }
                 }
                 
-                if (!empty($emailData['subscriptions']) || !empty($emailData['courses']) || !empty($emailData['bookings'])) {
+                if (!empty($emailData['subscriptions']) || !empty($emailData['courses']) || !empty($emailData['trainings'])) {
                     dispatch(new SendNotificationJob('sessionBooking', $this->order?->orderBy, $emailData));
-                    dispatch(new SendDbNotificationJob('sessionBooking', $this->order?->orderBy, ['bookingLink' => route('student.bookings')]));
+                    dispatch(new SendDbNotificationJob('sessionBooking', $this->order?->orderBy, ['bookingLink' => route('courses.course-list')]));
                 }
 
                 if(!empty($tutorSubscriptions)){

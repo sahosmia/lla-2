@@ -18,7 +18,6 @@ use Modules\Courses\Models\Like;
 use Illuminate\Http\Request;
 use App\Traits\ApiResponser;
 use App\Models\User;
-use App\Services\BookingService;
 use Carbon\Carbon;
 use Modules\Courses\Models\Course;
 
@@ -413,7 +412,7 @@ class CoursesController extends Controller
             return $this->error(message: __('courses::courses.course_already_enrolled'), code: Response::HTTP_BAD_REQUEST);
         }
 
-        $response = (new BookingService(Auth::user()))->enrollFreeCourse($course->id);
+        $response = (new CourseService())->enrollFreeCourse($course->id);
 
         if(empty($response['success'])) {
             return $this->error(data: null,message: __('general.went_wrong'),code: Response::HTTP_INTERNAL_SERVER_ERROR);

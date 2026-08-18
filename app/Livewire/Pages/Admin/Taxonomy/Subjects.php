@@ -147,22 +147,9 @@ class Subjects extends Component
         $isDeleteRec = false;
         $subjectId  = $params['id'] ?? null;
         if ($subjectId) {
-            $subject = Subject::whereId($subjectId)->with(['subjectGroups' => function ($query) {
-                $query->with('slots');
-            }])->first();
-            if ($subject && $subject->subjectGroups()->whereHas('slots')->exists()) {
-                $this->dispatch('showAlertMessage', type: 'error', message: __('general.unable_to_delete_subject'));
-                return;
-            }
+            $subject = Subject::whereId($subjectId)->first();
             $isDeleteRec = $subject ? $subject->delete() : false;
         } elseif (!empty($this->selectedSubjects)) {
-            $subjects = Subject::whereIn('id', $this->selectedSubjects)->get();
-            foreach ($subjects as $subject) {
-                if ($subject->subjectGroups()->whereHas('slots')->exists()) {
-                    $this->dispatch('showAlertMessage', type: 'error', message: __('general.unable_to_delete_subject'));
-                    return;
-                }
-            }
             $isDeleteRec = Subject::whereIn('id', $this->selectedSubjects)->delete();
         }
         if ($isDeleteRec) {

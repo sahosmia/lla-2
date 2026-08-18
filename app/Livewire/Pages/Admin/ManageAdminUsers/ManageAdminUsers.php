@@ -43,14 +43,7 @@ class ManageAdminUsers extends Component
         }
         $this->role =  request()->role;
         $users = User::select('id', 'email', 'created_at', 'status', 'email_verified_at',)
-        ->with(
-            [
-                'roles',
-                'identityVerification' => function ($query) {
-                    $query->select('id', 'user_id', 'parent_verified_at');
-                }
-            ]
-        )
+        ->with(['roles'])
         ->whereHas('roles', function ($query) {
             $query->where('name', 'sub_admin');
         })

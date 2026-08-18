@@ -245,14 +245,22 @@ jQuery(window).on('load', function () {
             jQuery('[data-type="frame"]').remove();
         } 
         else {
-            tag = `<div class="uc-element-wildcard" data-actions="delete, copy" data-handles="ne, se, sw, nw" data-wildcard_name="attachment"> 
+            tag = `<div class="uc-element-wildcard" data-actions="delete, copy" data-handles="ne, se, sw, nw" data-wildcard_name="attachment">
                     <div class="uc-wildcard_content">
                         <img src="${url}" alt="image">
                     </div>
                 </div>`;
         }
-        jQuery('#uc-canvas-boundry').prepend(tag);
-        makeDraggable(jQuery('.uc-element-wildcard'));
+        if (tag) {
+            jQuery('#uc-canvas-boundry').prepend(tag);
+            const newElement = jQuery('#uc-canvas-boundry').children().first();
+            if (newElement.hasClass('uc-element-wildcard')) {
+                positionNewElement(newElement);
+                makeDraggable(newElement);
+            } else {
+                makeDraggable(jQuery('.uc-element-wildcard'));
+            }
+        }
     });
     
 
@@ -390,7 +398,9 @@ jQuery(window).on('load', function () {
         let wildcard = jQuery(element).css('color', '#000000');
 
         jQuery('#uc-canvas-boundry').prepend(wildcard);
-        makeDraggable(jQuery('.uc-element-wildcard'));
+        const newElement = jQuery('#uc-canvas-boundry').children().first();
+        positionNewElement(newElement);
+        makeDraggable(newElement);
     });
 
     jQuery(document).on('click', '.uc-element-wildcard', function (e) {
@@ -667,6 +677,23 @@ function addedFonts(font = '') {
         existingFontLinks.remove();
     }
     jQuery('head').append(linkTag);
+}
+
+function positionNewElement(element) {
+    // Newly added elements had no explicit top/left, so every new element
+    // landed at the same spot and stacked invisibly on top of previous ones.
+    // Stagger each new element so it's visibly distinct and separately movable.
+    const step = 24;
+    const maxSteps = 12;
+    const existingCount = jQuery('#uc-canvas-boundry')
+        .find('.uc-element-wildcard')
+        .not(element)
+        .length;
+    const offset = (existingCount % maxSteps) * step;
+    element.css({
+        top: 20 + offset + 'px',
+        left: 20 + offset + 'px',
+    });
 }
 
 function makeDraggable(elements) {

@@ -9,7 +9,6 @@ use Modules\Courses\Models\Category;
 use Modules\Courses\Models\Course;
 use Modules\Courses\Services\CourseService;
 use Livewire\Component;
-use App\Jobs\GenerateCertificateJob;
 class CourseBasicDetails extends Component
 {
     use PrepareForValidation;

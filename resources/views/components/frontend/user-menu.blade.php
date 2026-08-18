@@ -266,12 +266,6 @@
                             {{ __('sidebar.profile_settings') }}
                         </a>
                     </li>
-                    <!--<li>-->
-                    <!--    <a href="{{ route('student.bookings') }}">-->
-                    <!--        <i class="am-icon-calender-day"></i>-->
-                    <!--        {{ __('sidebar.bookings') }}-->
-                    <!--    </a>-->
-                    <!--</li>-->
                     @if(\Nwidart\Modules\Facades\Module::has('courses') && \Nwidart\Modules\Facades\Module::isEnabled('courses') && function_exists('courseMenuOptions'))
                         @php
                             $courseMenuOptions = courseMenuOptions('student');
@@ -284,41 +278,20 @@
                         </li>
                     @endif
                     <li>
-                        <a href="{{ route('student.billing-detail') }}">
-                            <svg class="am-svg-fill" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                <path d="M16.4336 13.7498C16.4336 14.394 17.1102 15.0201 17.8296 15.0201C18.6889 15.0201 19.385 14.5165 19.4239 13.7453C19.5405 11.4225 16.4336 12.8606 16.4258 10.7193C16.4219 9.94812 16.9702 9.42188 17.8257 9.42188C18.5373 9.42188 19.4239 9.83017 19.4239 10.7284" stroke="#585858" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"/>
-                                <path d="M17.8301 15.7237V15.0205" stroke="#585858" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"/>
-                                <path d="M17.8301 9.42227V8.72363" stroke="#585858" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"/>
-                                <path d="M17.8364 17.9648V18C17.8364 19.6569 16.4933 21 14.8364 21H7.57324C5.91639 21 4.57324 19.6569 4.57324 18V6C4.57324 4.34315 5.91639 3 7.57324 3H11.2048H14.5206C16.3519 3 17.8364 4.48453 17.8364 6.31579V6.31579" stroke="#585858" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M7.64844 8.83896L8.51252 9.59971L11.2591 6.84766" stroke="#585858" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M7.64844 13.3896H12.6484" stroke="#585858" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"/>
-                                <path d="M7.64844 17.082H12.6484" stroke="#585858" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"/>
-                            </svg>
-                            {{ __('sidebar.billing_detail') }}
-                        </a>
-                    </li>
-                    <li>
                         <a href="{{ route('student.favourites') }}">
                             <i class="am-icon-heart-01"></i>
                             {{ __('sidebar.favourites') }}
                         </a>
                     </li>
-                    <li>
-                        <a href="{{ route('find-tutors') }}" >
-                            <i class="am-icon-user-02"></i>
-                            {{__('sidebar.find_tutors') }}
-                        </a>
-                    </li>
-                    @if(\Nwidart\Modules\Facades\Module::has('courses') && \Nwidart\Modules\Facades\Module::isEnabled('courses'))
+                    @if(\Nwidart\Modules\Facades\Module::has('TrainingCalendar') && \Nwidart\Modules\Facades\Module::isEnabled('TrainingCalendar'))
                         <li>
-                            <a href="{{ route('courses.search-courses') }}">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M2.5 3.96429C2.5 1.78814 4.23508 0 6.40478 0H17.5952C19.7649 0 21.5 1.78815 21.5 3.96429V18.8214C21.5 19.0468 21.4006 19.2489 21.2433 19.3864C21.2263 19.4019 21.2083 19.4169 21.1893 19.4313L21.1893 19.4313L21.049 19.5377C20.0672 20.2825 20.0669 21.7897 21.0484 22.5349C21.6452 22.9879 21.3683 24 20.5566 24H6.20458C4.14603 24 2.50319 22.2999 2.51013 20.2372L2.5144 18.9684C2.50495 18.9209 2.5 18.8717 2.5 18.8214V3.96429ZM4.01238 19.5714L4.01012 20.2422C4.00589 21.5012 5.00286 22.5 6.20458 22.5H19.1401C18.703 21.5789 18.7032 20.4923 19.1409 19.5714H4.01238ZM20 18.0714H4V3.96429C4 2.59003 5.08981 1.5 6.40478 1.5H17.5952C18.9102 1.5 20 2.59002 20 3.96429V18.0714ZM11.6403 5.04127C9.28792 5.04127 7.35712 6.98815 7.35712 9.41939C7.35712 11.8506 9.28792 13.7975 11.6403 13.7975C13.9927 13.7975 15.9235 11.8506 15.9235 9.41939C15.9235 6.98815 13.9927 5.04127 11.6403 5.04127ZM5.85712 9.41939C5.85712 6.18627 8.4332 3.54127 11.6403 3.54127C14.8474 3.54127 17.4235 6.18627 17.4235 9.41939C17.4235 10.7695 16.9743 12.017 16.2175 13.0123L17.9277 14.7548C18.2179 15.0504 18.2135 15.5252 17.9178 15.8154C17.6222 16.1055 17.1474 16.1011 16.8572 15.8055L15.1645 14.0808C14.1905 14.8431 12.9696 15.2975 11.6403 15.2975C8.4332 15.2975 5.85712 12.6525 5.85712 9.41939Z" fill="#585858"></path>
-                                </svg>
-                                {{ __('courses::courses.find_courses') }}
+                            <a href="{{ route('trainingcalendar.student.my-trainings') }}">
+                                <i class="am-icon-calender-day"></i>
+                                {{ __('trainingcalendar::trainingcalendar.menu_student') }}
                             </a>
                         </li>
                     @endif
+                    {{-- Find Courses menu item hidden from student account dropdown --}}
                 @elseif($userRole == 'tutor')
                     <li>
                         <a href="{{ route('tutor.dashboard') }}">
@@ -329,12 +302,6 @@
                     <li>
                         <a href="{{ route('tutor.profile.personal-details') }}"><i class="am-icon-user-01"></i>{{ __('sidebar.profile_settings') }}</a>
                     </li>
-                    <!--<li>-->
-                    <!--    <a href="{{ route('tutor.bookings.subjects') }}">-->
-                    <!--        <i class="am-icon-calender-day"></i>-->
-                    <!--        {{ __('sidebar.bookings') }}-->
-                    <!--    </a>-->
-                    <!--</li>-->
                     @if (\Nwidart\Modules\Facades\Module::has('forumwise') && \Nwidart\Modules\Facades\Module::isEnabled('forumwise'))
                         <li>
                             <a href="{{ route('forums') }}">
@@ -379,11 +346,13 @@
                     </li>       
                 @endif     
                 @if($userRole == 'tutor' || $userRole == 'student')
-                    <li>
-                        <a href="{{ route('laraguppy.messenger') }}">
-                            <i class="am-icon-chat-03"></i>
-                            {{ __('sidebar.messages') }}</a>
-                    </li>
+                    @if($userRole == 'tutor')
+                        <li>
+                            <a href="{{ route('laraguppy.messenger') }}">
+                                <i class="am-icon-chat-03"></i>
+                                {{ __('sidebar.messages') }}</a>
+                        </li>
+                    @endif
                     @if (\Nwidart\Modules\Facades\Module::has('subscriptions') && \Nwidart\Modules\Facades\Module::isEnabled('subscriptions'))
                         <li>
                             <a href="{{ url(auth()->user()->role.'-subscriptions') }}">

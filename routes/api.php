@@ -3,7 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BillingDetailController;
 use App\Http\Controllers\Api\TaxonomiesController;
-use App\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\CertificationController;
 use App\Http\Controllers\Api\EducationController;
 use App\Http\Controllers\Api\ExperienceController;
@@ -11,8 +11,6 @@ use App\Http\Controllers\Api\AccountSettingController;
 use App\Http\Controllers\Api\FavouriteTutorController;
 use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\OptionBuilderController;
-use App\Http\Controllers\Api\IdentityController;
-use App\Http\Controllers\Api\CartController;
 use Symfony\Component\HttpFoundation\Response;
 use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\NotificationController;
@@ -43,8 +41,6 @@ Route::get('recommended-tutors',                                [TutorController
 Route::get('find-tutors',                                       [TutorController::class,'findTutots']);
 Route::get('tutor/{slug}',                                      [TutorController::class,'getTutorDetail']);
 Route::get('student-reviews/{id}',                              [StudentController::class,'getStudentReviews']);
-Route::get('tutor-available-slots',                             [TutorController::class,'getTutorAvailableSlots']);
-Route::get('slot-detail/{id}',                                  [TutorController::class,'slotDetail']);
 
 Route::apiResource('tutor-education',                           EducationController::class)->only(['show','store','update','destroy']);
 Route::apiResource('tutor-experience',                          ExperienceController::class)->only(['show','store','update','destroy']);
@@ -56,7 +52,6 @@ Route::get('states',                                        [TaxonomiesControlle
 
 Route::middleware('auth:sanctum')->group(function () {
 
-    Route::get('upcoming-bookings',                             [BookingController::class,'getUpComingBooking']);
     Route::post('tutor-certification/{id}',                     [CertificationController::class,'update']);
     Route::post('reset-password',                               [AuthController::class,'resetPassword']);
     Route::post('update-password/{id}',                         [AccountSettingController::class,'updatePassword']);
@@ -69,7 +64,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('profile-settings/{id}',                        [ProfileController::class,'updateProfile']);
     Route::get('profile-settings/{id}',                         [ProfileController::class,'getProfile']);
 
-    Route::apiResource('identity-verification',                 IdentityController::class)->only(['show','destroy','store']);
     Route::get('invoices',                                      [InvoiceController::class,'getInvoices']);
     Route::apiResource('billing-detail',                        BillingDetailController::class)->only(['show', 'update','store']);
     
@@ -81,17 +75,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('payout-status',                                [PayoutController::class,'updateStatus']);
     Route::post('payout-method',                                [PayoutController::class,'addPayoutMethod']);
     Route::Delete('payout-method',                              [PayoutController::class,'removePayoutMethod']);
-    Route::apiResource('booking-cart',                          CartController::class);
     Route::post('checkout',                                     [CheckoutController::class,'addCheckoutDetails']);
-
-    Route::post('complete-booking/{id}',                        [BookingController::class, 'completeBooking']);
-    Route::post('book-free-slot',                               [BookingController::class, 'bookFreeSlot']);
-    Route::post('dispute/{id}',                                 [BookingController::class, 'createDispute']);
-    Route::get('dispute-listing',                               [BookingController::class, 'getDisputes']);
-    Route::get('dispute-detail/{id}',                           [BookingController::class, 'getDispute']);
-    Route::get('dispute-discussion/{id}',                       [BookingController::class, 'getDisputeDiscussion']);
-    Route::post('dispute-reply/{id}',                           [BookingController::class, 'addDisputeReply']);
-    Route::post('review/{id}',                                  [BookingController::class, 'addReview']);
 
     Route::get('notifications',                                [NotificationController::class, 'index']);
     Route::post('notifications/{id}/read',                     [NotificationController::class, 'markAsRead']);
@@ -99,8 +83,8 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::get('country-states',                                    [TutorController::class,'getStates']);
-Route::get('subject-groups',                                   [BookingController::class,'getSubjectGroups']);
-Route::get('subjects',                                         [BookingController::class,'getSubjects']);
+Route::get('subject-groups',                                   [SubjectController::class,'getSubjectGroups']);
+Route::get('subjects',                                         [SubjectController::class,'getSubjects']);
 
 Route::get('settings',                                         [OptionBuilderController::class, 'getOpSettings']);
 Route::fallback(function () {

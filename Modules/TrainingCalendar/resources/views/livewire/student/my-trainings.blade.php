@@ -14,7 +14,7 @@
                     @if($training)
                     <div class="cr-card">
                         <figure class="cr-image-wrapper">
-                            <img src="{{ asset('modules/trainingcalendar/images/training-placeholder.png') }}" alt="{{ $training->title }}" class="cr-background-image" onerror="this.src='{{ asset('demo-content/placeholders/placeholder.png') }}'">
+                            <img src="{{ !empty($training->thumbnail) ? resizedImage($training->thumbnail, 360, 200) : asset('modules/trainingcalendar/images/training.png') }}" alt="{{ $training->title }}" class="cr-background-image">
                             <figcaption>
                                 <span class="am-quizstatus am-quizstatus_published">
                                     {{ ucfirst($training->type) }}
@@ -46,6 +46,13 @@
                                         {{ $training->event_datetime?->format('M d, Y • h:i A') }}
                                     </span>
                                 </div>
+                                @if($training->hasAccreditation())
+                                    <div class="cr-course-category mt-2">
+                                        <span class="am-quizstatus" style="background: #eef2ff; color: #4338ca;">
+                                            {{ $training->accreditation_body }}{{ $training->accreditation_body && $training->formatted_pdu_points ? ' · ' : '' }}{{ $training->formatted_pdu_points ? $training->formatted_pdu_points . ' PDU' : '' }}
+                                        </span>
+                                    </div>
+                                @endif
                             </div>
                             <div class="mt-3">
                                 <a href="{{ route('trainingcalendar.student.training-detail', $registration->id) }}" class="am-btn w-100 justify-content-center">
@@ -111,12 +118,17 @@
             position: absolute;
             top: 10px;
             right: 10px;
+            left: auto;
+            width: auto;
             padding: 2px 10px;
             border-radius: 4px;
             font-size: 12px;
             font-weight: 600;
             background: #e6f9f1;
             color: #00b96b;
+        }
+        .am-student-trainings .am-quizstatus:before {
+            display: none;
         }
     </style>
 @endpush

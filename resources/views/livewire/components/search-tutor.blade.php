@@ -174,21 +174,12 @@
                                                     @endif
                                                 </div>
                                             </div>
-                                            @if(isPaidSystem())
-                                                <div class="am-tutorsearch_fee">
-                                                    <span>{{ __('tutor.session_fee') }}</span>
-                                                    <strong>{{ formatAmount($tutor->min_price) }}<em>/{{ __('tutor.session') }}</em></strong>
-                                                </div>
-                                            @endif
+                                            {{-- Per-session price teaser hidden: session booking feature disabled on this platform --}}
                                         </div>
                                         <ul class="am-tutorsearch_info">
                                             <li>
                                                 <div class="am-tutorsearch_info_icon"><i class="am-icon-star-01"></i></div>
                                                 <span>{{ number_format($tutor->avg_rating, 1) }}<em>/5.0 ({{ $tutor->total_reviews == 1 ? __('general.review_count') : __('general.reviews_count', ['count' => $tutor->total_reviews] ) }})</em></span>
-                                            </li>
-                                            <li>
-                                                <div class="am-tutorsearch_info_icon"><i class="am-icon-user-group"></i></div>
-                                                <span>{{$tutor->active_students}} <em>{{ $tutor->active_students == '1' ? __('tutor.active_student') : __('tutor.active_students') }}</em></span>
                                             </li>
                                             <li>
                                                 <div class="am-tutorsearch_info_icon"><i class="am-icon-menu-2"></i></div>

@@ -97,7 +97,7 @@
                         @endif
                     @endif
                     <div class="form-group am-addressform">
-                        <x-input-label for="address" class="am-important" :value="__('profile.address')" />
+                        <x-input-label for="address" :class="auth()->user()->role == 'tutor' ? 'am-important' : ''" :value="__('profile.address')" />
                         <div class="am-user-location form-group-two-wrap">
                             @if($enableGooglePlaces == '1')
                                 <span class="form-control_wrap" @class(['am-invalid' => $errors->has('form.address')]) >
@@ -144,45 +144,47 @@
                             @endif
                         </div>
                     </div>
-                    <div class="form-group @error('form.native_language') am-invalid @enderror">
-                        <x-input-label for="language" class="am-important" :value="__('profile.native_language')" />
-                        <div class="form-group-two-wrap am-nativelang">
-                            <span class="am-select" wire:ignore>
-                                <select data-componentid="@this" class="am-select2" data-searchable="true" id="native_language" data-wiremodel="form.native_language">
-                                    <option value="">{{ __('profile.select_a_native_language') }}</option>
-                                    @foreach ($languages as $language)
-                                        <option  value="{{ $language }}" {{ $language == $form->native_language ? 'selected' : '' }} >{{ $language }}</option>
-                                    @endforeach
-                                </select>
-                            </span>
-                            <x-input-error field_name="form.native_language" />
-                        </div>
-                    </div>
-                    <div class="form-group am-knowlanguages @error('form.user_languages') am-invalid @enderror">
-                        <x-input-label for="Languages" class="am-important" :value="__('profile.language')" />
-                        <div class="form-group-two-wrap am-nativelang">
-                            <div id="user_lang" wire:ignore>
-                                <span class="am-select am-multiple-select">
-                                    <select data-componentid="@this" data-disable_onchange="true" class="languages am-select2" data-searchable="true" id="user_languages" data-wiremodel="form.user_languages" multiple >
-                                        <option value="" disabled >{{ __('profile.language_placeholder') }}</option>
-                                        @foreach ( $languages as $id => $language)
-                                            <option value="{{ $id }}" @if( in_array( $id, $form->user_languages) ) selected @endif>{{ $language }}</option>
+                    @if(auth()->user()->role == 'tutor')
+                        <div class="form-group @error('form.native_language') am-invalid @enderror">
+                            <x-input-label for="language" class="am-important" :value="__('profile.native_language')" />
+                            <div class="form-group-two-wrap am-nativelang">
+                                <span class="am-select" wire:ignore>
+                                    <select data-componentid="@this" class="am-select2" data-searchable="true" id="native_language" data-wiremodel="form.native_language">
+                                        <option value="">{{ __('profile.select_a_native_language') }}</option>
+                                        @foreach ($languages as $language)
+                                            <option  value="{{ $language }}" {{ $language == $form->native_language ? 'selected' : '' }} >{{ $language }}</option>
                                         @endforeach
                                     </select>
-                                    <div class="languageList">
-                                        @if (!empty( $form->user_languages))
-                                            <ul class="tu-labels">
-                                                @foreach ( $form->user_languages as $language_id )
-                                                    <li><span>{{ $languages[$language_id] }} <a href="javascript:void(0);" class="removeSelectedLang" data-id="{{ $language_id }}"><i class="am-icon-multiply-02"></i></a></span></li>
-                                                @endforeach
-                                            </ul>
-                                        @endif
-                                    </div>
                                 </span>
+                                <x-input-error field_name="form.native_language" />
                             </div>
-                            <x-input-error field_name="form.user_languages" />
                         </div>
-                    </div>
+                        <div class="form-group am-knowlanguages @error('form.user_languages') am-invalid @enderror">
+                            <x-input-label for="Languages" class="am-important" :value="__('profile.language')" />
+                            <div class="form-group-two-wrap am-nativelang">
+                                <div id="user_lang" wire:ignore>
+                                    <span class="am-select am-multiple-select">
+                                        <select data-componentid="@this" data-disable_onchange="true" class="languages am-select2" data-searchable="true" id="user_languages" data-wiremodel="form.user_languages" multiple >
+                                            <option value="" disabled >{{ __('profile.language_placeholder') }}</option>
+                                            @foreach ( $languages as $id => $language)
+                                                <option value="{{ $id }}" @if( in_array( $id, $form->user_languages) ) selected @endif>{{ $language }}</option>
+                                            @endforeach
+                                        </select>
+                                        <div class="languageList">
+                                            @if (!empty( $form->user_languages))
+                                                <ul class="tu-labels">
+                                                    @foreach ( $form->user_languages as $language_id )
+                                                        <li><span>{{ $languages[$language_id] }} <a href="javascript:void(0);" class="removeSelectedLang" data-id="{{ $language_id }}"><i class="am-icon-multiply-02"></i></a></span></li>
+                                                    @endforeach
+                                                </ul>
+                                            @endif
+                                        </div>
+                                    </span>
+                                </div>
+                                <x-input-error field_name="form.user_languages" />
+                            </div>
+                        </div>
+                    @endif
                     @if(setting('_ai_writer_settings.enable_on_profile_settings') == '1')
                         <button type="button" class="am-ai-btn" data-bs-toggle="modal" data-bs-target="#aiModal" data-prompt-type="profile" data-parent-model-id="profile-popup" data-target-selector="#profile_desc" data-target-summernote="true">
                             <img src="{{ asset('images/ai-icon.svg') }}" alt="AI">
@@ -190,7 +192,7 @@
                         </button>
                     @endif
                     <div class="form-group @error('form.description') am-invalid @enderror">
-                        <x-input-label for="introduction" class="am-important" :value="__('profile.description')" />
+                        <x-input-label for="introduction" :class="auth()->user()->role == 'tutor' ? 'am-important' : ''" :value="__('profile.description')" />
                         <div class="am-editor-wrapper">
                             <div class="am-custom-editor am-custom-textarea" wire:ignore>
                                 <textarea id="profile_desc" class="form-control" placeholder="{{ __('profile.description_placeholder') }}" data-textarea="profile_desc">{{ $form->description }}</textarea>
@@ -200,7 +202,7 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <x-input-label class="am-important" :value="__('profile.profile_photo')" />
+                        <x-input-label :class="auth()->user()->role == 'tutor' ? 'am-important' : ''" :value="__('profile.profile_photo')" />
                         <div class="am-uploadoption" x-data="{isUploading:false}" wire:key="uploading-img-{{ time() }}">
                             <div class="tk-draganddrop"
                                 x-bind:class="{ 'am-dragfile' : isDragging, 'am-uploading' : isUploading }"

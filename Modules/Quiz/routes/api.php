@@ -7,9 +7,7 @@ use Modules\Quiz\Http\Controllers\Api\QuestionController;
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::middleware('role:tutor')->group(function () {
-        Route::get('sessions',                          [QuizController::class, 'getSessions']);
         Route::prefix('quiz')->group(function () {
-            Route::get('subjects-list', [QuizController::class, 'getSubjects']);
             Route::get('courses',       [QuizController::class, 'getCourses']);
         });
         Route::get('quizzes',                           [QuizController::class, 'getQuizzes']);

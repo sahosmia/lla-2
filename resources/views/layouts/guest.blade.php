@@ -9,7 +9,6 @@
         @endphp
         <title>{{ $siteTitle }} {{ !empty($title) ? ' | ' . $title : '' }}</title>
         @livewireStyles()
-        @livewireScripts()
         <!-- Scripts -->
         @vite([
             'public/css/bootstrap.min.css',
@@ -17,9 +16,6 @@
             'public/css/select2.min.css',
             'public/css/icomoon/style.css',
             'public/css/videojs.css',
-            'public/js/bootstrap.min.js',
-            'public/js/video.min.js',
-            'public/js/main.js',
         ])
         <link rel="stylesheet" type="text/css" href="{{ asset('css/main.css') }}">
         @if( !empty(setting('_general.enable_rtl')) || !empty(session()->get('rtl')) )
@@ -35,8 +31,12 @@
             {{ $slot }}
         </main>
         <x-popups />
-        <script src="{{ asset('js/jquery.min.js') }}"></script>
-        <script defer src="{{ asset('js/select2.min.js') }}"></script>
+        @livewireScripts()
+        <script src="{{ asset('js/jquery.min.js') }}" data-navigate-once></script>
+        <script defer src="{{ asset('js/bootstrap.min.js') }}" data-navigate-once></script>
+        <script defer src="{{ asset('js/select2.min.js') }}" data-navigate-once></script>
+        <script defer src="{{ asset('js/video.min.js') }}" data-navigate-once></script>
+        <script defer src="{{ asset('js/main.js') }}" data-navigate-once></script>
         @stack('scripts')
         @if( !empty(setting('_scripts_styles.footer_scripts')) )
             {!! setting('_scripts_styles.footer_scripts') !!}

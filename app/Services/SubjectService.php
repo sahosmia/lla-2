@@ -32,13 +32,7 @@ class SubjectService {
                 $query->whereUserId($this->user->id);
             });
         } elseif ($this->user->role === 'student') {
-            $query->whereHas('slots', function($query) {
-                $query->select('id','user_subject_group_subject_id');
-                $query->whereHas('bookings', function($query) {
-                    $query->select('id');
-                    $query->whereStudentId($this->user->id);
-                });
-            });
+            return collect();
         }
 
         $subjects = $query->with(['group:subject_groups.id,name', 'subject:id,name'])->get()
@@ -138,9 +132,7 @@ class SubjectService {
     public function deteletSubject($userGroupId, $userSubjectId){
         $group = $this->user->groups()?->whereId($userGroupId)->first();
         if($group){
-            $groupSubject = $group->userSubjects()
-                                    ->whereId($userSubjectId)
-                                    ->whereDoesntHave('slots', fn($slot) => $slot->select('id','user_subject_group_subject_id'));
+            $groupSubject = $group->userSubjects()->whereId($userSubjectId);
             if ($groupSubject) {
                 return $groupSubject->delete();
             }
@@ -167,9 +159,7 @@ class SubjectService {
     }
 
     public function deleteUserSubjectGroup($groupId): bool {
-        $group = $this->user->groups()->whereId($groupId)
-                    ->whereDoesntHave('userSubjects.slots')
-                    ->first();
+        $group = $this->user->groups()->whereId($groupId)->first();
         if($group){
             $group->userSubjects()->delete();
             $group->delete();

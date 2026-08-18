@@ -31,6 +31,7 @@ class TrainingCalendar extends Model
             'registration_deadline' => 'datetime',
             'event_datetime' => 'datetime',
             'price' => 'decimal:2',
+            'pdu_points' => 'decimal:2',
         ];
     }
 
@@ -95,6 +96,20 @@ class TrainingCalendar extends Model
     public function isFree(): bool
     {
         return (float) $this->price <= 0;
+    }
+
+    public function hasAccreditation(): bool
+    {
+        return !empty($this->accreditation_body) || !empty($this->pdu_points);
+    }
+
+    public function getFormattedPduPointsAttribute(): ?string
+    {
+        if (empty($this->pdu_points)) {
+            return null;
+        }
+
+        return rtrim(rtrim(number_format((float) $this->pdu_points, 2), '0'), '.');
     }
 
     public function getRouteKeyName(): string

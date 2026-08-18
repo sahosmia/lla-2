@@ -2,13 +2,10 @@
 
 namespace Modules\Quiz\Livewire\Pages\Tutor\QuizMark;
 
-use App\Jobs\GenerateCertificateJob;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Jobs\SendNotificationJob;
 use App\Jobs\SendDbNotificationJob;
-use App\Models\UserSubjectGroupSubject;
-use App\Models\UserSubjectSlot;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
@@ -226,29 +223,6 @@ class QuizMark extends Component
                         }
                     }
                 }
-            } elseif ($this->quizAttempt->quiz?->quizzable_type == UserSubjectGroupSubject::class) {
-                $slots = UserSubjectSlot::whereIn('id', $this->quizAttempt->quiz?->user_subject_slots)->get();
-
-                if ($slots->isNotEmpty()) {
-                    foreach ($slots as $slot) {
-                        if (!empty($slot->metadata['template_id'])) {
-                            if ($slot->metadata['assign_quiz_certificate'] == 'any') {
-                                $booking = $slot->bookings->whereStudentId($this->quizAttempt->student_id)->first();
-                                if ($booking) {
-                                    dispatch(new GenerateCertificateJob($booking));
-                                }
-                            }
-                            if ($slot->metadata['assign_quiz_certificate'] == 'all') {
-                                if (!$allQuizAttempts) {
-                                    $booking = $slot->bookings->whereStudentId($this->quizAttempt->student_id)->first();
-                                    if ($booking) {
-                                        dispatch(new GenerateCertificateJob($booking));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
             }
         }
     }
@@ -277,12 +251,12 @@ class QuizMark extends Component
             'tutor_email'        => $this->course?->instructor?->email ?? '',
         ];
 
-        if (Certificate::where('template_id', $this->course?->certificate_id)->where('modelable_type', User::class)->where('modelable_id', auth()->user()->id)->exists()) {
+        if (Certificate::where('template_id', $this->course?->certificate_id)->where('modelable_type', User::class)->where('modelable_id', $this->quizAttempt?->student_id)->exists()) {
             return;
         }
 
         if (!empty($this->course?->certificate_id)) {
-            generate_certificate(template_id: $this->course?->certificate_id, generated_for_type: User::class, generated_for_id: auth()->user()->id, wildcard_data: $wildcard_data);
+            generate_certificate(template_id: $this->course?->certificate_id, generated_for_type: User::class, generated_for_id: $this->quizAttempt?->student_id, wildcard_data: $wildcard_data);
         }
     }
 }

@@ -104,11 +104,6 @@ class QuizService
         $attemp_table = config('quiz.db_prefix') . 'quiz_attempts';
         $quiz_table = config('quiz.db_prefix') . 'quizzes';
 
-        $quizzableTypes = [UserSubjectGroupSubject::class];
-        if (isActiveModule('Courses')) {
-            $quizzableTypes[] = \Modules\Courses\Models\Course::class;
-        }
-
         return Quiz::query()
             ->select('id', 'quizzable_id', 'quizzable_type', 'tutor_id', 'title', 'status', 'created_at')
             ->where('tutor_id', Auth::user()->id)
@@ -132,11 +127,6 @@ class QuizService
                 }
             ])
             ->withWhereHas('quizzable')
-            // ->whereHasMorph('quizzable', $quizzableTypes, function ($query, $type) {
-            //     // empty
-            // })
-
-
             ->withCount([
                 'quizAttempts' => function ($query) {
                     // $query->where('result', '!=', 'assigned');
@@ -150,12 +140,6 @@ class QuizService
 
             ->paginate($filters['per_page'] ?? 10);
     }
-
-    public function quizzsBySlot($slotId)
-    {
-        return Quiz::with('tutor.profile')->whereJsonContains('user_subject_slots', "$slotId")->get();
-    }
-
 
     /**
      * Retrieve paginated attempted quizzes with optional filters.
@@ -388,7 +372,7 @@ class QuizService
                 'tutor_id'              => Auth::id(),
                 'quizzable_type'        => $quizData['quizzable_type'],
                 'quizzable_id'          => $quizData['quizzable_id'],
-                'user_subject_slots'    => $quizData['user_subject_slots'],
+                'user_subject_slots'    => $quizData['user_subject_slots'] ?? null,
                 'title'                 => $quizData['title'],
                 'description'           => $quizData['description'] ?? null,
                 'status'                => $quizData['status'] ?? 'draft',
@@ -448,7 +432,7 @@ class QuizService
             $quiz->update([
                 'quizzable_type'        => $quizData['quizzable_type'],
                 'quizzable_id'          => $quizData['quizzable_id'],
-                'user_subject_slots'    => $quizData['user_subject_slots'],
+                'user_subject_slots'    => $quizData['user_subject_slots'] ?? null,
                 'title'                 => $quizData['title'],
                 'description'           => $quizData['description'] ?? null,
                 'status'                => $quizData['status'] ?? 'draft',

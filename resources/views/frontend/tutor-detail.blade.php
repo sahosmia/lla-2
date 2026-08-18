@@ -168,12 +168,7 @@
                         </div>
                     @else
                         <div class="am-detailuser_novideo">
-                            @if(isPaidSystem())
-                                <div class="am-tutordetail_fee">
-                                    <strong> {!! formatAmountV2($tutor?->min_price) !!}<em>{{__('tutor.per_session') }}</em></strong>
-                                    <span>{{ __('tutor.starting_from') }}</span>
-                                </div>
-                            @endif
+                            {{-- Per-session price teaser hidden: session booking feature disabled on this platform --}}
                             <livewire:pages.tutor.action.action :tutor="$tutor" :isFavourite="$isFavourite" :navigate="false"
                             :key="$tutor->id" />
                         </div>
@@ -351,10 +346,10 @@
                                                                     <i class="am-icon-bar-chart-04"></i>
                                                                     <span>{{ __('courses::courses.'. $course->level) }}</span>
                                                                 </div>
-                                                                <div class="cr-info-item">
+                                                                {{-- <div class="cr-info-item">
                                                                     <i class="am-icon-dribbble-01"></i>
                                                                     <span>{{ $course->language->name }}</span>
-                                                                </div>
+                                                                </div> --}}
                                                             </div>
                                                             <div class="cr-lesson-count">
                                                                 <i class="am-icon-book-1"></i>

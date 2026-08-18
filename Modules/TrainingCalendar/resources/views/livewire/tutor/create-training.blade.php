@@ -12,6 +12,60 @@
                 <fieldset>
                     <div class="am-themeform__wrap">
                         <div class="form-group-wrap">
+                            <div class="form-group @error('thumbnail') am-invalid @enderror">
+                                <label class="am-label">{{ __('trainingcalendar::trainingcalendar.thumbnail') }}</label>
+                                <div class="am-uploadoption" x-data="{isUploading:false, isDragging:false}" wire:key="uploading-thumbnail-{{ time() }}">
+                                    <div class="tk-draganddrop"
+                                        wire:loading.class="am-uploading" wire:target="thumbnail"
+                                        x-bind:class="{ 'am-dragfile' : isDragging, 'am-uploading' : isUploading }"
+                                        x-on:drop.prevent="isUploading = true; isDragging = false"
+                                        wire:drop.prevent="$upload('thumbnail', $event.dataTransfer.files[0])">
+                                        <x-text-input
+                                            name="file"
+                                            type="file"
+                                            id="at_upload_thumbnail"
+                                            x-ref="file_upload"
+                                            accept="{{ !empty($imageExtensions) ? join(',', array_map(function($ex){return('.'.$ex);}, explode(',', $imageExtensions))) : 'image/*' }}"
+                                            x-on:change="isUploading = true; $wire.upload('thumbnail', $refs.file_upload.files[0])"/>
+                                        <label for="at_upload_thumbnail" class="am-uploadfile">
+                                            <span class="am-dropfileshadow">
+                                                <i class="am-icon-plus-02"></i>
+                                                <span class="am-uploadiconanimation">
+                                                    <i class="am-icon-upload-03"></i>
+                                                </span>
+                                                {{ __('general.drop_file_here') }}
+                                            </span>
+                                            <em>
+                                                <i class="am-icon-export-03"></i>
+                                            </em>
+                                            <span>{{ __('general.drop_file_here_or') }} <i>{{ __('general.click_here_file') }}</i> {{ __('general.to_upload') }}
+                                                <em>{{ str_replace(',', ', ', $imageExtensions) }} (max. {{ round($imageSize / 1024) }} MB)</em>
+                                            </span>
+                                            <svg class="am-border-svg "><rect width="100%" height="100%" rx="12"></rect></svg>
+                                        </label>
+                                    </div>
+
+                                    @if ($thumbnail)
+                                        <div class="am-uploadedfile" x-bind:class="{ 'am-dragfile' : isDragging, 'am-uploading' : isUploading }">
+                                            <img src="{{ $thumbnail->temporaryUrl() }}" alt="{{ __('trainingcalendar::trainingcalendar.thumbnail') }}">
+                                            <span>{{ basename(parse_url($thumbnail->temporaryUrl(), PHP_URL_PATH)) }}</span>
+                                            <a href="javascript:void(0);" wire:click="removeThumbnail" class="am-delitem">
+                                                <i class="am-icon-trash-02"></i>
+                                            </a>
+                                        </div>
+                                    @elseif ($existingThumbnail)
+                                        <div class="am-uploadedfile" x-bind:class="{ 'am-dragfile' : isDragging, 'am-uploading' : isUploading }">
+                                            <img src="{{ url(Storage::url($existingThumbnail)) }}" alt="{{ __('trainingcalendar::trainingcalendar.thumbnail') }}">
+                                            <span>{{ basename(parse_url(url(Storage::url($existingThumbnail)), PHP_URL_PATH)) }}</span>
+                                            <a href="javascript:void(0);" wire:click="removeThumbnail" class="am-delitem">
+                                                <i class="am-icon-trash-02"></i>
+                                            </a>
+                                        </div>
+                                    @endif
+                                    @error('thumbnail') <span class="text-danger">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+
                             <div class="form-group @error('title') am-invalid @enderror">
                                 <label class="am-label am-important">{{ __('trainingcalendar::trainingcalendar.title') }}</label>
                                 <div class="form-control_wrap">
@@ -42,6 +96,39 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="form-group">
+                                <div class="form-group-two-wrap">
+                                    <div class="form-control_wrap @error('accreditation_body') am-invalid @enderror">
+                                        <label class="am-label">{{ __('trainingcalendar::trainingcalendar.accreditation_body') }}</label>
+                                        <input type="text" class="form-control" wire:model="accreditation_body" placeholder="{{ __('trainingcalendar::trainingcalendar.enter_accreditation_body') }}">
+                                        @error('accreditation_body') <span class="text-danger">{{ $message }}</span> @enderror
+                                    </div>
+                                    <div class="form-control_wrap @error('pdu_points') am-invalid @enderror">
+                                        <label class="am-label">{{ __('trainingcalendar::trainingcalendar.pdu_points') }}</label>
+                                        <input type="number" step="0.01" min="0" class="form-control" wire:model="pdu_points" placeholder="{{ __('trainingcalendar::trainingcalendar.enter_pdu_points') }}">
+                                        @error('pdu_points') <span class="text-danger">{{ $message }}</span> @enderror
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if(isActiveModule('upcertify'))
+                                <div class="form-group">
+                                    <div class="form-control_wrap @error('certificate_id') am-invalid @enderror">
+                                        <label class="am-label">{{ __('trainingcalendar::trainingcalendar.certificate_template') }}</label>
+                                        <span class="am-select">
+                                            <select class="form-control am-select2" wire:model="certificate_id">
+                                                <option value="">{{ __('trainingcalendar::trainingcalendar.no_certificate') }}</option>
+                                                @foreach($templates as $template)
+                                                    <option value="{{ $template->id }}">{{ $template->title }}</option>
+                                                @endforeach
+                                            </select>
+                                        </span>
+                                        @error('certificate_id') <span class="text-danger">{{ $message }}</span> @enderror
+                                        <small class="am-help-text">{{ __('trainingcalendar::trainingcalendar.certificate_template_hint') }}</small>
+                                    </div>
+                                </div>
+                            @endif
 
                             <div class="form-group">
                                 <div class="form-group-two-wrap">

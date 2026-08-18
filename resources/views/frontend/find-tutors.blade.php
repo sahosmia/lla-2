@@ -22,21 +22,8 @@
         <div class="container">
             <div class="row">
                 <div class="col-12">
+                    {{-- Session-type tabs hidden: session booking feature disabled on this platform --}}
                     <div class="am-searchfilter_tabs">
-                        <ul class="am-searchfilter_tabslist">
-                            <li>
-                                <a href="javascript:void(0);" data-type="" @class(['am-session-tab', 'active'=>
-                                    $filters['session_type'] == ''])>{{ __('tutor.all_sessions') }}</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0);" data-type="one" @class(['am-session-tab', 'active'=>
-                                    $filters['session_type'] == 'one'])>{{ __('tutor.private_sessions') }}</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0);" data-type="group" @class(['am-session-tab', 'active'=>
-                                    $filters['session_type'] == 'group'])>{{ __('tutor.group_sessions') }}</a>
-                            </li>
-                        </ul>
                         <div class="am-clearfilterbtn d-none">
                             <a href="javascript:void(0);" id="clear_filters">{{ __('general.clear_all_filter') }}
                                 <i class="am-icon-multiply-02"></i>
@@ -118,7 +105,7 @@
                                     <option value="desc" {{ (($filters['sort_by'] ?? '') == 'desc' ? 'selected' : '') }}>{{ __('general.sort_by_z_a') }}</option>
                                 </select>
                             </span>
-                            <span class="am-select am-languageselect">
+                            {{-- <span class="am-select am-languageselect">
                                 <span class="am-select_title">{{ __('general.language') }}:</span>
                                 <select class="am-select2" id="language_id" data-searchable="true" multiple
                                     data-class="am-sort_dp_option" data-placeholder="{{ __('general.select_lang') }}">
@@ -128,7 +115,7 @@
                                         []) ? 'selected' : '' }}>{{ $lang->name }}</option>
                                     @endforeach
                                 </select>
-                            </span>
+                            </span> --}}
                         </div>
                     </div>
                 </div>
@@ -297,7 +284,7 @@
                     $('#group_id')?.val(null).trigger('change');
                     $('#subject_id')?.val(null).trigger('change');
                     $('#tutor_country')?.val(null)?.trigger('change');
-                    $('#language_id')?.val(null)?.trigger('change');
+                    // $('#language_id')?.val(null)?.trigger('change');
                     $('#clear_filters').parent().addClass('d-none');
                     applySearchFilter(false);
                     let newUrl = `${window.location.pathname}`;
@@ -328,15 +315,15 @@
                     applySearchFilter()
                 });
 
-                jQuery(document).on('change', '#language_id', function (e){
-                    let value = $('#language_id').select2("val");
-                    if(value?.length > 0){
-                        filter_record['language_id'] = value[0]?.length > 0 ? value : [];
-                    } else {
-                        filter_record['language_id'] = [];
-                    }
-                    applySearchFilter()
-                });
+                // jQuery(document).on('change', '#language_id', function (e){
+                //     let value = $('#language_id').select2("val");
+                //     if(value?.length > 0){
+                //         filter_record['language_id'] = value[0]?.length > 0 ? value : [];
+                //     } else {
+                //         filter_record['language_id'] = [];
+                //     }
+                //     applySearchFilter()
+                // });
 
                 
                

@@ -3,13 +3,17 @@
 namespace Modules\TrainingCalendar\Livewire\Pages\Tutor;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Modules\TrainingCalendar\Models\TrainingCalendar;
 use Modules\TrainingCalendar\Services\TrainingCalendarService;
 
 class CreateTraining extends Component
 {
+    use WithFileUploads;
+
     public ?int $trainingId = null;
     public string $title = '';
     public string $description = '';
@@ -19,7 +23,18 @@ class CreateTraining extends Component
     public string $registration_deadline = '';
     public string $event_datetime = '';
     public $max_seats = 50;
-    public string $status = TrainingCalendar::STATUS_DRAFT;
+    public string $status = TrainingCalendar::STATUS_PUBLISHED;
+
+    public $thumbnail;
+    public ?string $existingThumbnail = null;
+    public string $imageExtensions = '';
+    public int $imageSize = 0;
+
+    public string $accreditation_body = '';
+    public $pdu_points = null;
+
+    public $certificate_id = '';
+    public $templates = [];
 
     protected TrainingCalendarService $service;
 
@@ -31,6 +46,12 @@ class CreateTraining extends Component
     public function mount(?int $trainingId = null): void
     {
         $this->trainingId = $trainingId;
+        $this->imageExtensions = setting('_general.allowed_image_extensions') ?? 'jpg,jpeg,png';
+        $this->imageSize = (int) (setting('_general.max_image_size') ?? 1) * 1024;
+
+        if (isActiveModule('upcertify')) {
+            $this->templates = get_templates();
+        }
 
         if ($trainingId) {
             $training = $this->service->getTraining($trainingId);
@@ -48,9 +69,26 @@ class CreateTraining extends Component
             $this->event_datetime = $training->event_datetime?->format('Y-m-d\TH:i') ?? '';
             $this->max_seats = $training->max_seats;
             $this->status = $training->status;
+            $this->existingThumbnail = $training->thumbnail;
+            $this->accreditation_body = $training->accreditation_body ?? '';
+            $this->pdu_points = $training->pdu_points;
+            $this->certificate_id = $training->certificate_id ?? '';
         } else {
             $this->max_seats = (int) trainingCalendarSetting('default_max_seats', 50);
         }
+    }
+
+    public function updatedThumbnail(): void
+    {
+        $this->validate([
+            'thumbnail' => 'image|mimes:' . $this->imageExtensions . '|max:' . $this->imageSize,
+        ]);
+    }
+
+    public function removeThumbnail(): void
+    {
+        $this->thumbnail = null;
+        $this->existingThumbnail = null;
     }
 
     public function save(): void
@@ -69,10 +107,17 @@ class CreateTraining extends Component
             'event_datetime' => 'required|date|after:registration_deadline',
             'max_seats' => 'nullable|integer|min:1',
             'status' => 'required|in:draft,published,cancelled',
+            'accreditation_body' => 'nullable|string|max:100',
+            'pdu_points' => 'nullable|numeric|min:0|max:9999.99',
+            'certificate_id' => 'nullable|integer',
         ];
 
         if ($this->type === TrainingCalendar::TYPE_OFFLINE) {
             $rules['venue'] = 'required|string|max:255';
+        }
+
+        if ($this->thumbnail) {
+            $rules['thumbnail'] = 'image|mimes:' . $this->imageExtensions . '|max:' . $this->imageSize;
         }
 
         $this->validate($rules);
@@ -87,10 +132,24 @@ class CreateTraining extends Component
             'event_datetime' => $this->event_datetime,
             'max_seats' => $this->max_seats ?: (int) trainingCalendarSetting('default_max_seats', 50),
             'status' => $this->status,
+            'accreditation_body' => $this->accreditation_body ?: null,
+            'pdu_points' => $this->pdu_points !== '' && $this->pdu_points !== null ? $this->pdu_points : null,
+            'certificate_id' => $this->certificate_id !== '' ? $this->certificate_id : null,
         ];
 
-        if ($this->trainingId) {
-            $training = $this->service->getTraining($this->trainingId);
+        $training = $this->trainingId ? $this->service->getTraining($this->trainingId) : null;
+
+        if ($this->thumbnail) {
+            if ($training?->thumbnail) {
+                Storage::disk(getStorageDisk())->delete($training->thumbnail);
+            }
+            $data['thumbnail'] = $this->thumbnail->store('training-calendars/thumbnails', getStorageDisk());
+        } elseif ($training && $training->thumbnail && $this->existingThumbnail === null) {
+            Storage::disk(getStorageDisk())->delete($training->thumbnail);
+            $data['thumbnail'] = null;
+        }
+
+        if ($training) {
             $this->service->updateTraining($training, $data);
         } else {
             $this->service->createTraining($data, Auth::id());

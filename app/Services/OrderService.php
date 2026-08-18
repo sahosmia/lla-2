@@ -7,7 +7,6 @@ use App\Casts\OrderStatusCast;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Database\Eloquent\Builder;
-use App\Models\SlotBooking;
 use Illuminate\Support\Facades\Auth;
 use Nwidart\Modules\Facades\Module;
 
@@ -21,7 +20,7 @@ class OrderService
     public function getUserOrderDetail()
     {
         $order = Order::where('user_id', Auth::user()->id);
-        $orderableTypes = [SlotBooking::class];
+        $orderableTypes = [];
 
         if (Module::has('courses') && Module::isEnabled('courses')) {
             $orderableTypes[] = Course::class;
@@ -60,9 +59,7 @@ class OrderService
             ->whereHasMorph('orderable', $orderableTypes, function ($query, $type) use ($userId) {
                 if (!empty($userId) && Auth::user()->role == 'tutor') {
                    if (!empty($userId) && Auth::user()->role == 'tutor') {
-                    if ($type === SlotBooking::class) {
-                        $query->where('tutor_id', $userId)->with(['tutor']);
-                    } elseif (Module::has('courses') && Module::isEnabled('courses') && $type === \Modules\Courses\Models\Course::class) {
+                    if (Module::has('courses') && Module::isEnabled('courses') && $type === \Modules\Courses\Models\Course::class) {
                         $query->where('instructor_id', $userId)->with(['instructor']);
                     } elseif (Module::has('subscriptions') && Module::isEnabled('subscriptions') && $type === \Modules\Subscriptions\Models\Subscription::class) {
                         $query->where('role_id', getRoleByName(auth()->user()->role));
@@ -80,47 +77,6 @@ class OrderService
                     }
                 }
             });
-
-        if (!empty($search)) {
-            $orders->where(function ($query) use ($search) {
-                $query->where('options->subject', $search);
-            });
-        }
-
-
-        if (!empty($selectedSubject)) {
-            $orders->where(function ($query) use ($selectedSubject) {
-                $query->where('options->subject', $selectedSubject);
-            });
-        }
-
-        if (!empty($selectedSubGroup)) {
-            $orders->where(function ($query) use ($selectedSubGroup) {
-                $query->where('options->subject_group', $selectedSubGroup);
-            });
-        }
-
-        $orders = $orders->orderBy('id', $sortby ?? 'asc')
-            ->paginate(setting('_general.per_page_opt') ?? 10);
-
-        return $orders;
-    }
-
-    public function getBookings($status, $search, $sortby, $selectedSubject, $selectedSubGroup)
-    {
-        $orders = OrderItem::withWhereHas('orders', function ($query) use ($status) {
-            $query->select('id', 'status', 'transaction_id', 'user_id')->with('userProfile');
-            if (isset(OrderStatusCast::$statuses[$status])) {
-                $query->whereStatus(OrderStatusCast::$statuses[$status]);
-            }
-        })->whereHasMorph('orderable', [SlotBooking::class])
-            ->with('orderable');
-
-        // if (!empty($search)) {
-        //     $orders->where(function ($query) use ($search) {
-        //         $query->where('subject', $search);
-        //     });
-        // }
 
         if (!empty($search)) {
             $orders->where(function ($query) use ($search) {

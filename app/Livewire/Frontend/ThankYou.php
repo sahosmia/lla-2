@@ -5,7 +5,6 @@ namespace App\Livewire\Frontend;
 use App\Jobs\CompletePurchaseJob;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\SlotBooking;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Bus;
 use Livewire\Attributes\Layout;
@@ -101,10 +100,6 @@ class ThankYou extends Component
             return route('trainingcalendar.student.my-trainings');
         }
 
-        if ($types->contains(SlotBooking::class)) {
-            return route('student.bookings');
-        }
-
         return auth()->user()?->role === 'student'
             ? route('student.profile.personal-details')
             : route('tutor.invoices');
@@ -124,10 +119,6 @@ class ThankYou extends Component
             && $types->contains(\Modules\TrainingCalendar\Models\TrainingCalendar::class)
         ) {
             return __('thank_you.continue_my_trainings');
-        }
-
-        if ($types->contains(SlotBooking::class)) {
-            return __('thank_you.continue_bookings');
         }
 
         return __('thank_you.continue_profile');

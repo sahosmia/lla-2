@@ -13,6 +13,10 @@ new #[Layout('layouts.guest')] class extends Component
     public string $id = '';
     public function mount() {
         $this->id = request()->query('id') ?? '';
+
+        if ($redirect = request()->query('redirect')) {
+            Session::put('url.intended', $redirect);
+        }
     }
     /**
      * Handle an incoming authentication request.
@@ -34,11 +38,7 @@ new #[Layout('layouts.guest')] class extends Component
 
         $this->dispatch('showAlertMessage', type: 'success', title: __('general.success_title') , message: __('general.login_success'));
         usleep(500);
-        if($this->id != '' && auth()->user()->role == 'student'){
-            $this->redirect(route('session-detail', encrypt($this->id)));
-        }else {
-            $this->redirect(auth()->user()->redirect_after_login);
-        }
+        $this->redirectIntended(default: auth()->user()->redirect_after_login, navigate: true);
     }
 
     public function redirectGoogle() 

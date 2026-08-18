@@ -4,8 +4,9 @@
         @foreach($trainings as $training)
             <div class="col-md-6 col-lg-4">
                 <div class="modern-training-card">
-                    
-                
+                    <figure class="training-card-thumb">
+                        <img src="{{ !empty($training->thumbnail) ? resizedImage($training->thumbnail, 400, 220) : asset('modules/trainingcalendar/images/training.png') }}" alt="{{ $training->title }}">
+                    </figure>
 
                     <div class="card-content-area">
                         <h3 class="training-title">
@@ -75,25 +76,24 @@
 
 
 
-.training-img {
+.training-card-thumb {
+    margin: 0;
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    border-radius: 16px 16px 0 0;
+}
+
+.training-card-thumb img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
     transition: transform 0.5s ease;
 }
 
-.modern-training-card:hover .training-img {
+.modern-training-card:hover .training-card-thumb img {
     transform: scale(1.06);
-}
-
-.training-img-placeholder {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-    color: #94a3b8;
-    font-size: 2rem;
 }
 
 .training-badge {

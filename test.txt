@@ -1,0 +1,7 @@
+* amar kono email varification lagbe na register er somoy ba kono somoy lagbe na email verify, tahole admin keo identiy verify korar dorak nai, so email oo jabe na akan thake, amra student ke amaon akta welcome mail dite pari,
+
+* akane traning calender register korar jonno amar dui bar informtion submit kora lage, ami jai at akbar korte ar si ta checkout page e , traning calender register er jonno je sokol information gulo amra nitam oi gulo checkout page e  merge kore dao, ata same hobe course er jonno, ar tar sokol information age profile theke anbe jodi thake ar na thakle blank thakbe jemon phone, adress, profetions.
+
+* quize er mcq te kono akta option add korar por save dile ata auto upore cole jai, but ata oi kane thakbe ba user friendly hobe
+
+

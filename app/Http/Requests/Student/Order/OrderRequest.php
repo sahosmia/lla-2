@@ -24,6 +24,8 @@ class OrderRequest extends BaseFormRequest {
             'state'                 => 'required|string|max:255',
             'zipcode'               => 'required|regex:/^[A-Za-z0-9\s\-]{3,10}$/',
             'city'                  => 'required|string|max:150',
+            'profession'            => 'nullable|string|max:150',
+            'organization'          => 'nullable|string|max:150',
         ];
     }
 
@@ -51,6 +53,8 @@ class OrderRequest extends BaseFormRequest {
             'country'               => sanitizeTextField($this->country),
             'state'                 => sanitizeTextField($this->state),
             'city'                  => sanitizeTextField($this->city),
+            'profession'            => sanitizeTextField($this->profession),
+            'organization'          => sanitizeTextField($this->organization),
         ]);
     }
 }

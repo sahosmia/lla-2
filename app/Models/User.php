@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Amentotech\LaraGuppy\Traits\Chatable;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 use App\Casts\UserStatusCast;
 use App\Jobs\SendNotificationJob;
@@ -25,10 +24,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Sanctum\HasApiTokens;
-use App\Models\Dispute;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements MustVerifyEmail, CanResetPasswordContract
+class User extends Authenticatable implements CanResetPasswordContract
 {
     use HasFactory, Notifiable, HasRoles, HasApiTokens, Chatable, CanResetPassword;
 
@@ -208,11 +206,6 @@ class User extends Authenticatable implements MustVerifyEmail, CanResetPasswordC
         return $this->belongsToMany(User::class, 'favourite_users', 'favourite_user_id', 'user_id');
     }
 
-    public function bookingSlots(): HasMany
-    {
-        return $this->hasMany(SlotBooking::class, 'tutor_id');
-    }
-
     public function bookingOrders(): HasMany
     {
         return $this->hasMany(Order::class, 'user_id');
@@ -255,16 +248,6 @@ class User extends Authenticatable implements MustVerifyEmail, CanResetPasswordC
         return $this->hasOne(UserWallet::class, 'user_id');
     }
 
-    public function createdDisputes()
-    {
-        return $this->hasMany(Dispute::class, 'creator_by');
-    }
-
-    public function responsibleDisputes()
-    {
-        return $this->hasMany(Dispute::class, 'responsible_by');
-    }
-    
     public function socialProfiles(): HasMany
     {
         return $this->hasMany(SocialProfile::class);

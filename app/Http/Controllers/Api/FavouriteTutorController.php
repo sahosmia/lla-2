@@ -27,14 +27,10 @@ class FavouriteTutorController extends Controller
         ->with(['profile:id,user_id,slug,first_name,last_name,image,native_language,verified_at',
                 'address:id,addressable_id,addressable_type,country_id','languages:id,name'])
         ->with(['subjects' => function ($query) {
-            $query->withCount('slots as sessions');
             $query->with('subject:id,name')->take(1);
         }])
         ->withMin('subjects as min_price', 'hour_rate')
         ->withAvg('reviews', 'rating')
-        ->withCount(['bookingSlots as active_students' => function($query){
-            $query->whereStatus('active');
-        }])
         ->get();
         return $this->success(data: UserResource::collection($favourites));
     }

@@ -37,19 +37,11 @@
                                 </div>
                             </div>
                             <ul class="am-tutorsearch_info">
-                                @if(isPaidSystem())
-                                    <li>
-                                        <span class="am-currency_conversion">{!! formatAmount($singleTutor->min_price) !!}<em>{{ __('app.hr') }}</em></span>
-                                    </li>
-                                @endif
+                                {{-- Per-session price teaser hidden: session booking feature disabled on this platform --}}
                                 <li>
                                     <div class="am-tutorsearch_info_icon"><i class="am-icon-star-01"></i></div>
                                     <span>{{ number_format($singleTutor->avg_rating, 1) }}<em>/5.0 ({{ $singleTutor->total_reviews == 1 ? __('general.review_count') : __('general.reviews_count', ['count' => $singleTutor->total_reviews] ) }})</em></span>
 
-                                </li>
-                                <li>
-                                    <div class="am-tutorsearch_info_icon"><i class="am-icon-user-group"></i></div>
-                                    <span>{{ $singleTutor->active_students }} <em>{{ __('general.active_students') }}</em></span>
                                 </li>
                             </ul>
                             <a href="{{ route('tutor-detail', ['slug' => $singleTutor?->profile?->slug]) }}" class="am-white-btn">{{ __('general.profile') }}</a>

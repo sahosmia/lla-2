@@ -55,14 +55,6 @@ class Navigation extends Component
                 'icon'  => '<i class="am-icon-menu-7"></i>',
                 'accessibility' => ['tutor'],
             ],
-            // [
-            //     'studentSortOrder' => 2,
-            //     'route' => 'student.bookings',
-            //     'onActiveRoute' => ['student.bookings', 'student.reschedule-session'],
-            //     'title' => __('sidebar.bookings'),
-            //     'icon'  => '<i class="am-icon-calender-day"></i>',
-            //     'accessibility' => ['student'],
-            // ],
             [
                 'tutorSortOrder' => 2,
                 'studentSortOrder' => 1,
@@ -82,14 +74,6 @@ class Navigation extends Component
             //                 </svg>
             //             </i>',
             //     'accessibility' => ['student'],
-            // ],
-            // [
-            //     'tutorSortOrder' => 3,
-            //     'route' => 'tutor.bookings.subjects',
-            //     'onActiveRoute' => ['tutor.bookings', 'tutor.bookings.subjects', 'tutor.bookings.session-detail', 'tutor.bookings.manage-sessions', 'tutor.bookings.upcoming-bookings'],
-            //     'title' => __('sidebar.manage_bookings'),
-            //     'icon'  => '<i class="am-icon-calender-day"></i>',
-            //     'accessibility' => ['tutor'],
             // ],
             [
                 'tutorSortOrder' => 9,
@@ -145,16 +129,6 @@ class Navigation extends Component
                 'accessibility' => ['student', 'tutor'],
                 'disableNavigate' => true,
             ],
-            [
-                'tutorSortOrder' => 11,
-                'studentSortOrder' => 12,
-                'route' => $this->role . '.disputes',
-                'onActiveRoute' => [$this->role . '.disputes', $this->role . '.manage-dispute'],
-                'title' => __('sidebar.disputes'),
-                'icon'  => '<i class="am-icon-dispute-1"></i>',
-                'accessibility' => ['student', 'tutor'],
-                'disableNavigate' => true,
-            ]
         ];
 
         if (\Nwidart\Modules\Facades\Module::has('forumwise') && \Nwidart\Modules\Facades\Module::isEnabled('forumwise')) {

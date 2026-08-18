@@ -130,7 +130,7 @@
 
 })(jQuery);
 
-let popupParams;
+var popupParams;
 function ConfirmationBox(params) {
     popupParams = params;
     let {

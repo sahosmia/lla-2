@@ -2,11 +2,9 @@
 
 namespace App\Services;
 
-use App\Casts\BookingStatus;
 use App\Casts\OrderStatusCast;
 use App\Casts\WalletDetailCast;
 use App\Models\OrderItem;
-use App\Models\SlotBooking;
 use App\Models\User;
 use App\Models\UserWalletDetail;
 use Nwidart\Modules\Facades\Module;
@@ -52,20 +50,6 @@ class InsightsService
         return OrderItem::whereHas('orders', function ($query) {
             return $query->whereStatus(OrderStatusCast::$statuses['complete']);
         })->sum('platform_fee');
-    }
-
-    public function getSessions($statuses = [], $sessionStartDate = null, $sessionEndDate = null)
-    {
-        $statusValues = [];
-        foreach ($statuses as $status) {
-            if (isset(BookingStatus::$statuses[$status])) {
-                $statusValues[] = BookingStatus::$statuses[$status];
-            }
-        }
-        if (!empty($sessionStartDate) && !empty($sessionEndDate)) {
-            return SlotBooking::whereBetween('start_time', [$sessionStartDate . ' 00:00:00', $sessionEndDate . ' 23:59:59'])->whereIn('status', $statusValues)->count();
-        }
-        return SlotBooking::whereIn('status', $statusValues)->count();
     }
 
     public function getUsers($roles = [], $dateRange = null)

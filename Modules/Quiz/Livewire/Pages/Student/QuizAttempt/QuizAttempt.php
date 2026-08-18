@@ -2,12 +2,9 @@
 
 namespace Modules\Quiz\Livewire\Pages\Student\QuizAttempt;
 
-use App\Jobs\GenerateCertificateJob;
 use App\Jobs\SendDbNotificationJob;
 use App\Jobs\SendNotificationJob;
 use App\Models\User;
-use App\Models\UserSubjectGroupSubject;
-use App\Models\UserSubjectSlot;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -328,29 +325,6 @@ class QuizAttempt extends Component
                             if ($metaData == 'all') {
                                 if (!$allQuizAttempts) {
                                     $this->generateCertificate();
-                                }
-                            }
-                        }
-                    } elseif ($this->quizAttempt->quiz?->quizzable_type == UserSubjectGroupSubject::class) {
-                        $slots = UserSubjectSlot::whereIn('id', $this->quizAttempt->quiz?->user_subject_slots)->get();
-
-                        if ($slots->isNotEmpty()) {
-                            foreach ($slots as $slot) {
-                                if (!empty($slot->metadata['template_id'])) {
-                                    if ($slot->metadata['assign_quiz_certificate'] == 'any') {
-                                        $booking = $slot->bookings->whereStudentId(auth()?->user()?->id)->first();
-                                        if ($booking) {
-                                            dispatch(new GenerateCertificateJob($booking));
-                                        }
-                                    }
-                                    if ($slot->metadata['assign_quiz_certificate'] == 'all') {
-                                        if (!$allQuizAttempts) {
-                                            $booking = $slot->bookings->whereStudentId(auth()?->user()?->id)->first();
-                                            if ($booking) {
-                                                dispatch(new GenerateCertificateJob($booking));
-                                            }
-                                        }
-                                    }
                                 }
                             }
                         }

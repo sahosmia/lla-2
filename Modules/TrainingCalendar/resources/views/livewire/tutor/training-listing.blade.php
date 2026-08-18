@@ -91,16 +91,22 @@
                 <div class="cr-allcourses_list">
                     @foreach ($trainings as $training)
                         <div class="cr-card">
-                            {{-- <figure class="cr-image-wrapper">
-                                <img src="{{ asset('modules/trainingcalendar/images/training-placeholder.png') }}"
-                                    alt="{{ $training->title }}" class="cr-background-image"
-                                    onerror="this.src='{{ asset('demo-content/placeholders/placeholder.png') }}'">
+                            <figure class="cr-image-wrapper">
+                                <img src="{{ !empty($training->thumbnail) ? resizedImage($training->thumbnail, 360, 200) : asset('modules/trainingcalendar/images/training.png') }}"
+                                    alt="{{ $training->title }}" class="cr-background-image">
                                 <figcaption>
-                                    <span class="am-quizstatus am-quizstatus_published">
-                                        {{ ucfirst($training->type) }}
-                                    </span>
+                                    <div class="tc-thumb-badges">
+                                        <span class="tc-thumb-tag tc-thumb-tag-{{ $training->type }}">
+                                            {{ ucfirst($training->type) }}
+                                        </span>
+                                        @if($training->hasAccreditation())
+                                            <span class="tc-thumb-accreditation">
+                                                {{ $training->accreditation_body }}{{ $training->accreditation_body && $training->formatted_pdu_points ? ' · ' : '' }}{{ $training->formatted_pdu_points ? $training->formatted_pdu_points . ' PDU' : '' }}
+                                            </span>
+                                        @endif
+                                    </div>
                                 </figcaption>
-                            </figure> --}}
+                            </figure>
                             <div class="cr-course-card">
                                 <div class="cr-course-header">
                                     <a class="cr-course-title"
@@ -117,11 +123,6 @@
                                             {{ $training->paid_registrations_count }} /
                                             {{ $training->max_seats ?? '∞' }}
                                             {{ __('trainingcalendar::trainingcalendar.registrations') }}
-                                        </span>
-                                    </div>
-                                    <div class="cr-course-category mt-2">
-                                        <span class="am-quizstatus am-quizstatus_published">
-                                            {{ ucfirst($training->type) }}
                                         </span>
                                     </div>
                                 </div>
@@ -176,7 +177,7 @@
                                                 <li>
                                                     <a
                                                         href="{{ route('trainingcalendar.tutor.send-notice', $training->id) }}">
-                                                        <i class="am-icon-email"></i>
+                                                        <i class="am-icon-email-02"></i>
                                                         {{ __('trainingcalendar::trainingcalendar.send_notice') }}
                                                     </a>
                                                 </li>
@@ -245,16 +246,37 @@
             width: 100%;
         }
 
-        .am-training-list .am-quizstatus {
+        .am-training-list .tc-thumb-badges {
             position: absolute;
             top: 10px;
+            left: 10px;
             right: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .am-training-list .tc-thumb-tag,
+        .am-training-list .tc-thumb-accreditation {
             padding: 2px 10px;
             border-radius: 4px;
             font-size: 12px;
             font-weight: 600;
+        }
+
+        .am-training-list .tc-thumb-tag-online {
             background: #e6f9f1;
             color: #00b96b;
+        }
+
+        .am-training-list .tc-thumb-tag-offline {
+            background: #fff4e5;
+            color: #d97706;
+        }
+
+        .am-training-list .tc-thumb-accreditation {
+            background: #eef2ff;
+            color: #4338ca;
         }
 
         .am-training-list .cr-status-wrap {

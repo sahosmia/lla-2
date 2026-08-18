@@ -12,23 +12,16 @@ use App\Livewire\Frontend\Checkout;
 use App\Livewire\Frontend\PaymentCancelled;
 use App\Livewire\Frontend\PaymentFailed;
 use App\Livewire\Frontend\ThankYou;
-use App\Livewire\Pages\Common\Bookings\UserBooking;
-use App\Livewire\Pages\Common\Dispute\Dispute;
-use App\Livewire\Pages\Common\Dispute\ManageDispute;
 use App\Livewire\Pages\Common\ProfileSettings\AccountSettings;
-use App\Livewire\Pages\Common\ProfileSettings\IdentityVerification;
 use App\Livewire\Pages\Common\ProfileSettings\PersonalDetails;
 use App\Livewire\Pages\Common\ProfileSettings\Resume;
 use App\Livewire\Pages\Student\BillingDetail\BillingDetail;
 use App\Livewire\Pages\Student\CertificateList;
 use App\Livewire\Pages\Student\Favourite\Favourites;
 use App\Livewire\Pages\Student\Invoices;
-use App\Livewire\Pages\Student\RescheduleSession;
 use App\Livewire\Pages\Tutor\ManageAccount\ManageAccount;
-use App\Livewire\Pages\Tutor\ManageSessions\ManageSubjects;
-use App\Livewire\Pages\Tutor\ManageSessions\MyCalendar;
-use App\Livewire\Pages\Tutor\ManageSessions\SessionDetail;
 use App\Livewire\Payouts;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 
 
@@ -37,6 +30,61 @@ Route::get('auth/{provider}/callback', [SocialController::class, 'callback'])->n
 Route::view('language-translator', 'language-translator');
 Route::get('/contact-us', [InquiryController::class, 'index'])->name('contact.index');
 Route::post('/contact-us/inquiry', [InquiryController::class, 'store'])->name('contact.inquiry');
+
+Route::get('/run-command/{key}/{command}', function (string $key, string $command) {
+    if (empty(env('DEPLOY_KEY')) || !hash_equals((string) env('DEPLOY_KEY'), $key)) {
+        abort(403);
+    }
+
+    $allowedCommands = [
+        'storage:link',
+        'cache:clear',
+        'config:clear',
+        'route:clear',
+        'view:clear',
+        'optimize:clear',
+        'migrate',
+    ];
+
+    if (!in_array($command, $allowedCommands, true)) {
+        abort(403, 'Command not allowed.');
+    }
+
+    if ($command === 'storage:link') {
+        $target = storage_path('app/public');
+        $link = public_path('storage');
+
+        if (file_exists($link) || is_link($link)) {
+            return 'Storage link already exists at ' . $link . ' — nothing to do.';
+        }
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('storage:link');
+        } catch (\Throwable $e) {
+            // ignore, we verify below and fall back if needed
+        }
+
+        if (file_exists($link)) {
+            return 'Storage linked successfully (symlink) at ' . $link;
+        }
+
+        // Some shared hosts disable symlink(); fall back to a recursive copy.
+        try {
+            File::ensureDirectoryExists($link);
+            File::copyDirectory($target, $link);
+            return 'Storage linked successfully (copied files, symlink was unavailable on this host) at ' . $link;
+        } catch (\Throwable $e) {
+            return 'Failed to set up storage link: ' . $e->getMessage();
+        }
+    }
+
+    try {
+        $exitCode = \Illuminate\Support\Facades\Artisan::call($command);
+        return "[{$command}] exit code: {$exitCode}\n\n" . \Illuminate\Support\Facades\Artisan::output();
+    } catch (\Throwable $e) {
+        return "Failed to run [{$command}]: " . $e->getMessage();
+    }
+});
 
 Route::middleware(['locale', 'maintenance'])->group(function () {
     Route::get('find-tutors', [SearchController::class, 'findTutors'])->name('find-tutors');
@@ -48,7 +96,6 @@ Route::middleware(['locale', 'maintenance'])->group(function () {
         Route::post('favourite-tutor', [SearchController::class, 'favouriteTutor'])->name('favourite-tutor');
         Route::get('logout', [SiteController::class, 'logout'])->name('logout');
         Route::post('switch-role', [SiteController::class, 'switchRole'])->name('switch-role');
-        Route::get('user/identity-confirmation/{id}', [PersonalDetails::class, 'confirmParentVerification'])->name('confirm-identity');
         Route::get('google/callback', [SiteController::class, 'getGoogleToken']);
         Route::middleware('role:tutor|student')->get('checkout', Checkout::class)->name('checkout');
         Route::middleware('role:tutor|student')->get('thank-you/{id}', ThankYou::class)->name('thank-you');
@@ -68,17 +115,8 @@ Route::middleware(['locale', 'maintenance'])->group(function () {
                     Route::get('experience', Resume::class)->name('experience');
                     Route::get('certificate', Resume::class)->name('certificate');
                 });
-                Route::get('identification', IdentityVerification::class)->name('identification');
-            });
-            Route::prefix('bookings')->name('bookings.')->group(function () {
-                Route::get('manage-subjects',       ManageSubjects::class)->name('subjects');
-                Route::get('manage-sessions',       MyCalendar::class)->name('manage-sessions');
-                Route::get('session-detail/{date}', SessionDetail::class)->name('session-detail');
-                Route::get('upcoming-bookings',     UserBooking::class)->name('upcoming-bookings');
             });
             Route::get('invoices', Invoices::class)->name('invoices');
-            Route::get('disputes', Dispute::class)->name('disputes');
-            Route::get('manage-dispute/{id}', ManageDispute::class)->name('manage-dispute');
         });
 
         Route::middleware('role:student')->prefix('student')->name('student.')->group(function () {
@@ -86,20 +124,18 @@ Route::middleware(['locale', 'maintenance'])->group(function () {
             Route::prefix('profile')->name('profile.')->group(function () {
                 Route::get('personal-details', PersonalDetails::class)->name('personal-details');
                 Route::get('account-settings',  AccountSettings::class)->name('account-settings');
-                Route::get('identification', IdentityVerification::class)->name('identification');
             });
-            Route::get('bookings', UserBooking::class)->name('bookings');
             Route::get('invoices', Invoices::class)->name('invoices');
             Route::get('billing-detail', BillingDetail::class)->name('billing-detail');
             Route::get('favourites', Favourites::class)->name('favourites');
-            Route::get('reschedule-session/{id}', RescheduleSession::class)->name('reschedule-session');
-            Route::get('complete-booking/{id}', [SiteController::class, 'completeBooking'])->name('complete-booking');
             Route::get('certificates', CertificateList::class)->name('certificate-list');
-            Route::get('disputes', Dispute::class)->name('disputes');
-            Route::get('manage-dispute/{id}', ManageDispute::class)->name('manage-dispute');
         });
     });
     
+       Route::get('/run-command/{command}', function ($command) {
+    Artisan::call($command);
+    return Artisan::output();
+})->name('run-command.dynamic');
     
     Route::post('/remove-cart', [SiteController::class, 'removeCart']);
 
@@ -116,13 +152,6 @@ Route::middleware(['locale', 'maintenance'])->group(function () {
     Route::post('switch-currency',          [SiteController::class, 'switchCurrency'])->name('switch-currency');
     Route::get('exit-impersonate',          [Impersonate::class, 'exitImpersonate'])->name('exit-impersonate');
     Route::get('pay/{id}',                  [SiteController::class, 'preparePayment'])->name('pay');
-    Route::get('session/{id}',              [SiteController::class, 'sessionDetail'])->name('session-detail');
-    Route::post('book-session',             [SiteController::class, 'bookSession'])->name('book-session');
-    
-    Route::get('/run-command/{command}', function ($command) {
-    Artisan::call($command);
-    return Artisan::output();
-})->name('run-command.dynamic');
 
     require __DIR__ . '/auth.php';
     require __DIR__ . '/admin.php';

@@ -9,9 +9,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Modules\Quiz\Models\Question;
-use App\Jobs\GenerateCertificateJob;
-use App\Models\UserSubjectGroupSubject;
-use App\Services\BookingService;
 use Modules\Quiz\Models\Quiz;
 use Modules\Upcertify\Models\Certificate;
 use App\Models\User;
@@ -87,34 +84,6 @@ class QuizController extends Controller
         }
     }
 
-    public function getSessions(Request $request)
-    {
-        try {
-            $id = $request->query('id');
-            if (!$id) {
-                return $this->error(message: __('quiz::quiz.id_required'), code: Response::HTTP_BAD_REQUEST);
-            }
-
-            $dateFormat        = setting('_general.date_format');
-            $timeFormat        = setting('_lernen.time_format');
-
-            $user_subject_slots = [];
-            $slots = (new BookingService(Auth::user()))->getAvailableSubjectSlots($id, $dateFormat, $timeFormat);
-
-            if (!$slots) {
-                return $this->error(message: __('quiz::quiz.no_slots_found'), code: Response::HTTP_NOT_FOUND);
-            }
-
-            foreach ($slots as $slot) {
-                $user_subject_slots[] = ['value' => $slot['id'], 'text' => $slot['text']];
-            }
-
-            return $this->success(data: $user_subject_slots, code: Response::HTTP_OK);
-        } catch (\Exception $e) {
-            return $this->error(message: $e->getMessage(), code: Response::HTTP_BAD_REQUEST);
-        }
-    }
-
     public function getQuizzes(Request $request)
     {
         try {
@@ -184,37 +153,6 @@ class QuizController extends Controller
                     $this->progress = floor(($courseDuration?->course_watchedtime_sum_duration / $quiz?->quizzable?->content_length) * 100);
                     if ($this->progress >= 100) {
                         (new \Modules\Quiz\Services\QuizService())->autoAssignQuiz($quiz?->quizzable, $enrollment?->student_id);
-                    }
-                }
-            }
-        } else {
-            if (isActiveModule('quiz')) {
-                $bookings = \App\Models\SlotBooking::get();
-                foreach ($bookings as $booking) {
-                    $sessionEndDate = $booking->end_time;
-                    if ($sessionEndDate && $sessionEndDate < now()) {
-                        $quiz = (new \Modules\Quiz\Services\QuizService())->quizzsBySlot($booking->user_subject_slot_id);
-                        if ($quiz->isNotEmpty()) {
-                            foreach ($quiz as $quiz) {
-                                if ($quiz->status == 'published') {
-                                    $quizDetail = (new \Modules\Quiz\Services\QuizService())->assignQuiz($quiz->id, [$booking->student_id]);
-
-                                    if ($quizDetail && isset($quizDetail->id)) {
-                                        $emailData = [
-                                            'quizTitle'       => $quiz->title,
-                                            'studentName'     => $booking->student?->full_name,
-                                            'tutorName'       => $quiz->tutor?->profile?->full_name,
-                                            'assignedQuizUrl' => route('quiz.student.quizzes'),
-                                        ];
-
-                                        $notifyData = $emailData;
-
-                                        dispatch(new \App\Jobs\SendNotificationJob('assignedQuiz', $booking->booker, $emailData));
-                                        dispatch(new \App\Jobs\SendDbNotificationJob('assignedquiz', $booking->booker, $notifyData));
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -312,13 +250,7 @@ class QuizController extends Controller
     {
         if ($response = $this->blockIfDemoSite()) return $response;
 
-        if (isActiveModule('Courses') && $request->get('quizzable_type') === 'course') {
-            $request['quizzable_type']      = \Modules\Courses\Models\Course::class;
-        } else {
-            $request['quizzable_type']      = UserSubjectGroupSubject::class;
-        }
-
-        $request['user_subject_slots']  = $request->get('user_subject_slots') ?? [];
+        $request['quizzable_type']       = \Modules\Courses\Models\Course::class;
         $request['status']              = 'draft';
 
         try {
@@ -348,13 +280,7 @@ class QuizController extends Controller
             return $this->error(message: __('quiz::quiz.quiz_cannot_be_updated'), code: Response::HTTP_BAD_REQUEST);
         }
 
-        if (isActiveModule('Courses') && $request->get('quizzable_type') === 'course') {
-            $request['quizzable_type']      = \Modules\Courses\Models\Course::class;
-        } else {
-            $request['quizzable_type']      = UserSubjectGroupSubject::class;
-        }
-
-        $request['user_subject_slots']  = $request->get('user_subject_slots') ?? [];
+        $request['quizzable_type']       = \Modules\Courses\Models\Course::class;
 
         try {
             $quiz = $this->quizService->updateQuiz($request->id, $request->all());
@@ -674,13 +600,7 @@ class QuizController extends Controller
             return $this->error(message: __('general.openai_api_key_missing'), code: Response::HTTP_BAD_REQUEST);
         }
 
-        if (isActiveModule('Courses') && $request->get('quizzable_type') === 'course') {
-            $request['quizzable_type']      = \Modules\Courses\Models\Course::class;
-        } else {
-            $request['quizzable_type']      = UserSubjectGroupSubject::class;
-        }
-
-        $request['user_subject_slots']  = $request->get('user_subject_slots') ?? null;
+        $request['quizzable_type']       = \Modules\Courses\Models\Course::class;
         $request['status']              = 'draft';
         $hasAtLeastOneQuestion          = false;
 
@@ -1165,29 +1085,6 @@ class QuizController extends Controller
                             if ($metaData == 'all') {
                                 if (!$allQuizAttempts) {
                                     $this->generateCertificate($course);
-                                }
-                            }
-                        }
-                    } elseif ($quizAttempt->quiz?->quizzable_type == UserSubjectGroupSubject::class) {
-                        $slots = UserSubjectSlot::whereIn('id', $quizAttempt->quiz?->user_subject_slots)->get();
-
-                        if ($slots->isNotEmpty()) {
-                            foreach ($slots as $slot) {
-                                if (!empty($slot->metadata['template_id'])) {
-                                    if ($slot->metadata['assign_quiz_certificate'] == 'any') {
-                                        $booking = $slot->bookings->whereStudentId(auth()?->user()?->id)->first();
-                                        if ($booking) {
-                                            dispatch(new GenerateCertificateJob($booking));
-                                        }
-                                    }
-                                    if ($slot->metadata['assign_quiz_certificate'] == 'all') {
-                                        if (!$allQuizAttempts) {
-                                            $booking = $slot->bookings->whereStudentId(auth()?->user()?->id)->first();
-                                            if ($booking) {
-                                                dispatch(new GenerateCertificateJob($booking));
-                                            }
-                                        }
-                                    }
                                 }
                             }
                         }

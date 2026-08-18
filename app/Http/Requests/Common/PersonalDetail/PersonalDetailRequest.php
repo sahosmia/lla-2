@@ -18,19 +18,21 @@ class PersonalDetailRequest extends BaseFormRequest
         $isProfilePhoneMendatory        = setting('_lernen.profile_phone_number') == 'yes' ? true : false;
         $isProfileVideoMendatory        = setting('_lernen.profile_video') == 'yes' ? true : false;
         $isProfileKeywordsMendatory     = setting('_lernen.profile_keywords') == 'yes' ? true : false;
+        $isTutor = Auth::user()->role == 'tutor';
+
         $rules = [
             'first_name'        => 'required|string|min:3|max:150',
             'phone_number'      => $isProfilePhoneMendatory ? 'required|regex:/^(\+?\(?\d{1,4}\)?)?[\d\s\-]{7,15}$/' : 'nullable|regex:/^(\+?\(?\d{1,4}\)?)?[\d\s\-]{7,15}$/',
             'last_name'         => 'sometimes|string|min:3|max:150',
             'gender'            => 'required|in:male,female,not_specified',
-            'user_languages'    => 'required|array|min:1',
-            'native_language'   => 'required|string:max:255',
-            'description'       => 'required|string|min:20|max:65535',
+            'user_languages'    => $isTutor ? 'required|array|min:1' : 'nullable|array',
+            'native_language'   => $isTutor ? 'required|string:max:255' : 'nullable|string:max:255',
+            'description'       => $isTutor ? 'required|string|min:20|max:65535' : 'nullable|string|max:65535',
             'email'             => 'required|email|max:255',
-            'image'             => 'required',
+            'image'             => $isTutor ? 'required' : 'nullable',
         ];
 
-        if (Auth::user()->role == 'tutor') {
+        if ($isTutor) {
             $rules['intro_video'] = $isProfileVideoMendatory ? 'required' : 'nullable';
             $rules['tagline']     = 'required|string|min:20|max:255';
             $rules['keywords']    = 'nullable|string|max:255';
@@ -49,11 +51,11 @@ class PersonalDetailRequest extends BaseFormRequest
         }
 
         if ($enableGooglePlaces != '1') {
-            $rules['country']   = 'required|numeric';
-            $rules['city']      = 'required|string|max:255';
-            $rules['zipcode']   = 'required|regex:/^[A-Za-z0-9\s\-]{3,10}$/';
+            $rules['country']   = $isTutor ? 'required|numeric' : 'nullable|numeric';
+            $rules['city']      = $isTutor ? 'required|string|max:255' : 'nullable|string|max:255';
+            $rules['zipcode']   = $isTutor ? 'required|regex:/^[A-Za-z0-9\s\-]{3,10}$/' : 'nullable|regex:/^[A-Za-z0-9\s\-]{3,10}$/';
         } else {
-            $rules['address']   = 'required|string|max:255';
+            $rules['address']   = $isTutor ? 'required|string|max:255' : 'nullable|string|max:255';
         }
 
         return $rules;

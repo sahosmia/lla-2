@@ -36,7 +36,16 @@
                 </div>
                 @php
                     $subTotal = 0;
-                    $discountAmount = 0; 
+                    $discountAmount = 0;
+                    // dompdf's font doesn't render the currency glyph (e.g. ৳) reliably, so the invoice PDF shows the currency code instead.
+                    $invoiceCurrencyCode = getCurrentCurrency()['code'] ?? 'USD';
+                    $formatInvoiceAmount = function ($amount) use ($invoiceCurrencyCode) {
+                        $decimals = (int) (setting('_general.number_of_decimals') ?? 2);
+                        $decimalSeparator = (string) (setting('_general.decimal_separator') ?: '.');
+                        $thousandSeparator = (string) (setting('_general.thousand_separator') ?: ',');
+                        $formatted = number_format((float) $amount * (float) getExchangeRate(), $decimals, $decimalSeparator, $thousandSeparator);
+                        return $invoiceCurrencyCode . "\u{00A0}" . $formatted;
+                    };
                 @endphp
                 <div class="modal-body" style="padding: 0;">
                     <div class="tb-invoice-container" style="padding: 16px 30px;">
@@ -52,20 +61,20 @@
                         </div>
                         <ul class="am-payment-to-from clearfix" style="width: 100%; margin: 40px 0 0 0; padding: 0; list-style: none;">
                             <li style="width: 48%; display: inline-block; vertical-align: top;">
-                                <strong style="color: #585858; font-weight: 600; font-family: 'Roboto', sans-serif; font-size: 14px; opacity: 0.7; line-height: 20px;">Company</strong>
-                                <h6 style="color: #000; font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 400; margin: 10px 0 0 0; line-height: 20px;">
-                                    {{ $company_name }}
-                                    <em style="display: block; color: #585858; font-family: 'Roboto', sans-serif; font-size: 12px; font-weight: 400; opacity:0.9; line-height: 18px; font-style: normal;">{{ $company_email }}</em>
-                                </h6>
-                                <p style="color: #585858; font-family: 'Roboto', sans-serif; font-size: 12px; font-weight: 400; margin: 10px 0 0 0; line-height: 18px; opacity: 0.9;">{{ $company_address }}</p>
-                            </li>
-                            <li style="width: 48%; display: inline-block; vertical-align: top; float: right;">
                                 <strong style="color: #585858; font-weight: 600; font-family: 'Roboto', sans-serif; font-size: 14px; opacity: 0.7; line-height: 20px;">{{ __('invoices.payment_from') }}</strong>
                                 <h6 style="color: #000; font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 400; margin: 10px 0 0 0; line-height: 20px;">
                                     {{ $invoice?->first_name }} {{ $invoice?->last_name }}
                                     <em style="display: block; color: #585858; font-family: 'Roboto', sans-serif; font-size: 12px; font-weight: 400; opacity:0.9; line-height: 18px; font-style: normal;">{{ $invoice?->email }}</em>
                                 </h6>
                                 <p style="color: #585858; font-family: 'Roboto', sans-serif; font-size: 12px; font-weight: 400; margin: 10px 0 0 0; line-height: 18px; opacity: 0.9;"> {{ $invoice?->city }}, {{ $invoice?->countryDetails?->name ?? '' }}, {{ $invoice?->state }}</p>
+                            </li>
+                            <li style="width: 48%; display: inline-block; vertical-align: top; float: right;">
+                                <strong style="color: #585858; font-weight: 600; font-family: 'Roboto', sans-serif; font-size: 14px; opacity: 0.7; line-height: 20px;">{{ __('invoices.company') }}</strong>
+                                <h6 style="color: #000; font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 400; margin: 10px 0 0 0; line-height: 20px;">
+                                    {{ $company_name }}
+                                    <em style="display: block; color: #585858; font-family: 'Roboto', sans-serif; font-size: 12px; font-weight: 400; opacity:0.9; line-height: 18px; font-style: normal;">{{ $company_email }}</em>
+                                </h6>
+                                <p style="color: #585858; font-family: 'Roboto', sans-serif; font-size: 12px; font-weight: 400; margin: 10px 0 0 0; line-height: 18px; opacity: 0.9;">{{ $company_address }}</p>
                             </li>
                         </ul>
                         <ul class="am-payment-to-from clearfix" style="width: 100%; margin: 15px 0 0 0; padding: 16px 0 0 0; list-style: none; border-top: 1px solid #EAEAEA;">
@@ -124,13 +133,13 @@
                                             <div class="tb-col tb-col-qty" data-label="{{ __('invoices.invoice_price') }}" style="width: 10%; display: inline-block; vertical-align: top; text-align: left; color: rgba(0, 0, 0, 0.7); font-weight: 400; font-family: 'Roboto', sans-serif; font-size: 14px; line-height: 20px;">{{ $item->quantity}}</div>
                                             <div class="tb-col tb-col-price" data-label="{{ __('invoices.invoice_price') }}" style="width: 12%; display: inline-block; vertical-align: top; text-align: left; color: rgba(0, 0, 0, 0.7); font-weight: 400; font-family: 'Roboto', sans-serif; font-size: 14px; line-height: 20px;">
                                                 @if(!empty($item?->discount_amount))
-                                                    <del style="color: rgba(#585858, 0.9); font-weight: 400; font-family: 'Roboto', sans-serif; font-size: 12px; line-height: 14px;">{{ formatAmount($item->price) }}</del>
-                                                    {{ formatAmount($item->total) }}
+                                                    <del style="color: rgba(#585858, 0.9); font-weight: 400; font-family: 'Roboto', sans-serif; font-size: 12px; line-height: 14px;">{{ $formatInvoiceAmount($item->price) }}</del>
+                                                    {{ $formatInvoiceAmount($item->total) }}
                                                 @else     
                                                     @if(auth()->user()->role == 'student' || auth()->user()->role == 'admin')
-                                                        {{ !empty($item->extra_fee) ? formatAmount($item->price + $item->extra_fee) : formatAmount($item->price) }}
+                                                        {{ !empty($item->extra_fee) ? $formatInvoiceAmount($item->price + $item->extra_fee) : $formatInvoiceAmount($item->price) }}
                                                     @else
-                                                        {{ formatAmount($item->price) }}
+                                                        {{ $formatInvoiceAmount($item->price) }}
                                                     @endif
                                                 @endif
                                             </div>
@@ -139,15 +148,15 @@
                                                     $commission     = is_numeric(getCommission($item->total)) ? getCommission($item->total) : 0;
                                                     $tutor_payout   = !empty($item->options['tutor_payout']) && is_numeric($item->options['tutor_payout']) ? $item->options['tutor_payout'] : ($item->total - $commission);
                                                 @endphp
-                                                <div class="tb-col tb-col-netpay" data-label="{{ auth()->user()->role == 'tutor' ? __('booking.net_payout') : __('booking.tutor_payout') }}" style="width: 12%; display: inline-block; vertical-align: top; text-align: left; color: rgba(0, 0, 0, 0.7); font-weight: 400; font-family: 'Roboto', sans-serif; font-size: 14px; line-height: 20px;">{{ formatAmount($tutor_payout) }}</div>
+                                                <div class="tb-col tb-col-netpay" data-label="{{ auth()->user()->role == 'tutor' ? __('booking.net_payout') : __('booking.tutor_payout') }}" style="width: 12%; display: inline-block; vertical-align: top; text-align: left; color: rgba(0, 0, 0, 0.7); font-weight: 400; font-family: 'Roboto', sans-serif; font-size: 14px; line-height: 20px;">{{ $formatInvoiceAmount($tutor_payout) }}</div>
                                             @endif
                                             @if(auth()->user()->role == 'admin')
-                                                <div class="tb-col tb-col-commission" data-label="{{ __('booking.commission') }}" style="width: 16%; display: inline-block; vertical-align: top; text-align: left; color: rgba(0, 0, 0, 0.7); font-weight: 400; font-family: 'Roboto', sans-serif; font-size: 14px; line-height: 20px;">{{ formatAmount($item->platform_fee) }}</div>
+                                                <div class="tb-col tb-col-commission" data-label="{{ __('booking.commission') }}" style="width: 16%; display: inline-block; vertical-align: top; text-align: left; color: rgba(0, 0, 0, 0.7); font-weight: 400; font-family: 'Roboto', sans-serif; font-size: 14px; line-height: 20px;">{{ $formatInvoiceAmount($item->platform_fee) }}</div>
                                             @endif
                                             @if(auth()->user()->role == 'admin' || auth()->user()->role == 'student')
-                                                <div class="tb-col tb-col-platform_fee" data-label="{{ __('booking.platform_fee') }}" style="width: 12%; display: inline-block; vertical-align: top; text-align: left; color: rgba(0, 0, 0, 0.7); font-weight: 400; font-family: 'Roboto', sans-serif; font-size: 14px; line-height: 20px;">{{ !empty($item->extra_fee) ? formatAmount($item->extra_fee) : '-' }}</div>
+                                                <div class="tb-col tb-col-platform_fee" data-label="{{ __('booking.platform_fee') }}" style="width: 12%; display: inline-block; vertical-align: top; text-align: left; color: rgba(0, 0, 0, 0.7); font-weight: 400; font-family: 'Roboto', sans-serif; font-size: 14px; line-height: 20px;">{{ !empty($item->extra_fee) ? $formatInvoiceAmount($item->extra_fee) : '-' }}</div>
                                             @endif
-                                            <div class="tb-col tb-col-discount" data-label="{{ __('invoices.invoice_subtotal') }}" style="width: 12%; display: inline-block; vertical-align: top; text-align: right; color: rgba(0, 0, 0, 0.7); font-weight: 400; font-family: 'Roboto', sans-serif; font-size: 14px; line-height: 20px;">{{ formatAmount($item->total) }}</div>
+                                            <div class="tb-col tb-col-discount" data-label="{{ __('invoices.invoice_subtotal') }}" style="width: 12%; display: inline-block; vertical-align: top; text-align: right; color: rgba(0, 0, 0, 0.7); font-weight: 400; font-family: 'Roboto', sans-serif; font-size: 14px; line-height: 20px;">{{ $formatInvoiceAmount($item->total) }}</div>
                                         </div>
                                     @endforeach
                                     <div class="tb-item-row" style=" padding: 14px 20px;">
@@ -166,7 +175,7 @@
                                         @if(auth()->user()->role == 'tutor' || auth()->user()->role == 'admin')
                                             <div class="tb-col tb-col-netpay" style="width: 18%; display: inline-block; vertical-align: top; text-align: left; color: #585858; font-weight: 500; font-family: 'Roboto', sans-serif; font-size: 14px; line-height: 20px;"></div>
                                         @endif
-                                        <div class="tb-col tb-col-qty" style="width: 12%; display: inline-block; vertical-align: top; text-align: right; color: #585858; font-weight: 500; font-family: 'Roboto', sans-serif; font-size: 14px; line-height: 20px;"><strong style="font-weight: 600;">{{ formatAmount($subTotal) }}</strong></div>
+                                        <div class="tb-col tb-col-qty" style="width: 12%; display: inline-block; vertical-align: top; text-align: right; color: #585858; font-weight: 500; font-family: 'Roboto', sans-serif; font-size: 14px; line-height: 20px;"><strong style="font-weight: 600;">{{ $formatInvoiceAmount($subTotal) }}</strong></div>
                                     </div>
                                 </div>
                             </div>
@@ -183,17 +192,17 @@
                             @endphp
                             <div class="tb-summary-row" style="display: table; width: 100%; font-family: 'Roboto', sans-serif; font-size: 15px;">
                                 <span class="tb-label" style="display: table-cell; color: #585858; font-weight: 400; font-family: 'Roboto', sans-serif; font-size: 13px; line-height: 18px;" data-label="Subtotal">{{ __('invoices.invoice_subtotal') }}:</span>
-                                <span class="tb-value" style="display: table-cell; text-align: right; color: #585858; font-weight: 500; font-family: 'Roboto', sans-serif; font-size: 14px; line-height: 20px;">{{ formatAmount($subTotal) }}</span>
+                                <span class="tb-value" style="display: table-cell; text-align: right; color: #585858; font-weight: 500; font-family: 'Roboto', sans-serif; font-size: 14px; line-height: 20px;">{{ $formatInvoiceAmount($subTotal) }}</span>
                             </div>
                             @if($discountAmount > 0)
                                 <div class="tb-summary-row" style="display: table; width: 100%; margin-top: 10px; font-family: 'Roboto', sans-serif; font-size: 15px;">
                                     <span class="tb-label" style="display: table-cell; color: #585858; font-weight: 400; font-family: 'Roboto', sans-serif; font-size: 13px; line-height: 18px;" data-label="Total">{{ __('invoices.invoice_discount_amount') }}</span>
-                                    <span class="tb-value" style="display: table-cell; text-align: right; color: #585858; font-weight: 500; font-family: 'Roboto', sans-serif; font-size: 14px; line-height: 20px;">{{formatAmount($discountAmount) }}</span>
+                                    <span class="tb-value" style="display: table-cell; text-align: right; color: #585858; font-weight: 500; font-family: 'Roboto', sans-serif; font-size: 14px; line-height: 20px;">{{$formatInvoiceAmount($discountAmount) }}</span>
                                 </div>
                             @endif
                             <div class="tb-summary-row" style="display: table; width: 100%; margin-top: 10px; font-family: 'Roboto', sans-serif; font-size: 15px;">
                                 <span class="tb-label" style="display: table-cell; color: #585858; font-weight: 400; font-family: 'Roboto', sans-serif; font-size: 13px; line-height: 18px;" data-label="Total">{{ __('invoices.grand_total') }}</span>
-                                <span class="tb-value" style="display: table-cell; text-align: right; color: #585858; font-weight: 500; font-family: 'Roboto', sans-serif; font-size: 14px; line-height: 20px;">{{ formatAmount($grossTotal) }}</span>
+                                <span class="tb-value" style="display: table-cell; text-align: right; color: #585858; font-weight: 500; font-family: 'Roboto', sans-serif; font-size: 14px; line-height: 20px;">{{ $formatInvoiceAmount($grossTotal) }}</span>
                             </div>
                         </div>
                     </div>

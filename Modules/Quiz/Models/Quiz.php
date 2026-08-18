@@ -11,7 +11,6 @@ use Modules\Quiz\Casts\QuizStatusCast;
 use Modules\Quiz\Models\QuizAttempt;
 use Modules\Quiz\Models\Question;
 use Modules\Quiz\Models\QuizSetting;
-use App\Models\UserSubjectSlot;
 use Google\Service\Gmail\Draft;
 use Illuminate\Support\Facades\Storage;
 

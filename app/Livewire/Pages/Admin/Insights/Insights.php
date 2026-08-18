@@ -91,10 +91,6 @@ class Insights extends Component
         $this->tutorPendingEarnings         = $this->insightsService->getTutorEarnings(type: 'pending_available', revenueStartDate: $this->revenueStartDate, revenueEndDate: $this->revenueEndDate);
         $this->platformCommission           = $this->insightsService->getPlatformCommission(revenueStartDate: $this->revenueStartDate, revenueEndDate: $this->revenueEndDate);
 
-        $this->totalSessions                = $this->insightsService->getSessions(statuses: ['active', 'completed'], sessionStartDate: $this->sessionStartDate, sessionEndDate: $this->sessionEndDate);
-        $this->completedSessions            = $this->insightsService->getSessions(statuses: ['completed'], sessionStartDate: $this->sessionStartDate, sessionEndDate: $this->sessionEndDate);
-        $this->cancelledSessions            = $this->insightsService->getSessions(statuses: ['rescheduled'], sessionStartDate: $this->sessionStartDate, sessionEndDate: $this->sessionEndDate);
-
         return view('livewire.pages.admin.insights.insights');
     }
 

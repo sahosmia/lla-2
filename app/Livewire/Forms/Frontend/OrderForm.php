@@ -23,6 +23,8 @@ class OrderForm extends Form
     public string $address          = '';
     public string $country          = '';
     public string $zipcode          = '';
+    public string $profession       = '';
+    public string $organization     = '';
     public $totalAmount;
     public $walletBalance           = '';
     public $useWalletBalance        = false;
@@ -63,6 +65,8 @@ class OrderForm extends Form
         $this->email         = $billigDetail?->email ?? '';
         $this->phone         = $billigDetail?->phone ?? '';
         $this->paymentMethod = $billigDetail?->payment_method ?? '';
+        $this->profession    = $billigDetail?->profession ?? $this->profession;
+        $this->organization  = $billigDetail?->organization ?? $this->organization;
     }
 
     public function setUserAddress($address,$isState = true)
@@ -90,6 +94,8 @@ class OrderForm extends Form
             'state'                     => $this->state ,
             'city'                      => $this->city  ,
             'postal_code'               => $this->zipcode,
+            'profession'                => $this->profession,
+            'organization'              => $this->organization,
             'payment_method'            => $this->paymentMethod,
             'description'               => $this->dec,
         ];

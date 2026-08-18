@@ -43,5 +43,6 @@ Route::middleware(['locale', 'maintenance', 'enabled:courses'])->as('courses.')-
     Route::get('/course-taking/{slug}', CourseTaking::class)->middleware(['auth', 'verified'])->name('course-taking');
     Route::get('/course-list', CourseList::class)->middleware(['auth', 'verified', 'role:student'])->name('course-list');
 
-    Route::get('secure-video/{path}', [VideoController::class, 'play'])->middleware('auth')->name('secure.video'); 
+    Route::get('secure-video/{path}', [VideoController::class, 'play'])->middleware('auth')->name('secure.video');
+    Route::get('curriculum-video/{curriculumId}', [VideoController::class, 'streamCurriculumVideo'])->middleware(['auth', 'verified'])->name('curriculum-video');
 });

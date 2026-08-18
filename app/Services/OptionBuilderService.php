@@ -44,7 +44,6 @@ class OptionBuilderService
                 'social_google_client_id_android',
                 'social_google_client_id_ios',
             ],
-            '_dispute_setting' => '*',
             '_lernen' =>  [
                 "profile_phone_number",
                 "student_display_name",

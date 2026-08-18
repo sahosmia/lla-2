@@ -24,7 +24,6 @@ class TutorDetailResource extends JsonResource
             'min_price'                      => $this->whenHas('min_price', function ($min_price) {
                 return formatAmount($min_price);
             }),
-            'active_students'                => $this->whenHas('active_students'),
             'total_reviews'                  => $this->whenHas('total_reviews'),
             'email_verified_at'              => $this->whenHas('email_verified_at'),
             'is_online'                      => $this?->is_online,

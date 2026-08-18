@@ -3742,7 +3742,7 @@ form p span i {
   display: block;
 }
 .am-logo a {
-  max-width: 126px;
+  width: 70px;
   margin: 0 !important;
 }
 .am-navigation {

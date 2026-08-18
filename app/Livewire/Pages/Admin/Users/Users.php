@@ -31,7 +31,6 @@ class Users extends Component
     public      $selectedUsers      = [];
     public      $roles_list         = [];
     public      $per_page_opt       = [];
-    public      $identityInfo;
     public      $roles;
     public      $role;
     public      $isEdit             = '';
@@ -55,9 +54,6 @@ class Users extends Component
                 [
                     'address.country',
                     'roles',
-                    'identityVerification' => function ($query) {
-                        $query->select('id', 'user_id', 'parent_verified_at');
-                    }
                 ]
             )
             ->whereHas('roles', function ($query) {
@@ -218,10 +214,9 @@ class Users extends Component
                 }
 
                 if ($user->role == 'tutor') {
-                    $hasBookings            = $user->bookingSlots()->exists();
                     $hasEnrolledCourses     =  (isActiveModule('Courses') && $user->courses()->whereHas('enrollments')->exists());
 
-                    $deletableUser          = !$hasBookings && !$hasEnrolledCourses;
+                    $deletableUser          = !$hasEnrolledCourses;
                 } else {
                     $hasBookings            = $user->bookingOrders()->exists();
                     $hasEnrolledCourses     = isActiveModule('Courses') && \Modules\Courses\Models\Enrollment::whereStudentId($user->id)->exists();
@@ -233,9 +228,6 @@ class Users extends Component
                     Schema::disableForeignKeyConstraints();
                     try {
                         $user->groups()->each(function ($group) {
-                            $group->userSubjects()->each(function ($userSubject) {
-                                $userSubject->slots()->delete();
-                            });
                             $group->userSubjects()->delete();
                         });
                         $user->groups()->delete();

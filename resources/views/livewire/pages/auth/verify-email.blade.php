@@ -16,9 +16,7 @@ new #[Layout('layouts.guest')] class extends Component
     }
 
     public function mount(){
-        if (Auth::user()->hasVerifiedEmail()) {
-            return $this->redirectIntended(default: auth()->user()->redirect_after_login, navigate: true);
-        }
+        return $this->redirectIntended(default: auth()->user()->redirect_after_login, navigate: true);
     }
 
     /**

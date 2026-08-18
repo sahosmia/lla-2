@@ -7,11 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\RecommendedTutor\RecommendedTutorResource;
 use App\Http\Resources\FindTutors\TutorCollection;
 use App\Http\Resources\TutorDetail\TutorDetailResource;
-use App\Http\Resources\TutorSlots\TutorSlotResource;
 use Carbon\Carbon;
 use App\Models\Profile;
 use App\Models\User;
-use App\Services\BookingService;
 use App\Services\ProfileService;
 use App\Services\SiteService;
 use App\Services\UserService;
@@ -70,77 +68,6 @@ class TutorController extends Controller
 
         $tutor      = $this->getFavouriateTutors($tutor);
         return $this->success(data: new TutorDetailResource($tutor));
-    }
-
-    public function getTutorAvailableSlots(Request $request)
-    {
-        $userId         = $request->user_id;
-        $userTimeZone   = auth()->check() ? getUserTimezone() : ($request->user_time_zone ?? (setting('_general.timezone') ?? 'UTC'));
-        $filter         = $request->filter ?? [];
-        $type           = $request->type;
-
-        $startOfWeek = (int) (setting('_lernen.start_of_week') ?? Carbon::SUNDAY);
-
-        if (!empty($request->start_date) && !empty($request->end_date)) {
-            $currentDate  = Carbon::parse($request->start_date);
-        } else {
-            $currentDate  =   Carbon::now();
-        }
-
-        $start = $currentDate->copy()->startOfWeek($startOfWeek)->toDateString()." 00:00:00";
-        $end = $currentDate->copy()->endOfWeek(getEndOfWeek($startOfWeek))->toDateString()." 23:59:59";
-
-        $startDate = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $start, $userTimeZone);
-        $endDate   = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $end, $userTimeZone);
-
-        if ($type == 'prev') {
-            $startDate = Carbon::parse($startDate, $userTimeZone)->subWeek();
-            $endDate = Carbon::parse($endDate, $userTimeZone)->subWeek();
-        } elseif ($type == 'next') {
-            $startDate = Carbon::parse($startDate, $userTimeZone)->subWeek();
-            $endDate = Carbon::parse($endDate, $userTimeZone)->subWeek();
-        }
-
-        $dateRange = [
-            'start_date'    => parseToUTC($startDate),
-            'end_date'      => parseToUTC($endDate)
-        ];
-
-        if (empty($userId)) {
-            return $this->error(data: null,message: 'Invalid parameters.',code: Response::HTTP_BAD_REQUEST);
-        }
-
-        $tutor = User::where('id', $userId)->first();
-
-        if (!$tutor) {
-            return $this->error(data: null,message: 'Tutor not found.',code: Response::HTTP_NOT_FOUND);
-        }
-
-        if ($tutor->role !== 'tutor') {
-            return $this->error(data: null,message: 'Unauthorized access.',code: Response::HTTP_FORBIDDEN);
-        }
-
-        $bookingService = new BookingService();
-
-        $availableSlots = $bookingService->getTutorAvailableSlots($userId, $userTimeZone, $dateRange, $filter);
-        $userSlot = [
-            'start_date'    => $start,
-            'end_date'      => $end
-        ];
-
-        foreach ($availableSlots as $date => $slots) {
-            $formattedDate = Carbon::parse($date)->format('d M Y');
-            $userSlot[$formattedDate] = TutorSlotResource::collection($slots);
-        }
-
-        return $this->success(data: $userSlot);
-    }
-
-    public function slotDetail($id)
-    {
-        $bookingService  = new BookingService();
-        $currentSlot     = $bookingService->getSlotDetail($id);
-        return $this->success(data: new TutorSlotResource($currentSlot));
     }
 
     public function getFavouriateTutors($tutors)

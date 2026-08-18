@@ -139,11 +139,8 @@ class AuthController extends Controller
         $success['token']   =  $user->createToken('lernen', ['*'], now()->addDays(7))->plainTextToken;
 
         $success['user']    =  new UserResource($user);
-        if (!empty($user->email_verified_at)) {
-            return $this->success($success, __('api.user_login_successfully'));
-        } else {
-            return $this->error(__('api.user_not_verified'), $success);
-        }
+
+        return $this->success($success, __('api.user_login_successfully'));
     }
 
     /**

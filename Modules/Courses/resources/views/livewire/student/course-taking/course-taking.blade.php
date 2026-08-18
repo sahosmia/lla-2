@@ -176,20 +176,7 @@
                             <div class="cr-image-wrapper-skeleton">
                             </div>
                         </div>
-                        <div class="cr-coursetasking-video" x-data="{ showVideo: false }" x-init="showVideo = true;
-                        $nextTick(() => {
-                            let video = document.getElementById('video-{{ $activeCurriculum['id'] }}');
-                            if (video) {
-                                let player = videojs(video, {
-                                    controls: true,
-                                    autoplay: false,
-                                    playbackRates: [0.5, 1, 1.5, 2]
-                                });
-                                player.ready(() => {
-                                    player.load();
-                                });
-                            }
-                        });">
+                        <div class="cr-coursetasking-video" x-data="{ showVideo: false }" x-init="showVideo = true;">
                             <!-- Use x-show instead of x-if -->
                             <template x-if="showVideo">
                                 <video id="video-{{ $activeCurriculum['id'] }}" preload="auto"
@@ -1050,8 +1037,55 @@
                         }
                     });
                 });
+
+                player.on(['play', 'focus'], function() {
+                    window.__activeVideoPlayer = player;
+                });
             }
+
+            window.__activeVideoPlayer = videoElement.player;
         }
+
+        // Issue 1 fix: the progress bar was jumping back to 00:00 because the
+        // player was being initialized twice (once via Alpine's x-init calling
+        // videojs() + player.load() directly, and again here via the
+        // onloadstart/onloadeddata handlers). The stray player.load() call
+        // reloaded the media source - which resets currentTime to 0 - every
+        // time it re-ran. Removing the duplicate init in the blade view and
+        // keeping this single initializeVideoPlayer() as the only source of
+        // truth fixes video.js's built-in seek-bar math (it was never wrong,
+        // it was just seeking on a player instance that kept getting reloaded).
+
+        // Issue 2 fix: seek 5s backward/forward with the Left/Right arrow keys.
+        // Bound to window (not the player element) because video.js only
+        // reacts to arrow keys when its own DOM element has focus, which is
+        // unreliable here since Livewire/Alpine can re-render the player
+        // region and silently steal focus. We guard against firing while the
+        // user is typing in a text field elsewhere on the page.
+        window.addEventListener('keydown', function(event) {
+            const player = window.__activeVideoPlayer;
+            if (!player) {
+                return;
+            }
+
+            const target = event.target;
+            const isTyping = target && (
+                target.tagName === 'INPUT' ||
+                target.tagName === 'TEXTAREA' ||
+                target.isContentEditable
+            );
+            if (isTyping) {
+                return;
+            }
+
+            if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                player.currentTime(Math.max(0, player.currentTime() - 5));
+            } else if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                player.currentTime(Math.min(player.duration() || Infinity, player.currentTime() + 5));
+            }
+        });
 
         function updateWatchtime(curriculumId) {
             let video = document.getElementById("video-" + curriculumId + "_html5_api");

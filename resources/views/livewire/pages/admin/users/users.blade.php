@@ -92,7 +92,6 @@
                                 <th>{{ __('general.email_verification' )}}</th>
                                 <th>{{__('general.status')}}</th>
                                 <th>{{__('profile.country')}}</th>
-                                <th>{{__('general.identity_verification')}}</th>
                                 <th>{{__('general.actions')}}</th>
                             </tr>
                         </thead>
@@ -146,14 +145,6 @@
                                         $single->status}}</em>
                                 </td>
                                 <td>{{ $single->address?->country?->name }}</td>
-                                <td data-label="{{__('general.identity_verification')}}">
-                                    <div class="am-status-tag">
-                                        <div class="am-status-tag">
-                                            <em class="tk-project-tag {{  !empty($single->profile->verified_at) ? 'tk-hourly-tag' : 'tk-fixed-tag' }}">{{
-                                                !empty($single->profile->verified_at) ? __('general.verified') : __('general.non_verified')}}</em>
-                                        </div>
-                                    </div>
-                                </td>
                                 <td  data-label="{{__('general.actions')}}">
                                     <div class="am-custom-tooltip">
                                         <span class="am-tooltip-text am-tooltip-textimp">

@@ -2,6 +2,7 @@
 
 namespace Modules\Courses\Livewire\Pages\Admin;
 
+use Illuminate\Support\Str;
 use Modules\Courses\Models\Category;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
@@ -235,7 +236,7 @@ class Categories extends Component
 
         $validated_data['name']         = sanitizeTextField($this->name);
         $validated_data['description']  = sanitizeTextField($this->description, true);
-        $validated_data['slug']         = $validated_data['name'];
+        $validated_data['slug']         = Str::slug($validated_data['name']);
         $validated_data['parent_id']    = $this->parentId;
 
         if (!is_null($this->status) && in_array($this->status, ['active', 'deactive'])) {

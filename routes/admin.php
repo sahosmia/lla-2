@@ -5,11 +5,7 @@ use App\Livewire\Pages\Admin\Blogs\BlogCategories;
 use App\Livewire\Pages\Admin\Blogs\Blogs;
 use App\Livewire\Pages\Admin\Blogs\CreateBlog;
 use App\Livewire\Pages\Admin\Blogs\UpdateBlog;
-use App\Livewire\Pages\Admin\Bookings\Bookings;
-use App\Livewire\Pages\Admin\Dispute\Dispute;
-use App\Livewire\Pages\Admin\Dispute\ManageDispute;
 use App\Livewire\Pages\Admin\EmailTemplates\EmailTemplates;
-use App\Livewire\Pages\Admin\IdentityVerification\IdentityVerification;
 use App\Livewire\Pages\Admin\Reviews\Reviews;
 use App\Livewire\Pages\Admin\Insights\Insights;
 use App\Http\Controllers\SiteController;
@@ -53,9 +49,7 @@ Route::middleware(['auth', 'verified', 'role:admin|sub_admin'])->prefix('admin')
 
     Route::get('manage-admin-users',          ManageAdminUsers::class)->name('manage-admin-users')->middleware('permit-of:can-manage-admin-users');
     Route::get('users',          Users::class)->name('users')->middleware('permit-of:can-manage-users');
-    Route::get('identity-verification',          IdentityVerification::class)->name('identity-verification')->middleware('permit-of:can-manage-identity-verification');
     Route::get('reviews',           Reviews::class)->name('reviews')->middleware('permit-of:can-manage-reviews');
-    Route::get('bookings',          Bookings::class)->name('bookings')->middleware('permit-of:can-manage-bookings');
     Route::get('invoices',          Invoices::class)->name('invoices')->middleware('permit-of:can-manage-invoices');
     Route::get('email-settings',    EmailTemplates::class)->name('email-settings')->middleware('permit-of:can-manage-email-settings');
     Route::get('notification-settings', NotificationTemplates::class)->name('notification-settings')->middleware('permit-of:can-manage-notification-settings');
@@ -66,8 +60,6 @@ Route::middleware(['auth', 'verified', 'role:admin|sub_admin'])->prefix('admin')
         Route::get('installed', InstalledPackages::class)->name('installed');
         Route::post('upload', [GeneralController::class, 'uploadAddon'])->name('upload');
     });
-    Route::get('disputes', Dispute::class)->name('disputes')->middleware('permit-of:can-manage-disputes-list');
-    Route::get('manage-dispute/{id}', ManageDispute::class)->name('manage-dispute')->middleware('permit-of:can-manage-dispute');
     Route::get('clear-cache', [GeneralController::class, 'clearCache'])->name('clear-cache');
     Route::get('check-queue', [GeneralController::class, 'checkQueue'])->name('check-queue');
 

@@ -3,9 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Order;
-use App\Models\SlotBooking;
 use App\Models\User;
-use App\Services\BookingService;
 use App\Services\OrderService;
 use Carbon\Carbon;
 use Exception;
@@ -22,7 +20,6 @@ class CompleteFreePurchaseJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected Order $order;
-    protected BookingService $bookingService;
     protected OrderService $orderService;
 
     /**
@@ -36,10 +33,9 @@ class CompleteFreePurchaseJob implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(BookingService $bookingService, OrderService $orderService): void
+    public function handle(OrderService $orderService): void
     {
         try {
-            $this->bookingService   = $bookingService;
             $this->orderService     = $orderService;
             
             $tutorBookings = $tutorFunds = [];
@@ -57,16 +53,7 @@ class CompleteFreePurchaseJob implements ShouldQueue
                         $emailData = [];
                         $emailData['emailFor']  = 'tutor';
                         foreach($bookings as $booking) {
-                            if($booking->orderable instanceof SlotBooking) {
-                                $emailData['tutorName'] = $booking->orderable?->tutor?->full_name;
-                                $tutorForEmail = $booking->orderable?->bookee;
-                                $emailData['bookings'][]=[
-                                    'studentName' => $booking->orderable?->student?->full_name,
-                                    'studentImg'  => $booking->orderable?->student?->image,
-                                    'subjectName' => $booking->options['subject_group'] . ' <br /> ' . $booking->options['subject'],
-                                    'sessionTime' => $this->bookingService->getBookingTime($booking->orderable, 'bookee', true)
-                                ];
-                            } elseif(\Nwidart\Modules\Facades\Module::has('courses') && \Nwidart\Modules\Facades\Module::isEnabled('courses') && $booking->orderable instanceof \Modules\Courses\Models\Course) {
+                            if(\Nwidart\Modules\Facades\Module::has('courses') && \Nwidart\Modules\Facades\Module::isEnabled('courses') && $booking->orderable instanceof \Modules\Courses\Models\Course) {
                                 $emailData['tutorName'] = $booking->orderable->instructor?->profile?->full_name;
                                 $tutorForEmail = $booking->orderable->instructor;
                                 $emailData['courses'][]=[
@@ -97,7 +84,7 @@ class CompleteFreePurchaseJob implements ShouldQueue
                             }
                         }
                         dispatch(new SendNotificationJob('sessionBooking',$tutorForEmail, $emailData));
-                        dispatch(new SendDbNotificationJob('sessionBooking', $tutorForEmail, ['bookingLink' => route('tutor.bookings.upcoming-bookings')]));
+                        dispatch(new SendDbNotificationJob('sessionBooking', $tutorForEmail, ['bookingLink' => route('courses.tutor.courses')]));
                     }
                 }
 
@@ -106,14 +93,7 @@ class CompleteFreePurchaseJob implements ShouldQueue
                 $emailData['emailFor']  = 'student';
                 $emailData['studentName'] = $this->order?->userProfile?->full_name;
                 foreach ($this->order?->items as $item) {
-                    if($item->orderable instanceof SlotBooking) {
-                        $emailData['bookings'][] = [
-                            'tutorName'   => $item->orderable?->tutor?->full_name,
-                            'tutorImg'    => $item->orderable?->tutor?->image,
-                            'subjectName' => $item->options['subject_group'] . ' <br /> ' . $item->options['subject'],
-                            'sessionTime' => $this->bookingService->getBookingTime($item->orderable, 'booker', true)
-                        ];
-                    } elseif(Module::has('courses') && Module::isEnabled('courses') && $item->orderable instanceof \Modules\Courses\Models\Course) {
+                    if(Module::has('courses') && Module::isEnabled('courses') && $item->orderable instanceof \Modules\Courses\Models\Course) {
                         $emailData['studentName'] = $this->order?->userProfile?->full_name;
                         $emailData['courses'][] = [
                             'tutorName'   => $item->orderable?->instructor?->profile?->full_name,
@@ -146,7 +126,7 @@ class CompleteFreePurchaseJob implements ShouldQueue
 
                 if (!empty($emailData['courses']) || !empty($emailData['bookings'])) {
                     dispatch(new SendNotificationJob('sessionBooking', $this->order?->orderBy, $emailData));
-                    dispatch(new SendDbNotificationJob('sessionBooking', $this->order?->orderBy, ['bookingLink' => route('student.bookings')]));
+                    dispatch(new SendDbNotificationJob('sessionBooking', $this->order?->orderBy, ['bookingLink' => route('courses.course-list')]));
                 }
 
 

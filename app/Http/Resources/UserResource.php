@@ -26,7 +26,6 @@ class UserResource extends JsonResource
                 return formatAmount($min_price);
             }),
             'total_reviews'                  => $this->whenHas('total_reviews'),
-            'active_students'                => $this->whenHas('active_students'),
             'rating'                         => $this->whenHas('rating'),
             'image'                          => $this->whenHas('image'),
             'profile_completed'              => (($this->profile?->created_at ?? null) == ($this->profile?->updated_at ?? null) ? false : true),

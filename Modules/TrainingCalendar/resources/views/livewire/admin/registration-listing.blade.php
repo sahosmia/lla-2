@@ -11,6 +11,9 @@
                                     <i class="icon-search"></i>
                                     <input type="text" class="form-control" wire:model.live.debounce.400ms="keyword" autocomplete="off" placeholder="{{ __('general.search') }}...">
                                 </div>
+                                <div class="tb-actionselect">
+                                    <a href="javascript:void(0)" wire:click="exportRegistrations" id="export" class="tb-btn add-new">{{ __('general.export') }}</a>
+                                </div>
                             </div>
                         </fieldset>
                     </form>
@@ -27,6 +30,7 @@
                                     <th>{{ __('trainingcalendar::trainingcalendar.training') }}</th>
                                     <th>{{ __('trainingcalendar::trainingcalendar.name') }}</th>
                                     <th>{{ __('trainingcalendar::trainingcalendar.email') }}</th>
+                                    <th>{{ __('trainingcalendar::trainingcalendar.organization') }}</th>
                                     <th>{{ __('trainingcalendar::trainingcalendar.tutor') }}</th>
                                     <th>{{ __('trainingcalendar::trainingcalendar.payment_status') }}</th>
                                     <th>{{ __('trainingcalendar::trainingcalendar.actions') }}</th>
@@ -52,6 +56,10 @@
 
                                         <td data-label="{{ __('trainingcalendar::trainingcalendar.email') }}">
                                             <span>{{ $registration->email }}</span>
+                                        </td>
+
+                                        <td data-label="{{ __('trainingcalendar::trainingcalendar.organization') }}">
+                                            <span>{{ $registration->organization }}</span>
                                         </td>
 
                                         <td data-label="{{ __('trainingcalendar::trainingcalendar.tutor') }}">
@@ -101,4 +109,14 @@
 @push('styles')
     <link rel="stylesheet" href="{{ asset('modules/courses/css/main.css') }}">
     <link rel="stylesheet" href="{{ asset('modules/quiz/css/main.css') }}">
+    <style>
+        .am-training-admin .am-disputelist {
+            overflow-x: auto;
+        }
+
+        .am-training-admin .tb-table th,
+        .am-training-admin .tb-table td {
+            white-space: nowrap;
+        }
+    </style>
 @endpush

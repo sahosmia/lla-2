@@ -1,7 +1,6 @@
 <?php
 
 use App\Spotlight\Logout;
-use App\Spotlight\ManageSessions;
 use App\Spotlight\Search;
 
 return [
@@ -35,7 +34,6 @@ return [
     'commands' => [
        Logout::class,
        Search::class,
-       ManageSessions::class,
     ],
 
     /*

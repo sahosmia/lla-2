@@ -80,6 +80,8 @@ return [
     "saving"                                        => "Saving...",
     'library'                                       => 'Library',
     'library_title'                                 => 'Library',
+    'your_uploads'                                   => 'Your Uploads',
+    'upload_image'                                   => 'Upload Image',
     "cancel"                                        => "Cancel",
     "background"                                    => "Background",
     "background_menu"                               => "Background",

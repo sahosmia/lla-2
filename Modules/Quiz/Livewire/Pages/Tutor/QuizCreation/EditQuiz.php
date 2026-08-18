@@ -2,9 +2,6 @@
 
 namespace Modules\Quiz\Livewire\Pages\Tutor\QuizCreation;
 
-use App\Models\UserSubjectGroupSubject;
-use App\Services\BookingService;
-use App\Services\SubjectService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Livewire\Attributes\Layout;
@@ -23,7 +20,7 @@ class EditQuiz extends Component
     public $isUpdate = false;
     public $quizzable_ids = [];
     public $slots = [];
-    protected $quizService, $subjectService, $bookingService;
+    protected $quizService;
     public $sessions = [];
     public $selectedSubjectSlots = [];
     public $allowVideoSize  = '';
@@ -39,10 +36,7 @@ class EditQuiz extends Component
     public function boot()
     {
         $this->user = Auth::user();
-        $this->subjectService   = new SubjectService($this->user);
-        $this->bookingService   = new BookingService($this->user);
         $this->quizService      = new QuizService();
-        
     }
 
     public function mount($quizId = null)
@@ -73,28 +67,6 @@ class EditQuiz extends Component
         }
 
         $this->quizzable_ids = $this->initOptions($this->form->quizzable_type);
-        if($this->form->quizzable_type == UserSubjectGroupSubject::class){
-            $slotData = $this->bookingService->getAvailableSubjectSlots($this->form->quizzable_id, $this->dateFormat, $this->timeFormat);
-            
-            if(!empty($slotData)){
-                $this->selectedSubjectSlots = array_filter($slotData, function ($slot) {
-                    return !empty($this->quiz->user_subject_slots) ? in_array($slot['id'], $this->quiz->user_subject_slots) : false;
-                });
-                if(empty($this->selectedSubjectSlots)){
-                    $this->form->user_subject_slots = [];
-                }
-
-                $this->slots =  array_map(function ($slot) {
-                    $slot['selected'] = $this->quiz->user_subject_slots ? in_array($slot['id'], $this->quiz->user_subject_slots) : false;
-                    return $slot;
-                }, $slotData);
-
-            } else {
-                $this->form->user_subject_slots = [];
-                $this->slots = [];
-                $this->selectedSubjectSlots = [];
-            }
-        }        
     }
 
     #[Layout('layouts.app')]
@@ -109,18 +81,6 @@ class EditQuiz extends Component
         if (str_contains($key, 'quizzable_type')) {
             $data = $this->initOptions($this->form->quizzable_type);
             $this->dispatch('quizValuesUpdated', options: $data, reset: true, target: '#quizzable_id');
-            if($value == UserSubjectGroupSubject::class){
-                $this->dispatch('initSelect2', target: '.am-select2' );
-                $this->dispatch('slotsList');
-            }
-        } elseif (str_contains($key, 'quizzable_id')) {
-            if ($this->form->quizzable_type == UserSubjectGroupSubject::class) {
-                $this->slots = $this->bookingService->getAvailableSubjectSlots($this->form->quizzable_id, $this->dateFormat, $this->timeFormat);
-                $this->dispatch('addSlotsOptions', options:  $this->slots, reset: true);
-                $this->dispatch('slotsList');
-            } else {
-                $this->form->user_subject_slots = [];
-            }
         }
     }
 
@@ -129,31 +89,6 @@ class EditQuiz extends Component
         if ($type == \Modules\Courses\Models\Course::class) {
             $courses = (new \Modules\Courses\Services\CourseService())->getInstructorCourses(Auth::id(), [], ['title', 'id']);
             return $courses->map(fn($course) => ['text' => $course->title, 'id' => $course->id, 'selected' => !empty($this->form->quizzable_id) ? $this->form->quizzable_id == $course->id : false]) ?? [];
-        } else if ($type == UserSubjectGroupSubject::class) {
-            $subjectGroups = $this->subjectService->getUserSubjectGroups(['subjects:id,name', 'group:id,name']);
-            $formattedData = [];
-            foreach ($subjectGroups as $sbjGroup) {
-                if ($sbjGroup->subjects->isEmpty()) {
-                    continue;
-                }
-                $groupData = [
-                    'text' => $sbjGroup->group->name,
-                    'children' => []
-                ];
-
-                if ($sbjGroup->subjects) {
-                    foreach ($sbjGroup->subjects as $sbj) {
-                        $groupData['children'][] = [
-                            'id' => $sbj->pivot->id,
-                            'text' => $sbj->name,
-                            'selected' => !empty($this->form->quizzable_id) ? $this->form->quizzable_id == $sbj->pivot->id : false
-                        ];
-                    }
-                }
-                $formattedData[] = $groupData;
-            }
-
-            return $formattedData;
         }
     }
 

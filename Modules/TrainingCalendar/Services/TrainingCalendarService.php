@@ -3,10 +3,8 @@
 namespace Modules\TrainingCalendar\Services;
 
 use App\Facades\Cart;
-use App\Jobs\CompleteFreePurchaseJob;
 use App\Models\Order;
 use App\Models\User;
-use App\Services\OrderService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -118,14 +116,36 @@ class TrainingCalendarService
             ->paginate(10);
     }
 
-    public function getTrainingRegistrations(int $trainingId): LengthAwarePaginator
+    public function getTrainingRegistrations(int $trainingId, string $keyword = ''): LengthAwarePaginator
+    {
+        $with = ['user.profile'];
+
+        if (isActiveModule('upcertify')) {
+            $with[] = 'issuedCertificate';
+        }
+
+        return TrainingRegistration::query()
+            ->where('training_calendar_id', $trainingId)
+            ->where('payment_status', TrainingRegistration::PAYMENT_PAID)
+            ->when($keyword, function ($query) use ($keyword) {
+                $query->where(function ($q) use ($keyword) {
+                    $q->where('name', 'like', '%' . $keyword . '%')
+                        ->orWhere('email', 'like', '%' . $keyword . '%');
+                });
+            })
+            ->with($with)
+            ->latest()
+            ->paginate(10);
+    }
+
+    public function getAllTrainingRegistrations(int $trainingId)
     {
         return TrainingRegistration::query()
             ->where('training_calendar_id', $trainingId)
             ->where('payment_status', TrainingRegistration::PAYMENT_PAID)
-            ->with('user.profile')
+            ->with(['user.profile', 'training'])
             ->latest()
-            ->paginate(10);
+            ->get();
     }
 
     public function createTraining(array $data, int $tutorId): TrainingCalendar
@@ -165,75 +185,12 @@ class TrainingCalendarService
             ->exists();
     }
 
-    public function registerFree(TrainingCalendar $training, array $registrationData, User $user): array
+    public function addToCart(TrainingCalendar $training, User $user): array
     {
-        if (trainingCalendarSetting('allow_free_training', 'yes') !== 'yes' && $training->isFree()) {
+        if ($training->isFree() && trainingCalendarSetting('allow_free_training', 'yes') !== 'yes') {
             return ['success' => false, 'message' => __('trainingcalendar::trainingcalendar.free_registration_disabled')];
         }
 
-        if (!$training->isRegistrationOpen()) {
-            return ['success' => false, 'message' => __('trainingcalendar::trainingcalendar.registration_closed')];
-        }
-
-        if ($this->userAlreadyRegistered($training->id, $user->id)) {
-            return ['success' => false, 'message' => __('trainingcalendar::trainingcalendar.already_registered')];
-        }
-
-        try {
-            DB::beginTransaction();
-
-            $orderService = new OrderService();
-            $order = $orderService->createOrder([
-                'user_id' => $user->id,
-                'first_name' => $registrationData['name'],
-                'last_name' => '',
-                'email' => $registrationData['email'],
-                'phone' => $registrationData['phone'],
-                'amount' => 0,
-                'currency' => setting('_general.currency') ?? 'BDT',
-                'payment_method' => 'free',
-                'status' => 'complete',
-                'company' => '',
-                'country' => '',
-                'state' => '',
-                'postal_code' => '',
-                'city' => '',
-            ]);
-
-            $orderService->storeOrderItems($order->id, [[
-                'order_id' => $order->id,
-                'title' => $training->title,
-                'quantity' => 1,
-                'options' => array_merge($registrationData, [
-                    'training_id' => $training->id,
-                    'tutor_id' => $training->tutor_id,
-                ]),
-                'price' => 0,
-                'total' => 0,
-                'orderable_id' => $training->id,
-                'orderable_type' => TrainingCalendar::class,
-            ]]);
-
-            $this->createRegistration($training, $user, $registrationData, $order->id);
-
-            DB::commit();
-
-            dispatch(new CompleteFreePurchaseJob($order));
-
-            return [
-                'success' => true,
-                'message' => __('trainingcalendar::trainingcalendar.registration_success'),
-            ];
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            report($e);
-
-            return ['success' => false, 'message' => __('general.went_wrong')];
-        }
-    }
-
-    public function addToCart(TrainingCalendar $training, array $registrationData, User $user): array
-    {
         if (!$training->isRegistrationOpen()) {
             return ['success' => false, 'message' => __('trainingcalendar::trainingcalendar.registration_closed')];
         }
@@ -248,14 +205,14 @@ class TrainingCalendarService
             name: $training->title,
             qty: 1,
             price: $training->price,
-            options: array_merge($registrationData, [
+            options: [
                 'training_id' => $training->id,
                 'tutor_id' => $training->tutor_id,
                 'type' => $training->type,
                 'slug' => $training->slug,
                 'price' => $training->price,
                 'event_datetime' => $training->event_datetime?->format('Y-m-d H:i'),
-            ])
+            ]
         );
 
         return ['success' => true, 'message' => __('trainingcalendar::trainingcalendar.added_to_cart')];
@@ -271,6 +228,7 @@ class TrainingCalendarService
             'email' => $data['email'] ?? $user->email,
             'phone' => $data['phone'] ?? '',
             'profession' => $data['profession'] ?? '',
+            'organization' => $data['organization'] ?? '',
             'payment_status' => $paymentStatus,
         ]);
     }
@@ -287,7 +245,15 @@ class TrainingCalendarService
             return;
         }
 
-        $this->createRegistration($training, $user, $options, $order->id);
+        $data = [
+            'name' => trim($order->first_name . ' ' . $order->last_name) ?: null,
+            'email' => $order->email,
+            'phone' => $order->phone,
+            'profession' => $order->profession ?? '',
+            'organization' => $order->organization ?? '',
+        ];
+
+        $this->createRegistration($training, $user, $data, $order->id);
     }
 
     public function sendNotice(TrainingCalendar $training, User $sender, array $data): array

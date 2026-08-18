@@ -144,37 +144,6 @@ class QuestionManager extends Component
                     }
                 }
             }
-        } else {
-            if (isActiveModule('quiz')) {
-                $bookings = \App\Models\SlotBooking::get();
-                foreach ($bookings as $booking) {
-                    $sessionEndDate = $booking->end_time;
-                    if ($sessionEndDate && $sessionEndDate < now()) {
-                        $quiz = (new \Modules\Quiz\Services\QuizService())->quizzsBySlot($booking->user_subject_slot_id);
-                        if ($quiz->isNotEmpty()) {
-                            foreach ($quiz as $quiz) {
-                                if ($quiz->status == 'published') {
-                                    $quizDetail = (new \Modules\Quiz\Services\QuizService())->assignQuiz($quiz->id, [$booking->student_id]);
-
-                                    if ($quizDetail && isset($quizDetail->id)) {
-                                        $emailData = [
-                                            'quizTitle'       => $quiz->title,
-                                            'studentName'     => $booking->student?->full_name,
-                                            'tutorName'       => $quiz->tutor?->profile?->full_name,
-                                            'assignedQuizUrl' => route('quiz.student.quizzes'),
-                                        ];
-                                    
-                                        $notifyData = $emailData;
-                                    
-                                        dispatch(new \App\Jobs\SendNotificationJob('assignedQuiz', $booking->booker, $emailData));
-                                        dispatch(new \App\Jobs\SendDbNotificationJob('assignedquiz', $booking->booker, $notifyData));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
         if (!empty($publishedQuiz)) {
             $this->dispatch('showAlertMessage', type: 'success', title: __('quiz::quiz.quiz_publish'), message: __('quiz::quiz.quiz_publish_successfully'));

@@ -66,12 +66,12 @@ class DefaultSettingSeeder extends Seeder
                 'footer3_paragraph'            => 'Join our community to either share your expertise as an tutor or enhance your skills as a student. Connect, learn, and grow with us today. ',
                 'primary_button_text'          => 'Get Started Now',
                 'primary_button_url'           => 'login',
-                'secondary_button_text'        => 'Learn About Lernen',
+                'secondary_button_text'        => 'Learn About The Learning Line Academy',
                 'secondary_button_url'         => 'about-us',
                 'tutor_link_heading'           => 'Are you a Tutor?',
-                'join_lernen_link'             => 'Join Lernen',
+                'join_lernen_link'             => 'Join The Learning Line Academy',
                 'join_lernen_link_url'         => 'register',
-                'footer_paragraph'              => 'Lernen is the top online tutoring platform for children, dedicated to connecting each student with their perfect tutor. With a network of over 1 million qualified tutors, we provide exceptional tutoring in every school subject.',
+                'footer_paragraph'              => 'The Learning Line Academy is the top online tutoring platform for children, dedicated to connecting each student with their perfect tutor. With a network of over 1 million qualified tutors, we provide exceptional tutoring in every school subject.',
                 'footer_contact'                => '(316) 555-0116',
                 'footer_email'                  => 'hello@gmail.com',
                 'footer_address'                => '4517 Washington Ave. Manchester, Kentucky 39495',
@@ -206,23 +206,6 @@ class DefaultSettingSeeder extends Seeder
                     ['page_id' => 7,  'footer_variation'  => 'am-footer_three'],
                     ['page_id' => 8,  'footer_variation'  => 'am-footer_three'],
                 ],
-                '_dispute_setting' => [
-                    'dispute_reasons' => [
-                        ['dispute_reason' => 'Tutor No-Show'],
-                        ['dispute_reason' => 'Unsatisfactory Service or Quality of Session'],
-                        ['dispute_reason' => 'Technical Issues Preventing Completion of Session'],
-                        ['dispute_reason' => 'Tutor’s Inappropriate Behavior'],
-                        ['dispute_reason' => 'Session Did Not Meet Agreed-Upon Goals'],
-                        ['dispute_reason' => 'Late Start or Early End of Session'],
-                        ['dispute_reason' => 'Other (Provide Details)'],
-                    ],
-                    'dispute_message' => 'Hi Admin, I\'d like to file a dispute regarding my recent session with tutorName: on formattedSessionDateTime:. The session didn’t meet my expectations. I’d appreciate your help in resolving this. Thank you!',
-                    'dispute_winner_message' => 'After careful review of your dispute case, our administrative team has determined that the decision has been made in your favor. The disputed booking has been resolved and the necessary refund will be processed accordingly. The case is now officially closed. Thank you for your patience throughout this process.',
-                    'dispute_loser_message' => 'After careful review of your dispute case, our administrative team has determined that the decision has not been made in your favor. We understand this may be disappointing, but we have thoroughly evaluated all evidence and information provided. The disputed booking has now been closed. If you have any questions about future bookings, please don\'t hesitate to contact our support team.',
-                    'pending_dispute_tooltip_message' => 'Your dispute request has not been accepted by an admin yet. Please wait for a response.',
-                    'close_dispute_tooltip_message' => 'This dispute has not been closed yet.',
-
-                ],
             ];
             $this->seedSettings($def_setting);
             return;
@@ -346,7 +329,7 @@ class DefaultSettingSeeder extends Seeder
         if ($version == '2.2.1') {
             $def_setting = [
                 '_general' => [
-                    'company_name'      => 'Lernen',
+                    'company_name'      => 'The Learning Line Academy',
                     'invoice_logo'      => [uploadObMedia('demo-content/invoice-logo.png')],
                     'company_email'     => 'hellow@yourdomain.com',
                     'company_address'   => '4517 Washington Ave. Manchester, Kentucky 39495',
@@ -448,23 +431,6 @@ class DefaultSettingSeeder extends Seeder
                 'zoom_client_secret'            => env('ZOOM_CLIENT_SECRET', ''),
                 'openai_api_key'                => env('OPENAI_API_KEY', ''),
             ],
-            '_dispute_setting' => [
-                'dispute_reasons' => [
-                    ['dispute_reason' => 'Tutor No-Show'],
-                    ['dispute_reason' => 'Unsatisfactory Service or Quality of Session'],
-                    ['dispute_reason' => 'Technical Issues Preventing Completion of Session'],
-                    ['dispute_reason' => 'Tutor’s Inappropriate Behavior'],
-                    ['dispute_reason' => 'Session Did Not Meet Agreed-Upon Goals'],
-                    ['dispute_reason' => 'Late Start or Early End of Session'],
-                    ['dispute_reason' => 'Other (Provide Details)'],
-                ],
-                'dispute_message' => 'Hi Admin, I\'d like to file a dispute regarding my recent session with tutorName: on formattedSessionDateTime:. The session didn’t meet my expectations. I’d appreciate your help in resolving this. Thank you!',
-                'dispute_winner_message' => 'After careful review of your dispute case, our administrative team has determined that the decision has been made in your favor. The disputed booking has been resolved and the necessary refund will be processed accordingly. The case is now officially closed. Thank you for your patience throughout this process.',
-                'dispute_loser_message' => 'After careful review of your dispute case, our administrative team has determined that the decision has not been made in your favor. We understand this may be disappointing, but we have thoroughly evaluated all evidence and information provided. The disputed booking has now been closed. If you have any questions about future bookings, please don\'t hesitate to contact our support team.',
-                'pending_dispute_tooltip_message' => 'Your dispute request has not been accepted by an admin yet. Please wait for a response.',
-                'close_dispute_tooltip_message' => 'This dispute has not been closed yet.',
-
-            ],
             '_ai_writer_settings' => [
                 'enable_on_profile_settings'    => '1',
                 'profile_prompt'    => 'Write a paragraph about the following topic: {topic}',
@@ -487,10 +453,10 @@ class DefaultSettingSeeder extends Seeder
                 'email_logo'          => [
                     'file_name' => 'email-logo.png',
                 ],
-                'sender_name'         => env('APP_NAME', 'Lernen'),
+                'sender_name'         => env('APP_NAME', 'The Learning Line Academy'),
                 'sender_email'        => 'abc@somedomain.com',
-                'sender_signature'     => 'Happy learning! <br /> <br /> Best regards, <br /> The Lernen Team',
-                'footer_text'         => '&copy; ' . date('Y') . ' The Lernen. All rights reserved.'
+                'sender_signature'     => 'Happy learning! <br /> <br /> Best regards, <br /> The Learning Line Academy Team',
+                'footer_text'         => '&copy; ' . date('Y') . ' The Learning Line Academy. All rights reserved.'
             ],
             '_front_page_settings' => [
                 'per_page'                     => 9,
@@ -508,13 +474,13 @@ class DefaultSettingSeeder extends Seeder
                 'footer3_paragraph'            => 'Join our community to either share your expertise as an tutor or enhance your skills as a student. Connect, learn, and grow with us today. ',
                 'primary_button_text'          => 'Get Started Now',
                 'primary_button_url'           => 'login',
-                'secondary_button_text'        => 'Learn About Lernen',
+                'secondary_button_text'        => 'Learn About The Learning Line Academy',
                 'secondary_button_url'         => 'about-us',
                 'tutor_link_heading'           => 'Are you a Tutor?',
-                'join_lernen_link'             => 'Join Lernen',
+                'join_lernen_link'             => 'Join The Learning Line Academy',
                 'join_lernen_link_url'         => 'register',
 
-                'footer_paragraph'              => 'Lernen is the top online tutoring platform for children, dedicated to connecting each student with their perfect tutor. With a network of over 1 million qualified tutors, we provide exceptional tutoring in every school subject.',
+                'footer_paragraph'              => 'The Learning Line Academy is the top online tutoring platform for children, dedicated to connecting each student with their perfect tutor. With a network of over 1 million qualified tutors, we provide exceptional tutoring in every school subject.',
                 'footer_contact'                => '(316) 555-0116',
                 'footer_email'                  => 'hello@gmail.com',
                 'footer_address'                => '4517 Washington Ave. Manchester, Kentucky 39495',
@@ -564,7 +530,7 @@ class DefaultSettingSeeder extends Seeder
                 'decimal_separator'             => '.',
                 'number_of_decimals'            => '2',
                 'enable_rtl'                    => '0',
-                'site_name'                     => 'Lernen',
+                'site_name'                     => 'The Learning Line Academy',
                 'site_email'                    => 'hellow@yourdomain.com',
                 'date_format'                   => 'F j, Y',
                 'address_format'                => 'city_country',

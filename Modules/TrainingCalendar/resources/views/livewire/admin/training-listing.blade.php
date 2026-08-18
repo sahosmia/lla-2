@@ -89,7 +89,17 @@
                                             <span>{{ $training->id }}</span>
                                         </td>
                                         <td data-label="{{ __('trainingcalendar::trainingcalendar.title') }}">
-                                            <span>{{ $training->title }}</span>
+                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                <img src="{{ !empty($training->thumbnail) ? resizedImage($training->thumbnail, 60, 40) : asset('modules/trainingcalendar/images/training.png') }}" alt="{{ $training->title }}" style="width: 60px; height: 40px; object-fit: cover; border-radius: 6px; flex-shrink: 0;">
+                                                <div>
+                                                    <span class="d-block">{{ $training->title }}</span>
+                                                    @if($training->hasAccreditation())
+                                                        <span class="d-block" style="font-size: 11px; color: #4338ca;">
+                                                            {{ $training->accreditation_body }}{{ $training->accreditation_body && $training->formatted_pdu_points ? ' · ' : '' }}{{ $training->formatted_pdu_points ? $training->formatted_pdu_points . ' PDU' : '' }}
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            </div>
                                         </td>
                                         <td data-label="{{ __('trainingcalendar::trainingcalendar.tutor') }}">
                                             <div class="am-instructor-column">

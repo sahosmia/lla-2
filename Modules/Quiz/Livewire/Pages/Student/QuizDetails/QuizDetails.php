@@ -20,7 +20,6 @@ class QuizDetails extends Component
 
     public User $user;
     public $tutor;
-    public $totalSlots;
     public $quizAttempt;
     public $reviews;
     public $isFavourite;
@@ -113,10 +112,6 @@ class QuizDetails extends Component
 
         $passingGradeValue = $this->quizAttempt?->quiz?->settings?->where('meta_key', 'passing_grade')->first()?->meta_value ?? 0;
         $passingGrade = is_array($passingGradeValue) ? ($passingGradeValue[0] ?? 0) : $passingGradeValue;
-
-        $this->totalSlots = $this->tutor?->subjects?->flatMap(function ($subject) {
-            return $subject->slots;
-        })->count();
 
         $userService = new UserService($this->user);
         $this->isFavourite = $userService->isFavouriteUser($this->tutor?->id ?? 0);

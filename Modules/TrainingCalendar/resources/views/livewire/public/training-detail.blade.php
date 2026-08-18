@@ -1,9 +1,17 @@
-<div class="tc-training-detail am-section-load">
+<div class="tc-training-detail">
     <div class="container">
         <div class="row g-4">
             <div class="col-lg-8">
                 <div class="tc-training-detail_content">
+                    <figure class="tc-training-detail_thumb">
+                        <img src="{{ !empty($training->thumbnail) ? resizedImage($training->thumbnail, 800, 400) : asset('modules/trainingcalendar/images/training.png') }}" alt="{{ $training->title }}">
+                    </figure>
                     <span class="am-coursetag detail-tag-{{ $training->type }}">{{ ucfirst($training->type) }}</span>
+                    @if($training->hasAccreditation())
+                        <span class="am-coursetag" style="background: #eef2ff; color: #4338ca;">
+                            {{ $training->accreditation_body }}{{ $training->accreditation_body && $training->formatted_pdu_points ? ' · ' : '' }}{{ $training->formatted_pdu_points ? $training->formatted_pdu_points . ' PDU' : '' }}
+                        </span>
+                    @endif
                     <h1 class="tc-training-detail_title">{{ $training->title }}</h1>
                     
                     @if($training->description)
@@ -76,44 +84,23 @@
                                 @guest
                                     <div class="guest-login-notice">
                                         <span>{{ __('trainingcalendar::trainingcalendar.login_required') }}</span>
-                                        <a href="{{ route('login') }}" class="modern-submit-btn text-center justify-content-center">
+                                        <a href="{{ route('login', ['redirect' => url()->current()]) }}" class="modern-submit-btn text-center justify-content-center">
                                             {{ __('general.login') }}
                                         </a>
                                     </div>
                                 @else
-                                    <form wire:submit.prevent="register" class="tc-training-detail_form">
-                                        <div class="form-group mb-3">
-                                            <label class="modern-form-label">{{ __('trainingcalendar::trainingcalendar.name') }}</label>
-                                            <input type="text" class="form-control modern-input" wire:model="name">
-                                            @error('name') <span class="text-danger d-block mt-1 small">{{ $message }}</span> @enderror
-                                        </div>
-                                        <div class="form-group mb-3">
-                                            <label class="modern-form-label">{{ __('trainingcalendar::trainingcalendar.email') }}</label>
-                                            <input type="email" class="form-control modern-input" wire:model="email">
-                                            @error('email') <span class="text-danger d-block mt-1 small">{{ $message }}</span> @enderror
-                                        </div>
-                                        <div class="form-group mb-3">
-                                            <label class="modern-form-label">{{ __('trainingcalendar::trainingcalendar.phone') }}</label>
-                                            <input type="text" class="form-control modern-input" wire:model="phone">
-                                            @error('phone') <span class="text-danger d-block mt-1 small">{{ $message }}</span> @enderror
-                                        </div>
-                                        <div class="form-group mb-4">
-                                            <label class="modern-form-label">{{ __('trainingcalendar::trainingcalendar.profession') }}</label>
-                                            <input type="text" class="form-control modern-input" wire:model="profession">
-                                            @error('profession') <span class="text-danger d-block mt-1 small">{{ $message }}</span> @enderror
-                                        </div>
-                                        
-<button
-    type="submit"
-    class="modern-submit-btn"
-    wire:loading.attr="disabled"
->
-    <span class="btn-content-flex">
-        {{ $training->isFree() ? __('trainingcalendar::trainingcalendar.register_free') : __('trainingcalendar::trainingcalendar.pay_and_register') }}
-        <i class="am-icon-arrow-right"></i>
-    </span>
-</button>
-                                    </form>
+                                    <p class="tc-training-detail_form_note">{{ __('trainingcalendar::trainingcalendar.register_now_details_at_checkout') }}</p>
+                                    <button
+                                        type="button"
+                                        wire:click="register"
+                                        class="modern-submit-btn"
+                                        wire:loading.attr="disabled"
+                                    >
+                                        <span class="btn-content-flex">
+                                            {{ $training->isFree() ? __('trainingcalendar::trainingcalendar.register_free') : __('trainingcalendar::trainingcalendar.pay_and_register') }}
+                                            <i class="am-icon-arrow-right"></i>
+                                        </span>
+                                    </button>
                                 @endguest
                             @endif
                         </div>
@@ -153,6 +140,21 @@
         color: #0f172a;
         margin: 16px 0 20px;
         line-height: 1.3;
+    }
+
+    .tc-training-detail_thumb {
+        margin: 0 0 20px;
+        width: 100%;
+        height: 320px;
+        overflow: hidden;
+        border-radius: 12px;
+    }
+
+    .tc-training-detail_thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
     }
     
     .tc-training-detail_desc {

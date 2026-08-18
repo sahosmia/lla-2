@@ -30,6 +30,8 @@ class CreateCertificate extends Component {
     public $templates;
     public $title;
     public $attachments;
+    public $uploadedAttachments;
+    public $loadingUploadedAttachments = false;
     public $backgrounds;
     public $shapeIcons;
     public $badeIcons;
@@ -85,9 +87,9 @@ class CreateCertificate extends Component {
         if($this->tab == 'background') {
             $this->getPattern();
         }
-        // if($this->tab == 'library') {
-        //     $this->getAttachment();
-        // }
+        if($this->tab == 'library') {
+            $this->getAttachment();
+        }
         $this->fonts = $this->getGoogleFonts();
     }
 
@@ -160,20 +162,23 @@ class CreateCertificate extends Component {
             if($tab == 'media' && (empty($this->backgrounds) || $this->backgrounds->isEmpty())) {
                 $this->getBackgrounds();
             }
-            // if($tab == 'library' && empty($this->attachments)) {
-            //     $this->getAttachment();
-            // }
+            if($tab == 'library' && empty($this->uploadedAttachments)) {
+                $this->getAttachment();
+            }
             if($tab == 'background' && empty($this->patterns)) {
                 $this->getPattern();
             }
         }
     }
 
-    // public function getAttachment() {
-    //     $this->loadingAttachments = true;
-    //     $this->attachments = Media::where('type', Media::TYPE['attachment'])->orderBy('id', 'desc')->get();
-    //     $this->loadingAttachments = false;
-    // }
+    public function getAttachment() {
+        $this->loadingUploadedAttachments = true;
+        $this->uploadedAttachments = Media::where('type', Media::TYPE['attachment'])->when($this->search, function($query, $search){
+            return $query->where('title', 'like', '%'.$search.'%');
+        })
+        ->orderBy('id', 'desc')->get();
+        $this->loadingUploadedAttachments = false;
+    }
 
     public function updatedSearch(){
         if($this->tab == 'templates'){
@@ -181,6 +186,8 @@ class CreateCertificate extends Component {
             $this->getTemplates();
         } elseif($this->tab == 'media') {
             $this->getBackgrounds();
+        } elseif($this->tab == 'library') {
+            $this->getAttachment();
         }
     }
 
@@ -350,13 +357,12 @@ class CreateCertificate extends Component {
                 $this->patterns = $this->patterns->reject(function($item) use ($id) {
                     return $item->id == $id;
                 });
+            } else if($media->type == 'attachment') {
+                $this->uploadedAttachments = collect($this->uploadedAttachments)->reject(function($item) use ($id) {
+                    return $item->id == $id;
+                });
             }
-            // else {
-            //     $this->attachments = $this->attachments->reject(function($item) use ($id) {
-            //         return $item->id == $id;
-            //     });
-            // }
-           
+
             $this->dispatch('showToast', 
             type: 'success', 
             message: $media->type == 'media' 
@@ -414,10 +420,9 @@ class CreateCertificate extends Component {
                     $this->backgrounds = $this->backgrounds->prepend($newMedia);
                 }elseif($this->media_type == 'pattern') {
                     $this->patterns = $this->patterns->prepend($newMedia);
-                }  
-                // else {
-                //     $this->attachments = $this->attachments->prepend($newMedia);
-                // }
+                } elseif($this->media_type == 'attachment') {
+                    $this->uploadedAttachments = collect($this->uploadedAttachments)->prepend($newMedia);
+                }
                 $this->reset('media_title', 'media');
             }
         }

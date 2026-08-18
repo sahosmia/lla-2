@@ -12,9 +12,7 @@ use App\Services\ProfileService;
 use App\Jobs\CompletePurchaseJob;
 use App\Services\SiteService;
 use Illuminate\Support\Str;
-use App\Models\SlotBooking;
 use App\Services\BillingService;
-use App\Services\BookingService;
 use App\Services\OrderService;
 use App\Services\WalletService;
 use Illuminate\Support\Facades\DB;
@@ -107,7 +105,8 @@ class Checkout extends Component
             $profileData = (object) [
                 "first_name"        => $this->user->profile->first_name ?? '',
                 "last_name"         => $this->user->profile->last_name ?? '',
-                "email"             => $this->user->email ?? ''
+                "email"             => $this->user->email ?? '',
+                "phone"             => $this->user->profile->phone_number ?? ''
             ];
             $state = $this->siteService->getState($this->address?->state_id);
             $addressData = (object) [
@@ -120,6 +119,10 @@ class Checkout extends Component
             $this->form->setUserAddress($addressData);
             $this->form->paymentMethod = setting('admin_settings.default_payment_method') ?? '';
         }
+
+        $this->form->profession   = $this->orderDetail?->profession ?? $this->user->profession ?? '';
+        $this->form->organization = $this->orderDetail?->organization ?? $this->user->organization ?? '';
+
         $this->prepareCartAmount();
         if (!empty($this->chosenSubscription)) {
             $this->updatedChosenSubscription($this->chosenSubscription);
@@ -170,6 +173,10 @@ class Checkout extends Component
 
         $this->form->totalAmount = $this->totalAmount;
         $this->payAmount         = $this->totalAmount;
+
+        if ($this->totalAmount == 0) {
+            $this->form->paymentMethod = 'free';
+        }
     }
 
     public function updatedUseWalletBalance($value)
@@ -200,22 +207,6 @@ class Checkout extends Component
             if (!empty($choosedSubscription)) {
                 foreach ($this->content as $item) {
                     if (
-                        $item['cartable_type'] == SlotBooking::class &&
-                        (
-                            setting('_lernen.subscription_sessions_allowed') == 'all' ||
-                            (
-                                setting('_lernen.subscription_sessions_allowed') == 'tutor' &&
-                                ($item['options']['allowed_for_subscriptions'] ?? 0) == 1
-                            )
-                        ) &&
-                        ($choosedSubscription?->remaining_credits['sessions'] ?? 0) > 0
-                    ) {
-                        $subscriptionDiscount += $item['price'];
-                        $this->checkoutReady   = true;
-                        if (!empty($item['options']['discount_code'])) {
-                            $this->removeCoupon($item['options']['discount_code']);
-                        }
-                    } elseif (
                         Module::has('courses') && Module::isEnabled('courses') && $item['cartable_type'] == \Modules\Courses\Models\Course::class &&
                         ($choosedSubscription?->remaining_credits['courses'] ?? 0) > 0
                     ) {
@@ -319,8 +310,8 @@ class Checkout extends Component
                 $ipnUrl = PaymentDriver::getIpnUrl($this->form->paymentMethod);
                 session(['payment_data' =>  [
                     'amount'        => $this->payAmount,
-                    'title'         => setting('_general.site_name') ?? env('APP_NAME', 'Lernen') . ' Purchase',
-                    'description'   => setting('_general.site_name') ?? env('APP_NAME', 'Lernen') . ' Purchase Order Confirmation for reference #' . $orderDetail->id,
+                    'title'         => (setting('_general.site_name') ?? env('APP_NAME', 'The Learning Line Academy')) . ' Purchase',
+                    'description'   => (setting('_general.site_name') ?? env('APP_NAME', 'The Learning Line Academy')) . ' Purchase Order Confirmation for reference #' . $orderDetail->id,
                     'ipn_url'       => !empty($ipnUrl) ? route($ipnUrl, ['payment_method' => $this->form->paymentMethod]) : url('/'),
                     'order_id'      => $orderDetail->id,
                     'track'         => Str::random(36),
@@ -340,9 +331,6 @@ class Checkout extends Component
 
     public function removeCart($id, $type)
     {
-        if ($type == 'App\Models\SlotBooking') {
-            (new BookingService($this->user))->removeReservedBooking($id);
-        }
         Cart::remove($id, $type);
         $this->orderService->deleteOrderItem($id, $type);
         $this->prepareCartAmount();

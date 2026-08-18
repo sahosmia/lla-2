@@ -59,7 +59,7 @@ new #[Layout('layouts.guest')] class extends Component
         $validated = $this->validate((new RegisterUserRequest())->rules());
         $user = (new RegisterService)->registerUser($validated);
         Auth::login($user);
-        $this->redirect(route('tutor.profile.personal-details', absolute: false), navigate: true);
+        $this->redirect(route($user->role . '.profile.personal-details', absolute: false), navigate: true);
     }
 
     public function redirectGoogle() 
@@ -98,18 +98,18 @@ new #[Layout('layouts.guest')] class extends Component
                     <div class="form-group-wrap">
                         <div class="am-form-group-row">
                             <div class="form-group-half {{ $errors->get('first_name') ? 'am-invalid' : '' }}">
-                                <x-input-label for="first_name" :value="__('auth.first_name')" />
+                                <x-input-label for="first_name" class="am-important" :value="__('auth.first_name')" />
                                 <x-text-input id="first_name" wire:model="first_name" placeholder="{{ __('auth.first_name') }}" type="text"  autofocus autocomplete="name" />
                                 <x-input-error field_name="first_name" />
                             </div>
                             <div class="form-group-half {{ $errors->get('last_name') ? 'am-invalid' : '' }}">
-                                <x-input-label for="last_name" :value="__('auth.last_name')" />
+                                <x-input-label for="last_name" class="am-important" :value="__('auth.last_name')" />
                                 <x-text-input id="last_name" wire:model="last_name" placeholder="{{ __('auth.last_name') }}" type="text"  autofocus  />
                                 <x-input-error field_name="last_name" />
                             </div>
                         </div>
                         <div class="form-group {{ $errors->get('email') ? 'am-invalid' : '' }}">
-                            <x-input-label for="email" :value="__('auth.email_placeholder')" />
+                            <x-input-label for="email" class="am-important" :value="__('auth.email_placeholder')" />
                             <x-text-input id="email" wire:model="email" placeholder="{{ __('auth.email_placeholder') }}" type="email"  autofocus  />
                             <x-input-error field_name="email" />
                         </div>
@@ -135,14 +135,14 @@ new #[Layout('layouts.guest')] class extends Component
                         </div>
                         
                         <div class="form-group {{ $errors->get('password') ? 'am-invalid' : '' }}">
-                            <x-input-label for="password" :value="__('auth.password_placeholder')" />
+                            <x-input-label for="password" class="am-important" :value="__('auth.password_placeholder')" />
                             <div class="am-passwordfield">
                                 <x-text-input id="password" wire:model="password" placeholder="{{ __('auth.password_placeholder') }}" type="password"  autofocus  />
                                 <i class="am-icon-eye-close-01" id="togglePassword"></i>
                             </div>
                         </div>
                         <div class="form-group {{ $errors->get('password') ? 'am-invalid' : '' }}">
-                            <x-input-label for="password_confirmation" :value="__('auth.confirm_password_placeholder')" />
+                            <x-input-label for="password_confirmation" class="am-important" :value="__('auth.confirm_password_placeholder')" />
                             <div class="am-passwordfield">
                                 <x-text-input id="password_confirmation" wire:model="password_confirmation" placeholder="{{ __('auth.confirm_password_placeholder') }}" type="password"  autofocus  />
                                 <i class="am-icon-eye-close-01" id="toggleConfirmPassword"></i>
